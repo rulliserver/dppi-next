@@ -79,9 +79,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const menuName5Ref = useRef<HTMLParagraphElement>(null);
 
     const hamburgerAdminRef = useRef<HTMLDivElement>(null);
-    const slideoverContainerRef = useRef<HTMLDivElement>(null);
-    const slideoverBGRef = useRef<HTMLDivElement>(null);
-    const slideoverRef = useRef<HTMLDivElement>(null);
+    const videooverContainerRef = useRef<HTMLDivElement>(null);
+    const videooverBGRef = useRef<HTMLDivElement>(null);
+    const videooverRef = useRef<HTMLDivElement>(null);
     const headerRef = useRef<HTMLElement>(null);
     const bgHamburgerRef = useRef<HTMLDivElement>(null);
 
@@ -143,11 +143,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     const hamburgerHandle = () => {
-        if (hamburgerAdminRef.current && slideoverContainerRef.current && slideoverBGRef.current && slideoverRef.current) {
+        if (hamburgerAdminRef.current && videooverContainerRef.current && videooverBGRef.current && videooverRef.current) {
             hamburgerAdminRef.current.classList.toggle('hamburgera-active');
-            slideoverContainerRef.current.classList.toggle('invisible');
-            slideoverBGRef.current.classList.toggle('opacity-50');
-            slideoverRef.current.classList.toggle('translate-x-full');
+            videooverContainerRef.current.classList.toggle('invisible');
+            videooverBGRef.current.classList.toggle('opacity-50');
+            videooverRef.current.classList.toggle('translate-x-full');
         }
     };
 
@@ -241,14 +241,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             </div>
                         </div>
 
-                        <div id='slideover-container' className='fixed inset-0 z-10 invisible h-full max-w-full overflow-auto dark:bg-black/50 bg-white/50 lg:hidden ' ref={slideoverContainerRef}>
-                            <div id='slideover-bg' className='navbar-admin-sm' ref={slideoverBGRef}></div>
+                        <div id='videoover-container' className='fixed inset-0 z-10 invisible h-full max-w-full overflow-auto dark:bg-black/50 bg-white/50 lg:hidden ' ref={videooverContainerRef}>
+                            <div id='videoover-bg' className='navbar-admin-sm' ref={videooverBGRef}></div>
                             <div
-                                id='slideover'
+                                id='videoover'
                                 className='absolute right-0 w-full h-full transition-all duration-300 ease-out translate-x-full  border-t-4 dark:text-white shadow-inner backdrop-blur-sm bg-opacity-80 border-secondary'
-                                ref={slideoverRef}>
+                                ref={videooverRef}>
                                 <ul className='absolute leading-5 top-16 '>
-                                    {user.role === 'Superadmin' || user.role === 'Administrator' || user.role === 'Admin BP' ? (
+                                    {user.role === 'Superadmin' || user.role === 'Administrator' || user.role === 'Admin Kesbangpol' ? (
                                         <>
                                             <li className='mx-1 mr-3'>
                                                 <Link href='/adminpanel' className=''>
@@ -262,12 +262,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 <>
                                                     <div className='px-3 mt-4 text-gray-300'>--- Data</div>
                                                     <li className='mx-1 mr-3'>
-                                                        <Link href='/adminpanel/slide' className=''>
+                                                        <Link href='/adminpanel/video' className=''>
                                                             <div
                                                                 className={
-                                                                    pathname === '/adminpanel/slide' ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'
+                                                                    pathname === '/adminpanel/video' ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'
                                                                 }>
-                                                                Slide
+                                                                Video
                                                             </div>
                                                         </Link>
                                                     </li>
@@ -309,7 +309,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                             ) : (
                                                 ''
                                             )}
-                                            {user.role === 'Superadmin' || user.role === 'Admin BP' ? (
+                                            {user.role === 'Superadmin' || user.role === 'Admin Kesbangpol' ? (
                                                 <>
                                                     <div className='px-3 mt-4 text-gray-300'>--- Pengaturan</div>
                                                     <li className='mx-1 mr-3'>
@@ -408,7 +408,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         <i className='px-1 py-1 fas fa-chevron-left cursor-pointer'></i>
                                     </button>
                                 </div>
-                                {user.role === 'Superadmin' || user.role === 'Administrator' || user.role === 'Admin BP' ? (
+                                {user.role === 'Superadmin' || user.role === 'Administrator' || user.role === 'Admin Kesbangpol' ? (
                                     <div className='pt-4'>
                                         <Link
                                             href='/adminpanel'
@@ -432,21 +432,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                             <>
                                                 <div>
                                                     <Link
-                                                        href='/adminpanel/slides'
+                                                        href='/adminpanel/video'
                                                         className={
-                                                            pathname === '/adminpanel/slides'
+                                                            pathname === '/adminpanel/video'
                                                                 ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
                                                                 : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
                                                         }>
                                                         <i
                                                             className={
-                                                                pathname === '/adminpanel/slides'
+                                                                pathname === '/adminpanel/video'
                                                                     ? 'mx-2 text-xl py-auto fas fa-film text-red-600'
                                                                     : 'mx-2 text-xl py-auto fas fa-film text-red-600'
                                                             }></i>
 
                                                         <p className='mx-1 menu-list' id='menu-name0'>
-                                                            Slide
+                                                            Video
                                                         </p>
                                                     </Link>
                                                     <Link
@@ -506,7 +506,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         ) : (
                                             <div></div>
                                         )}
-                                        {user.role === 'Superadmin' || user.role === 'Admin BP' ? (
+                                        {user.role === 'Superadmin' || user.role === 'Admin Kesbangpol' ? (
                                             <div>
                                                 <Link
                                                     href='/adminpanel/data-wisatawan'
