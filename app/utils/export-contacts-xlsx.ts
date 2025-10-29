@@ -1,26 +1,25 @@
-// export-contacts-xlsx.ts
+// export-contacts-xlsx.ts (judul A1–H1, tabel mulai A3)
 import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
 import FormatLongDate from '../Components/FormatLongDate';
 
 export interface ContactMessage {
-    id: number;
     nama: string;
     telepon?: string | null;
     email: string;
     jenis_pesan: string;
     evidance?: string | null; // URL bukti
     pesan: string;
-    created_at: string | Date; // DateTime<Utc> -> ISO string di frontend
+    created_at: string | Date;
 }
 
 export function exportContactsXlsx(
     data: ContactMessage[],
-    filename = 'contacts.xlsx'
+    filename = 'contacts.xlsx',
+    title = 'Data Pesan Kontak'
 ) {
-    // 1) Header + data (AOA agar kontrol styling lebih mudah)
     const header = [
-        'ID',
+        'No',
         'Nama',
         'Telepon',
         'Email',
@@ -30,134 +29,172 @@ export function exportContactsXlsx(
         'Dibuat Pada',
     ];
 
-    const rows = data.map((d) => [
-        d.id,
+    // Row indices (0-based):
+    const TITLE_ROW = 0;      // A1
+    const BLANK_ROW = 1;      // A2
+    const HEADER_ROW = 2;     // A3
+    const DATA_START_ROW = 3; // A4
+
+    const rows = data.map((d, i) => [
+        i + 1,                                   // No (urut dari 1)
         d.nama ?? '',
-        // pastikan nomor telepon jadi teks (tidak diubah Excel):
-        d.telepon ? `'${d.telepon}` : '',
+        d.telepon ? `'${d.telepon}` : '',        // paksa teks agar nol depan aman
         d.email ?? '',
         d.jenis_pesan ?? '',
-        d.evidance ?? '', // akan diubah jadi hyperlink di langkah styling
+        d.evidance ?? '',                        // akan jadi hyperlink
         d.pesan ?? '',
-        FormatLongDate(d.created_at), // tampilkan sebagai string siap baca
+        FormatLongDate(d.created_at),
     ]);
 
-    const aoa = [header, ...rows];
+    // Susun AOA: title, blank, header, data
+    const aoa: any[][] = [
+        [title, '', '', '', '', '', '', ''], // A1–H1 (akan di-merge)
+        ['', '', '', '', '', '', '', ''],    // A2
+        header,                               // A3
+        ...rows,                              // A4..dst
+    ];
+
     const ws = XLSX.utils.aoa_to_sheet(aoa);
 
-    // 2) Range worksheet
-    const range = XLSX.utils.decode_range(ws['!ref'] as string);
+    // Merge A1:H1 untuk judul
+    (ws as any)['!merges'] = [{ s: { r: TITLE_ROW, c: 0 }, e: { r: TITLE_ROW, c: header.length - 1 } }];
 
-    // 3) Styling header
-    for (let C = range.s.c; C <= range.e.c; C++) {
-        const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+    // Styling judul (A1:H1 merged)
+    for (let c = 0; c < header.length; c++) {
+        const addr = XLSX.utils.encode_cell({ r: TITLE_ROW, c });
+        const cell = ws[addr] || (ws[addr] = { t: 's', v: c === 0 ? title : '' });
+        (cell as any).s = {
+            font: { bold: true, sz: 14 },
+            alignment: { vertical: 'center', horizontal: 'center' },
+        };
+    }
+
+    // Styling header (A3:H3)
+    for (let C = 0; C < header.length; C++) {
+        const addr = XLSX.utils.encode_cell({ r: HEADER_ROW, c: C });
+        const cell = ws[addr] || (ws[addr] = { t: 's', v: header[C] });
+        (cell as any).s = {
+            font: { bold: true },
+            fill: { patternType: 'solid', fgColor: { rgb: 'F3F4F6' } },
+            alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
+        };
+    }
+
+    const range = XLSX.utils.decode_range(ws['!ref'] as string);
+    const COL_EVIDANCE = 5;
+    const COL_PESAN = 6;
+
+    // === Border presets ===
+    const thin = { style: 'thin', color: { rgb: 'black' } };    // grid tipis
+    // const thin = { style: 'thin', color: { rgb: '9CA3AF' } }; // outline tebal
+
+    // Batas tabel (untuk outline tebal)
+    const START_ROW = HEADER_ROW;        // baris header (A3)
+    const END_ROW = range.e.r;         // baris data terakhir
+    const START_COL = 0;                 // kolom A
+    const END_COL = header.length - 1; // kolom H
+
+    // === Header borders (A3:H3) ===
+    for (let C = 0; C < header.length; C++) {
+        const addr = XLSX.utils.encode_cell({ r: HEADER_ROW, c: C });
         const cell = ws[addr] || (ws[addr] = { t: 's', v: header[C] });
 
         (cell as any).s = {
             font: { bold: true },
-            fill: { patternType: 'solid', fgColor: { rgb: 'F3F4F6' } }, // gray-100
+            fill: { patternType: 'solid', fgColor: { rgb: 'F3F4F6' } },
             alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
             border: {
-                top: { style: 'thin', color: { rgb: 'D1D5DB' } },
-                right: { style: 'thin', color: { rgb: 'D1D5DB' } },
-                bottom: { style: 'thin', color: { rgb: 'D1D5DB' } },
-                left: { style: 'thin', color: { rgb: 'D1D5DB' } },
+                top: C >= START_COL && C <= END_COL ? thin : thin, // outline atas tebal
+                right: C === END_COL ? thin : thin,
+                bottom: thin,
+                left: C === START_COL ? thin : thin,
             },
         };
     }
 
-    // 4) Styling body + hyperlink evidance + wrap pesan
-    const COL_EVIDANCE = 5; // index kolom (0-based): A=0 ... Evidance=5
-    const COL_PESAN = 6;
-
-    for (let R = 1; R <= range.e.r; R++) {
-        for (let C = range.s.c; C <= range.e.c; C++) {
+    // === Body borders + hyperlink + telepon teks ===
+    for (let R = DATA_START_ROW; R <= range.e.r; R++) {
+        for (let C = 0; C < header.length; C++) {
             const addr = XLSX.utils.encode_cell({ r: R, c: C });
             const cell = ws[addr];
             if (!cell) continue;
 
-            // border + alignment dasar
+            const border = {
+                top: R === START_ROW ? thin : thin,      // baris tepat di bawah header dapat outline atas tebal
+                right: C === END_COL ? thin : thin,
+                bottom: R === END_ROW ? thin : thin,      // outline bawah tebal
+                left: C === START_COL ? thin : thin,
+            };
+
             (cell as any).s = {
                 alignment: {
                     vertical: 'top',
                     horizontal: C === 0 ? 'center' : 'left',
-                    wrapText: C === COL_PESAN, // wrap untuk pesan
+                    wrapText: C === COL_PESAN,
                 },
-                border: {
-                    top: { style: 'thin', color: { rgb: 'E5E7EB' } },
-                    right: { style: 'thin', color: { rgb: 'E5E7EB' } },
-                    bottom: { style: 'thin', color: { rgb: 'E5E7EB' } },
-                    left: { style: 'thin', color: { rgb: 'E5E7EB' } },
-                },
+                border,
             };
 
-            // hyperlink untuk evidance jika URL ada
+            // Hyperlink Evidance
             if (C === COL_EVIDANCE) {
                 const url = String(cell.v || '').trim();
                 if (url) {
-                    // tampilkan teks yang ramah
                     cell.v = 'Buka Bukti';
                     (cell as any).l = { Target: url, Tooltip: 'Buka evidance' };
-                    // sedikit pewarnaan supaya tampak seperti link
                     (cell as any).s = {
                         ...(cell as any).s,
-                        font: { color: { rgb: '2563EB' }, underline: true }, // biru & underline
+                        font: { color: { rgb: '2563EB' }, underline: true },
                     };
                 }
             }
 
-            // pastikan telepon tetap teks
-            if (C === 2 && cell.v) {
-                cell.t = 's';
-            }
+            // Telepon sebagai teks
+            if (C === 2 && cell.v) cell.t = 's';
         }
     }
 
-    // 5) Autofilter & freeze header
-    ws['!autofilter'] = { ref: ws['!ref'] as string };
-    (ws as any)['!freeze'] = { xSplit: 0, ySplit: 1, topLeftCell: 'A2', activePane: 'bottomLeft', state: 'frozen' };
+    // Tanpa AutoFilter
+    // ws['!autofilter'] = undefined;
 
-    // 6) Auto column width (berdasar panjang teks)
+    // Freeze sampai header (baris 1..3 dipertahankan)
+    (ws as any)['!freeze'] = { xSplit: 0, ySplit: HEADER_ROW + 1, topLeftCell: 'A4', activePane: 'bottomLeft', state: 'frozen' };
+
+    // Auto width kolom
     const colCount = header.length;
-    const colWidths: { wch: number }[] = new Array(colCount).fill({ wch: 10 }).map(() => ({ wch: 10 }));
-
+    const colWidths: { wch: number }[] = Array.from({ length: colCount }, () => ({ wch: 10 }));
     const measure = (val: any) => {
         if (val == null) return 0;
         const s = String(val);
-        // sedikit bonus ruang; pesan bisa panjang
         return Math.min(80, Math.max(10, s.length + 2));
     };
 
-    // hitung lebar max per kolom
+    // Hitung lebar: perhatikan judul, header, dan data
     for (let C = 0; C < colCount; C++) {
-        // mulai dari header
+        // title row: pakai panjang title di kolom A saja
+        if (C === 0) colWidths[C].wch = Math.max(colWidths[C].wch, measure(title));
+
+        // header
         colWidths[C].wch = Math.max(colWidths[C].wch, measure(header[C]));
-        // body
-        for (let R = 1; R <= range.e.r; R++) {
+
+        // data
+        for (let R = DATA_START_ROW; R <= range.e.r; R++) {
             const addr = XLSX.utils.encode_cell({ r: R, c: C });
             const cell = ws[addr];
             if (!cell) continue;
-            // untuk evidance tampilkan panjang teks “Buka Bukti”
             const val =
-                C === COL_EVIDANCE && (cell as any).l?.Target
-                    ? 'Buka Bukti'
-                    : cell.v;
+                C === COL_EVIDANCE && (cell as any).l?.Target ? 'Buka Bukti' : cell.v;
             colWidths[C].wch = Math.max(colWidths[C].wch, measure(val));
         }
     }
-
-    // sedikit penyesuaian manual agar kolom “Pesan” lebih lebar
+    // Pesan lebih lebar
     colWidths[COL_PESAN].wch = Math.max(colWidths[COL_PESAN].wch, 60);
     ws['!cols'] = colWidths;
 
-    // 7) Workbook & simpan
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Contacts');
-
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([wbout], {
-        type:
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
     saveAs(blob, filename);
 }
