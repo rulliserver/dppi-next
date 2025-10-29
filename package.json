@@ -1,26 +1,48 @@
 {
-  "name": "dppi",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "next": "16.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.0"
-  }
+    "name": "dppi",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint"
+    },
+    "dependencies": {
+        "@headlessui/react": "^2.2.9",
+        "@tanstack/react-table": "^8.21.3",
+        "axios": "^1.13.0",
+        "datatables.net-dt": "^2.3.4",
+        "draft-js": "^0.11.7",
+        "jquery": "^3.7.1",
+        "jsdom": "^27.0.1",
+        "next": "16.0.0",
+        "react": "19.2.0",
+        "react-datepicker": "^8.8.0",
+        "react-dom": "19.2.0",
+        "react-google-recaptcha-v3": "^1.11.0",
+        "react-image-crop": "^11.0.10",
+        "react-image-gallery": "^1.4.0",
+        "react-select": "^5.10.2",
+        "react-spinners": "^0.17.0",
+        "react-zoom-pan-pinch": "^3.7.0",
+        "sanitize-html": "^2.17.0",
+        "sharp": "^0.34.4",
+        "sweetalert2": "^11.26.3",
+        "swiper": "^12.0.3"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4",
+        "@tailwindcss/typography": "^0.5.19",
+        "@types/jquery": "^3.5.33",
+        "@types/node": "^24.9.1",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "@types/react-image-gallery": "^1.2.4",
+        "@types/sanitize-html": "^2.16.0",
+        "eslint": "^9",
+        "eslint-config-next": "16.0.0",
+        "tailwindcss": "^4",
+        "typescript": "^5"
+    }
 }
