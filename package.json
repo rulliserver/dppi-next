@@ -14,6 +14,7 @@
         "axios": "^1.13.0",
         "datatables.net-dt": "^2.3.4",
         "draft-js": "^0.11.7",
+        "file-saver": "^2.0.5",
         "jquery": "^3.7.1",
         "jsdom": "^27.0.1",
         "next": "16.0.0",
@@ -29,11 +30,13 @@
         "sanitize-html": "^2.17.0",
         "sharp": "^0.34.4",
         "sweetalert2": "^11.26.3",
-        "swiper": "^12.0.3"
+        "swiper": "^12.0.3",
+        "xlsx-js-style": "^1.2.0"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4",
         "@tailwindcss/typography": "^0.5.19",
+        "@types/file-saver": "^2.0.7",
         "@types/jquery": "^3.5.33",
         "@types/node": "^24.9.1",
         "@types/react": "^19",

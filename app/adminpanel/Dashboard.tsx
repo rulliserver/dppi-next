@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+
 import 'datatables.net-dt';
 import $ from 'jquery';
 import { UrlApi } from '../Components/apiUrl';
 import { BaseUrl } from '../Components/baseUrl';
+import { exportContactsXlsx } from '../utils/export-contacts-xlsx';
 export default function Dashboard() {
     //fetching Contact
-
     const [loading, setLoading]: any = useState(true);
     const [error, setError]: any = useState(null);
     const [contact, setContact]: any = useState([]);
@@ -174,13 +174,6 @@ export default function Dashboard() {
     };
     const [deleteData, setDeleteData]: any = useState();
 
-    // const deleteSubmit = async (e: any) => {
-    //     e.preventDefault();
-    //     const response = await axios.delete(route('adminpanel.contact.destroy', deleteData.id));
-    //     console.log(response);
-    //     window.location.href = '/adminpanel';
-    // };
-
     const handleDelete = async (e: any) => {
         e.preventDefault();
         try {
@@ -289,9 +282,12 @@ export default function Dashboard() {
                     </div>
                     <div className='flex flex-row justify-between mt-4'>
                         <p className='px-4 text-accent'>*)klik pada pesan untuk menampilkan detail pesan</p>
-                        <a type='button' href='/adminpanel/contact/download' className='p-2 mb-4 mr-2 text-center text-white bg-green-600 rounded-md'>
-                            Unduh Pesan (xlsx)
-                        </a>
+                        <button
+                            onClick={() => exportContactsXlsx(contact, 'data-contacts.xlsx')}
+                            className="px-4 py-2 rounded bg-green-600 text-white m-4 cursor-pointer"
+                        >
+                            Download Excel
+                        </button>
                     </div>
                 </div>
             </div>
