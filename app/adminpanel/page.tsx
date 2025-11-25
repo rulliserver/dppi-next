@@ -4,14 +4,14 @@ import Dashboard from './Dashboard';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
-	return {
-		title: 'Dashboard - Sismart Geodome'
-	};
+    return {
+        title: 'Dashboard - DPPI BPIP RI'
+    };
 }
 export default function Page() {
-	return (
-		<AdminLayout>
-			<Dashboard />
-		</AdminLayout>
-	);
+    return (
+        <AdminLayout>
+            <Dashboard />
+        </AdminLayout>
+    );
 }

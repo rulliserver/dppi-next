@@ -16,6 +16,7 @@ import TextInput from '../Components/TextInput';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 
+
 interface Pdp {
     id: number;
     no_piagam: string;
@@ -28,7 +29,7 @@ interface Pdp {
     id_provinsi_domisili: any;
     id_kabupaten_domisili: any;
     id_provinsi: any;
-    id_kabupaten: any;
+    id_kabupaten: 0;
     tingkat_penugasan: string;
     thn_tugas: Date;
     pendidikan_terakhir: string;
@@ -140,7 +141,7 @@ function RegisterForm() {
             id_kabupaten: '', // Reset kabupaten saat provinsi berubah
         }));
     };
-
+    console.log(data);
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: currentYear - 1950 + 1 }, (_, index) => currentYear - index);
 
@@ -304,16 +305,28 @@ function RegisterForm() {
     //submit 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-
-        if (isSubmitting) return;
-
         setIsSubmitting(true);
         setErrorMessage('');
 
+        // ✅ Tampilkan SweetAlert loading
+        let loadingAlert: any;
         try {
+            loadingAlert = Swal.fire({
+                title: 'Mohon Menunggu...',
+                html: 'Data beserta file sedang diupload<br/>Proses ini mungkin membutuhkan beberapa saat',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             if (!executeRecaptcha) {
                 setErrorMessage('reCAPTCHA belum siap. Muat ulang halaman, ya.');
                 setIsSubmitting(false);
+                Swal.close(); // ✅ Tutup loading alert
                 return;
             }
 
@@ -323,10 +336,31 @@ function RegisterForm() {
             if (!token) {
                 setErrorMessage('Gagal mendapatkan token reCAPTCHA');
                 setIsSubmitting(false);
+                Swal.close(); // ✅ Tutup loading alert
                 return;
             }
 
             const formData = new FormData();
+            const finalData = {
+                ...data,
+                // Konversi field integer yang kosong menjadi null
+                id_kabupaten: data.id_kabupaten === '' ? null : data.id_kabupaten,
+                id_provinsi: data.id_provinsi === '' ? null : data.id_provinsi,
+                id_provinsi_domisili: data.id_provinsi_domisili === '' ? null : data.id_provinsi_domisili,
+                id_kabupaten_domisili: data.id_kabupaten_domisili === '' ? null : data.id_kabupaten_domisili,
+                id_minat: data.id_minat === 0 ? null : data.id_minat,
+                id_minat_2: data.id_minat_2 === 0 ? null : data.id_minat_2,
+                id_bakat: data.id_bakat === 0 ? null : data.id_bakat,
+            };
+
+            if (finalData.no_piagam === '') {
+                finalData.no_piagam = null;
+            }
+
+            // ✅ Update loading message untuk proses foto
+            await loadingAlert.update({
+                html: 'Sedang memproses foto...',
+            });
 
             // Handle photo upload
             if (previewCanvasRef.current) {
@@ -335,30 +369,43 @@ function RegisterForm() {
                 formData.append('avatar', croppedBlob);
             }
 
+            // ✅ Update loading message untuk proses file piagam
+            await loadingAlert.update({
+                html: 'Sedang memproses file piagam...',
+            });
+
             // Handle piagam file upload
             if (selectedFilePiagam && selectedFilePiagam.target.files[0]) {
                 formData.append('file_piagam', selectedFilePiagam.target.files[0]);
             }
 
+            // ✅ Update loading message untuk proses data
+            await loadingAlert.update({
+                html: 'Sedang mengirim data...',
+            });
+
             // Append all other form data
-            Object.keys(data).forEach(key => {
-                if (data[key] !== null && data[key] !== undefined) {
-                    if (Array.isArray(data[key])) {
-                        formData.append(key, JSON.stringify(data[key]));
+            Object.keys(finalData).forEach(key => {
+                if (finalData[key] !== null && finalData[key] !== undefined) {
+                    if (Array.isArray(finalData[key])) {
+                        formData.append(key, JSON.stringify(finalData[key]));
                     } else {
-                        formData.append(key, data[key].toString());
+                        formData.append(key, finalData[key].toString());
                     }
                 }
             });
 
-
             formData.append('recaptchaToken', token);
 
-            const response = await axios.post(`${UrlApi}/register`, formData, {
+            await axios.post(`${UrlApi}/register`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 60000, // ✅ Tambah timeout 60 detik
             });
+
+            // ✅ Tutup loading alert sebelum tampilkan success
+            Swal.close();
 
             Swal.fire({
                 icon: 'success',
@@ -373,6 +420,12 @@ function RegisterForm() {
             });
         } catch (error: any) {
             console.error(error);
+
+            // ✅ Pastikan loading alert ditutup saat error
+            if (loadingAlert) {
+                Swal.close();
+            }
+
             const data = error.response?.data;
 
             let msg = 'Terjadi kesalahan saat mengirim data';
@@ -388,15 +441,24 @@ function RegisterForm() {
                 if (first) msg = `${first[0]}: ${Array.isArray(first[1]) ? first[1][0] : String(first[1])}`;
             }
 
+            // ✅ Tambahkan pesan khusus untuk timeout
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                msg = 'Koneksi timeout. Silakan coba lagi atau periksa koneksi internet Anda.';
+            }
+            if (typeof data === 'string' && data.includes('<html')) {
+                msg = 'Gagal upload: ukuran file terlalu besar.';
+            }
+
             Swal.fire({
                 icon: 'error',
                 text: msg,
             });
             setErrorMessage(msg);
             setIsSubmitting(false);
+        } finally {
+            setIsSubmitting(false);
         }
     };
-
     // Fetch initial data
     //provinsi
     const getProvinsi = () => {
@@ -444,7 +506,7 @@ function RegisterForm() {
 
                 if (Array.isArray(response.data)) {
                     const hobiData: HobiOption[] = response.data.map((item: any) => ({
-                        value: item.id.toString(),
+                        value: item.kategori_hobi,
                         label: item.kategori_hobi,
                     }));
                     setHobi(hobiData);
@@ -516,7 +578,10 @@ function RegisterForm() {
         getDetailBakat()
     }, []);
 
-    console.log('no_piagam ->', data.no_piagam, typeof data.no_piagam);
+
+
+
+
 
     return (
         <div className='bg-gray-50 pb-28 dark:bg-gray-700'>
@@ -535,6 +600,7 @@ function RegisterForm() {
                         <h1 className='font-medium text-center'>Silahkan lengkapi data diri Anda</h1>
                     </div>
                 </div>
+
                 <form onSubmit={handleSubmit}>
                     <div className='grid grid-cols-1 md:grid-cols-2 bg-white dark:bg-gray-900 dark:text-gray-900 p-8 rounded-lg overflow-hidden'>
                         <div className='pr-2 md:border-r'>
@@ -1032,7 +1098,7 @@ function RegisterForm() {
                                 </select>
                             </div>
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='no_piagam'>Nomor Piagam:</InputLabel>
+                                <InputLabel htmlFor='no_piagam'>Nomor Piagam / SK:</InputLabel>
                                 <TextInput
                                     id='no_piagam'
                                     type='text'
@@ -1044,7 +1110,7 @@ function RegisterForm() {
                                 />
                             </div>
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='Piagam'>File Piagam Purnapaskibraka Duta Pancasila:</InputLabel>
+                                <InputLabel htmlFor='Piagam'>File Piagam / SK Purnapaskibraka Duta Pancasila:</InputLabel>
                                 <input
                                     className='text-sm border-2 w-full rounded-md'
                                     tabIndex={16}

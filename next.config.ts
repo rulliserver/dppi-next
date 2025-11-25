@@ -2,7 +2,6 @@
 const nextConfig = {
     images: {
         formats: ['image/webp', 'image/avif'],
-
         unoptimized: true,
         remotePatterns: [
             {
@@ -18,6 +17,7 @@ const nextConfig = {
             },
         ],
     },
+
 }
 
 module.exports = nextConfig

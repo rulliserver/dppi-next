@@ -4,7 +4,7 @@ import AdminLayout from '@/app/Layouts/AdminLayout';
 
 export async function generateMetadata(): Promise<Metadata> {
 	return {
-		title: 'Profile User - Sismart Geodome'
+		title: 'Profile User - DPPI BPIP RI'
 	};
 }
 

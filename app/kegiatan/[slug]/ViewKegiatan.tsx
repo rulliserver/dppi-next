@@ -39,7 +39,7 @@ export default function ViewKegiatan() {
                     {kegiatan &&
                         <div className='bg-white rounded-b-lg px-4 py-4'>
                             <p className='font-body font-semibold text-xl text-center mb-4'>{kegiatan.nama_kegiatan}</p>
-                            <Image alt='Foto Kegiatan' src={`${BaseUrl}/uploads/${kegiatan.photo}`} className='mx-auto border-2 w-full md:w-[500px] border-black' width={400} height={200} />
+                            <Image alt='Foto Kegiatan' src={BaseUrl + kegiatan.photo} className='mx-auto border-2 w-full md:w-[500px] border-black' width={400} height={200} />
                             <div className='grid grid-cols-12 mt-4 pt-4 border-t-2 border-black'>
                                 <p className='col-span-4'>Lokasi Kegiatan</p>
                                 <p className='col-span-1'>:</p>

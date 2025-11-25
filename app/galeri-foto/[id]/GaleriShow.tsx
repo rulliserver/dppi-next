@@ -79,7 +79,7 @@ export default function GaleriShow() {
             });
     };
 
-    const handlePageChange = (page: number) => {
+    const handlePageChange = (link: string, page: number) => {
         setCurrentPage(page);
         getData(page);
 
@@ -123,9 +123,9 @@ export default function GaleriShow() {
     // Function untuk mendapatkan URL gambar
     const getImageUrl = (foto: string | string[]): string => {
         if (Array.isArray(foto) && foto.length > 0) {
-            return `${BaseUrl}/uploads/assets/images/gallery/${foto[0]}`;
+            return `${BaseUrl}uploads/assets/images/gallery/${foto[0]}`;
         } else if (typeof foto === 'string') {
-            return `${BaseUrl}/uploads/assets/images/gallery/${foto}`;
+            return `${BaseUrl}uploads/assets/images/gallery/${foto}`;
         }
         return '/images/placeholder.jpg'; // Fallback image
     };
@@ -133,7 +133,7 @@ export default function GaleriShow() {
 
 
     const images = galeri?.foto.map((foto: any) => {
-        return { original: `${BaseUrl}/uploads/assets/images/gallery/${foto}`, thumbnail: `${BaseUrl}/uploads/assets/images/gallery/${foto}` };
+        return { original: `${BaseUrl}uploads/assets/images/gallery/${foto}`, thumbnail: `${BaseUrl}uploads/assets/images/gallery/${foto}` };
     });
 
 
@@ -201,8 +201,6 @@ export default function GaleriShow() {
                                 <Pagination
                                     links={generateLinks()}
                                     onPageChange={handlePageChange}
-                                    currentPage={currentPage}
-                                    lastPage={data.last_page}
                                 />
                             </div>
                         )}

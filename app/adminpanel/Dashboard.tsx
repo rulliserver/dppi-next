@@ -7,7 +7,9 @@ import $ from 'jquery';
 import { UrlApi } from '../Components/apiUrl';
 import { BaseUrl } from '../Components/baseUrl';
 import { exportContactsXlsx } from '../utils/export-contacts-xlsx';
+import { useUser } from '../Components/UserContext';
 export default function Dashboard() {
+    const { user } = useUser()
     //fetching Contact
     const [loading, setLoading]: any = useState(true);
     const [error, setError]: any = useState(null);
@@ -23,13 +25,19 @@ export default function Dashboard() {
     const getContact = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${UrlApi}/contact`);
-            if (!response.ok) {
-                throw new error(`This is an HTTP error: The status is ${response.status}`);
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+
+                const response = await fetch(`${UrlApi}/contact`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let contact = await response.json();
+                setContact(contact);
+                setError(null);
             }
-            let contact = await response.json();
-            setContact(contact);
-            setError(null);
         } catch (err: any) {
             setError(err.message);
             setContact(null);
@@ -37,16 +45,33 @@ export default function Dashboard() {
             setLoading(false);
         }
     };
+
     const getPdpTerdaftar = async () => {
         try {
             setLoading(true);
-            const response: any = await fetch(`${UrlApi}/pdp-terdaftar`);
-            if (!response.ok) {
-                throw new error(`This is an HTTP error: The status is ${response.status}`);
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                const response: any = await fetch(`${UrlApi}/pdp-terdaftar`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpTerdaftar(pdp);
+                setError(null);
+            } else if (user?.role === "Admin Kesbangpol") {
+                const response: any = await fetch(`${UrlApi}/kesbangpol/pdp-terdaftar`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpTerdaftar(pdp);
+                setError(null);
             }
-            let pdp = await response.json();
-            setPdpTerdaftar(pdp);
-            setError(null);
         } catch (err: any) {
             setError(err.message);
             setPdpTerdaftar(null);
@@ -57,17 +82,32 @@ export default function Dashboard() {
     const getPdpBelumDiverifikasi = async () => {
         try {
             setLoading(true);
-            const response: any = await fetch(`${UrlApi}/pdp-belum-diverifikasi`);
-            if (!response.ok) {
-                throw new error(`This is an HTTP error: The status is ${response.status}`);
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                const response: any = await fetch(`${UrlApi}/pdp-belum-diverifikasi`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpBelumDiverifikasi(pdp);
+                setError(null);
+            } else if (user?.role === "Admin Kesbangpol") {
+                const response: any = await fetch(`${UrlApi}/kesbangpol/pdp-belum-diverifikasi`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpBelumDiverifikasi(pdp);
+                setError(null);
             }
-            let pdp = await response.json();
-
-            setPdpBelumDiverifikasi(pdp);
-            setError(null);
         } catch (err: any) {
             setError(err.message);
-            setPdpBelumDiverifikasi(null);
+            setPdpTerdaftar(null);
         } finally {
             setLoading(false);
         }
@@ -75,14 +115,29 @@ export default function Dashboard() {
     const getPdpDiverifikasi = async () => {
         try {
             setLoading(true);
-            const response: any = await fetch(`${UrlApi}/pdp-diverifikasi`);
-            if (!response.ok) {
-                throw new error(`This is an HTTP error: The status is ${response.status}`);
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                const response: any = await fetch(`${UrlApi}/pdp-diverifikasi`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpDiverifikasi(pdp);
+                setError(null);
+            } else if (user?.role === "Admin Kesbangpol") {
+                const response: any = await fetch(`${UrlApi}/kesbangpol/pdp-diverifikasi`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpDiverifikasi(pdp);
+                setError(null);
             }
-            let pdp = await response.json();
-
-            setPdpDiverifikasi(pdp);
-            setError(null);
         } catch (err: any) {
             setError(err.message);
             setPdpDiverifikasi(null);
@@ -93,14 +148,29 @@ export default function Dashboard() {
     const getPdpSimental = async () => {
         try {
             setLoading(true);
-            const response: any = await fetch(`${UrlApi}/pdp-simental`);
-            if (!response.ok) {
-                throw new error(`This is an HTTP error: The status is ${response.status}`);
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                const response: any = await fetch(`${UrlApi}/pdp-simental`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpSimental(pdp);
+                setError(null);
+            } else if (user?.role === "Admin Kesbangpol") {
+                const response: any = await fetch(`${UrlApi}/kesbangpol/pdp-simental`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new error(`This is an HTTP error: The status is ${response.status}`);
+                }
+                let pdp = await response.json();
+                setPdpSimental(pdp);
+                setError(null);
             }
-            let pdp = await response.json();
-
-            setPdpSimental(pdp);
-            setError(null);
         } catch (err: any) {
             setError(err.message);
             setPdpSimental(null);
@@ -159,6 +229,12 @@ export default function Dashboard() {
             },
         },
         {
+            data: 'keterangan',
+            render: function (data: any, type: any, row: any) {
+                return data ? `<p class="text-red-600">${data}</p>` : '';
+            },
+        },
+        {
             data: null,
             render: function (data: any, type: any, row: any) {
                 return '<button class="delete-btn"><i class="text-danger px-1 mx-1 rounded-sm fas fa-trash"></button>';
@@ -170,14 +246,17 @@ export default function Dashboard() {
         $('#deleteModal').addClass('hidden');
     };
     const closeViewModal = () => {
-        $('#viewModal').addClass('hidden');
+        window.location.href = "/adminpanel"
     };
     const [deleteData, setDeleteData]: any = useState();
 
     const handleDelete = async (e: any) => {
         e.preventDefault();
         try {
-            await fetch(`${UrlApi}/contact/${deleteData.id}`, { method: 'DELETE' });
+            await fetch(`${UrlApi}/contact/${deleteData.id}`, {
+                method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
             window.location.href = '/adminpanel';
         } catch (err) {
             console.error('Gagal hapus:', err);
@@ -206,6 +285,7 @@ export default function Dashboard() {
             $('#jenisPesan').text(viewData.jenis_pesan);
             $('#isiPesan').text(viewData.pesan);
             setEvidance(viewData.evidance);
+            setCurrentMsg(viewData);
             $('#viewModal').removeClass('hidden');
         });
         $(tableRef.current).on('click', '.delete-btn', function () {
@@ -218,6 +298,71 @@ export default function Dashboard() {
         });
     }, [contact]);
 
+    // ==== REPLY STATES ====
+    const [replyOpen, setReplyOpen] = useState(false);
+    const [currentMsg, setCurrentMsg]: any = useState(null);
+    const [sending, setSending] = useState(false);
+    const [replyForm, setReplyForm] = useState<{
+        to: string; cc: string; bcc: string; subject: string; message: string; attachment?: File | null;
+    }>({
+        to: '',
+        cc: '',
+        bcc: '',
+        subject: '',
+        message: '',
+        attachment: null,
+    });
+
+    const openReplyModal = (msg: any) => {
+        setCurrentMsg(msg);
+        setReplyForm({
+            to: currentMsg?.email ?? '',
+            cc: '',
+            bcc: '',
+            subject: `Re: ${currentMsg?.jenis_pesan ?? 'Pesan'} ke kontak kami di website dppi.bpip.go.id`,
+            message: `SALAM PANCASILA!\n Halo ${currentMsg?.nama ?? ''},\n\nTerkait pesan Anda:\n"${msg?.pesan ?? ''}"\n\nBalasan kami:\n`,
+            attachment: null,
+        });
+        setReplyOpen(true);
+    };
+
+    const closeReplyModal = () => {
+        window.location.href = "/adminpanel"
+    };
+
+    const handleSendReply = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            setSending(true);
+            const fd = new FormData();
+            fd.append('id', String(currentMsg?.id ?? ''));
+            fd.append('to', replyForm.to);
+            if (replyForm.cc) fd.append('cc', replyForm.cc);
+            if (replyForm.bcc) fd.append('bcc', replyForm.bcc);
+            fd.append('subject', replyForm.subject);
+            fd.append('message', replyForm.message);
+
+            if (replyForm.attachment) fd.append('attachment', replyForm.attachment);
+
+            const res = await fetch(`${UrlApi}/contact/reply`, {
+                method: 'POST',
+                body: fd,
+                credentials: 'include',
+            });
+            if (!res.ok) {
+                const t = await res.text();
+                throw new Error(`Gagal kirim email: ${res.status} ${t}`);
+            }
+            // sukses
+            setReplyOpen(false);
+            alert('Balasan terkirim.');
+        } catch (err: any) {
+            alert(err?.message ?? 'Gagal mengirim balasan.');
+        } finally {
+            setSending(false);
+        }
+    };
+
     return (
         <>
 
@@ -228,21 +373,21 @@ export default function Dashboard() {
                         <div className='justify-center mt-2 shadow-md '>
                             <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 <i className='text-5xl mx-auto  mt-4 fas fa-users'></i>
-                                <p className='text-center text-2xl'>{pdpTerdaftar && pdpTerdaftar.length.toLocaleString()} PDP</p>
+                                <p className='text-center text-2xl'>{pdpTerdaftar && pdpTerdaftar.length} PDP</p>
                                 <p className='text-center text-2xl'>TERDAFTAR</p>
                             </div>
                         </div>
                         <div className='justify-center mt-2 shadow-md '>
                             <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 <i className='text-5xl mx-auto  mt-4 fas fa-registered'></i>
-                                <p className='text-center text-2xl'>{pdpBelumDiverifikasi && pdpBelumDiverifikasi.length.toLocaleString()} PDP</p>
+                                <p className='text-center text-2xl'>{pdpBelumDiverifikasi && pdpBelumDiverifikasi.length} PDP</p>
                                 <p className='text-center text-2xl'>TEREGISTER</p>
                             </div>
                         </div>
                         <div className='justify-center mt-2 shadow-md '>
                             <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 <i className='text-5xl mx-auto  mt-4 fas fa-user-check'></i>
-                                <p className='text-center text-2xl'>{pdpDiverifikasi && pdpDiverifikasi.length.toLocaleString()} PDP</p>
+                                <p className='text-center text-2xl'>{pdpDiverifikasi && pdpDiverifikasi.length} PDP</p>
                                 <p className='text-center text-2xl'>TERVERIFIKASI</p>
                             </div>
                         </div>
@@ -250,7 +395,7 @@ export default function Dashboard() {
                             <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 {/* <i className=' fas fa-users'></i> */}
                                 <i className='text-5xl mx-auto  mt-4 fab fa-creative-commons-by'></i>
-                                <p className='text-center text-2xl'>{pdpSimental && pdpSimental.length.toLocaleString()} PDP</p>
+                                <p className='text-center text-2xl'>{pdpSimental && pdpSimental.length} PDP</p>
                                 <p className='text-center text-2xl'>AKTIF</p>
                             </div>
                         </div>
@@ -258,38 +403,42 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className='relative p-0 overflow-hidden rounded-md'>
-                <div className='px-0 mx-auto mt-2 bg-gray-100 rounded-xl shadow-lg dark:bg-default lg:px-4'>
-                    <div className='grid grid-cols-3'>
-                        <p className='mx-2 my-auto mt-5 font-bold lg:text-xl dark:text-white'>Pesan Kontak</p>
-                        <div className='px-0 mx-auto mt-6 colspan-2 lg:px-4'>{loading && <div className='text-slate-900 dark:text-slate-50'>Loading...</div>}</div>
+                {user?.role === "Administrator" || user?.role === "Superadmin" ? (
+
+                    <div className='px-0 mx-auto mt-2 bg-gray-100 rounded-xl shadow-lg dark:bg-default lg:px-4'>
+                        <div className='grid grid-cols-3'>
+                            <p className='mx-2 my-auto mt-5 font-bold lg:text-xl dark:text-white'>Pesan Kontak</p>
+                            <div className='px-0 mx-auto mt-6 colspan-2 lg:px-4'>{loading && <div className='text-slate-900 dark:text-slate-50'>Loading...</div>}</div>
+                        </div>
+                        <div className='px-4 mx-auto overflow-auto text-xs 1xl:block 1xl:w-full 2xl:text-base'>
+                            <table ref={tableRef} className='table text-xs cell-border'>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Tanggal</th>
+                                        <th>Nama</th>
+                                        <th>Telepon</th>
+                                        <th>Email</th>
+                                        <th>Jenis Pesan</th>
+                                        <th>Isi Pesan</th>
+                                        <th>Evidance</th>
+                                        <th>Keterangan</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div className='flex flex-row justify-between mt-4'>
+                            <p className='px-4 text-accent'>*)klik pada pesan untuk menampilkan detail pesan</p>
+                            <button
+                                onClick={() => exportContactsXlsx(contact, 'data-contacts.xlsx')}
+                                className="px-4 py-2 rounded bg-green-600 text-white m-4 cursor-pointer"
+                            >
+                                Download Excel
+                            </button>
+                        </div>
                     </div>
-                    <div className='px-4 mx-auto overflow-auto text-xs 1xl:block 1xl:w-full 2xl:text-base'>
-                        <table ref={tableRef} className='table text-xs cell-border'>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Tanggal</th>
-                                    <th>Nama</th>
-                                    <th>Telepon</th>
-                                    <th>Email</th>
-                                    <th>Jenis Pesan</th>
-                                    <th>Isi Pesan</th>
-                                    <th>Evidance</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    <div className='flex flex-row justify-between mt-4'>
-                        <p className='px-4 text-accent'>*)klik pada pesan untuk menampilkan detail pesan</p>
-                        <button
-                            onClick={() => exportContactsXlsx(contact, 'data-contacts.xlsx')}
-                            className="px-4 py-2 rounded bg-green-600 text-white m-4 cursor-pointer"
-                        >
-                            Download Excel
-                        </button>
-                    </div>
-                </div>
+                ) : ""}
             </div>
 
             {/* view Modal */}
@@ -350,8 +499,15 @@ export default function Dashboard() {
                         </p>
                         <div className='p-6 space-y-6'>
                             <div className='mt-2 border-b dark:border-white0 border border-slate-200'></div>
-                            <div className='flex flex-row-reverse'>
-                                <button type='button' onClick={closeViewModal} className='px-8 py-2 hover:bg-primary mt-2 text-white bg-accent rounded-md'>
+                            <div className='flex flex-row-reverse justify-between'>
+                                <button
+                                    type='button'
+                                    onClick={() => openReplyModal(currentMsg)}
+                                    className='px-4 py-0 bg-primary hover:bg-red-800 text-white rounded-md mt-2'
+                                >
+                                    Jawab Pesan
+                                </button>
+                                <button type='button' onClick={closeViewModal} className='px-8 py-2 hover:bg-yellow-600 mt-2 text-black bg-yellow-500 rounded-md'>
                                     Tutup
                                 </button>
                             </div>
@@ -399,6 +555,100 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Reply Modal */}
+            {replyOpen && (
+                <div
+                    id='replyModal'
+                    aria-hidden='true'
+                    className='fixed inset-0 z-50 p-4 md:p-6 bg-black/40 flex items-start md:items-center justify-center'
+                >
+                    <div className='w-full max-w-2xl bg-gray-100 dark:bg-default rounded-lg shadow-xl border border-slate-200 dark:border-slate-700'>
+                        <div className='flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700'>
+                            <p className='font-semibold text-gray-900 dark:text-white'>Balas Email</p>
+                            <button onClick={closeReplyModal} className='text-gray-500 hover:text-gray-700'>
+                                <i className='fas fa-times-circle'></i>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSendReply} className='p-4 space-y-3' encType='multipart/form-data'>
+                            <div className='grid grid-cols-3 items-center gap-2'>
+                                <label className='text-sm'>Kepada</label>
+                                <input
+                                    type='email'
+                                    required
+                                    value={replyForm.to}
+                                    onChange={(e) => setReplyForm({ ...replyForm, to: e.target.value })}
+                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                />
+                            </div>
+                            <div className='grid grid-cols-3 items-center gap-2'>
+                                <label className='text-sm'>CC</label>
+                                <input
+                                    type='text'
+                                    placeholder='opsional, pisahkan dengan koma'
+                                    value={replyForm.cc}
+                                    onChange={(e) => setReplyForm({ ...replyForm, cc: e.target.value })}
+                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                />
+                            </div>
+                            <div className='grid grid-cols-3 items-center gap-2'>
+                                <label className='text-sm'>BCC</label>
+                                <input
+                                    type='text'
+                                    placeholder='opsional, pisahkan dengan koma'
+                                    value={replyForm.bcc}
+                                    onChange={(e) => setReplyForm({ ...replyForm, bcc: e.target.value })}
+                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                />
+                            </div>
+                            <div className='grid grid-cols-3 items-center gap-2'>
+                                <label className='text-sm'>Subjek</label>
+                                <input
+                                    type='text'
+                                    required
+                                    value={replyForm.subject}
+                                    onChange={(e) => setReplyForm({ ...replyForm, subject: e.target.value })}
+                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                />
+                            </div>
+                            <div className='grid grid-cols-3 gap-2'>
+                                <label className='text-sm'>Pesan</label>
+                                <textarea
+                                    required
+                                    rows={8}
+                                    value={replyForm.message}
+                                    onChange={(e) => setReplyForm({ ...replyForm, message: e.target.value })}
+                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                />
+                            </div>
+                            <div className='grid grid-cols-3 items-center gap-2'>
+                                <label className='text-sm'>Lampiran</label>
+                                <input
+                                    type='file'
+                                    accept='image/*,application/pdf'
+                                    onChange={(e) => setReplyForm({ ...replyForm, attachment: e.target.files?.[0] ?? null })}
+                                    className='col-span-2 text-sm'
+                                />
+                            </div>
+
+                            <div className='mt-2 border-t border-slate-200 dark:border-slate-700 pt-3 flex justify-end gap-2'>
+                                <button type='button' onClick={closeReplyModal} className='px-4 py-2 rounded-md bg-yellow-500 text-dark'>
+                                    Batal
+                                </button>
+                                <button
+                                    type='submit'
+                                    disabled={sending}
+                                    className='px-4 py-2 rounded-md bg-accent text-white disabled:opacity-60'
+                                >
+                                    {sending ? 'Mengirim...' : 'Kirim'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
         </>
     );
 }

@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
 	return {
-		title: 'login - Sismart Geodome'
+		title: 'login - DPPI BPIP RI'
 	};
 }
 

@@ -10,17 +10,17 @@ import Link from 'next/link';
 
 export default function KegiatanList() {
     const [kegiatan, setKegiatan]: any = useState();
+
+
     const getData = () => {
 
         axios
             .get(`${UrlApi}/kegiatan`)
             .then((response: any) => {
                 setKegiatan(response.data);
-                console.log(response.data);
-
             })
             .catch((error) => {
-                console.error('Error fetching gallery data:', error);
+                console.error('Error fetching kegitan data:', error);
             });
     };
 
@@ -46,7 +46,7 @@ export default function KegiatanList() {
                                                 {item.biaya == 0 ? 'Gratis' : item.biaya.toLocaleString()}
                                             </div>
                                         </div>
-                                        <Image className='object-cover h-full 2xl:max-h-96 w-[30em] ' src={`${BaseUrl}/uploads/${item.photo}`} alt='Foto Kegiatan' width={400} height={200} />
+                                        <Image className='object-cover h-full 2xl:max-h-96 w-[30em]' src={BaseUrl + item.photo} alt='Foto Kegiatan' width={400} height={200} />
                                         <div className='absolute bottom-0 justify-center w-full mx-auto my-0 overflow-hidden text-center rounded-b-md justify-items-center'>
                                             <div className='h-16 w-full py-2 px-2 my-0 text-xs text-center text-white bg-black/70 xl:text-sm font-seibold'>
                                                 {item.nama_kegiatan}

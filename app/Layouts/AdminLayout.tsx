@@ -1,49 +1,106 @@
 'use client';
 import { usePathname } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import { UrlApi } from '../Components/apiUrl';
 import { BaseUrl } from '../Components/baseUrl';
 import darkMode from '../Components/DarkMode';
 import Dropdown from '../Components/Dropdown';
 import { useUser } from '../Components/UserContext';
-import Link from 'next/link';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { user, setUser }: any = useUser();
+    const { user, setUser } = useUser();
+    const [isButtonClicked, setIsButtonClicked] = useState(false);
+    const [colorTheme, setTheme] = darkMode();
+    const [isColaps, setColaps] = useState(false);
 
+    // Refs
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const appNameRef = useRef<HTMLParagraphElement>(null);
+    const topbarRef = useRef<HTMLDivElement>(null);
+    const mainContentRef = useRef<HTMLElement>(null);
+
+    const menuRefs = {
+        menuName: useRef<HTMLParagraphElement>(null),
+        menuName1: useRef<HTMLParagraphElement>(null),
+        menuName2: useRef<HTMLParagraphElement>(null),
+        menuName3: useRef<HTMLParagraphElement>(null),
+        menuName4: useRef<HTMLParagraphElement>(null),
+        menuName5: useRef<HTMLParagraphElement>(null),
+    };
+
+    const hamburgerRefs = {
+        hamburgerAdmin: useRef<HTMLDivElement>(null),
+        slideoverContainer: useRef<HTMLDivElement>(null),
+        slideoverBG: useRef<HTMLDivElement>(null),
+        slideover: useRef<HTMLDivElement>(null),
+        header: useRef<HTMLElement>(null),
+        bgHamburger: useRef<HTMLDivElement>(null),
+    };
+
+    // Fetch user data
     useEffect(() => {
+
         const fetchUser = async () => {
             try {
-                const response = await fetch(`${UrlApi}/user`, {
+                const res = await fetch(`${UrlApi}/user`, {
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
+                    credentials: 'include',
                 });
 
-                const userData = await response.json();
+                if (res.status === 401) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
 
-                setUser(userData);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
+                const data = await res.json();
+                setUser(data);
 
-            } catch (err: any) {
-                console.error('Error:', err);
+                if (data.role === 'Superadmin' || data.role === 'Administrator' || data.role === 'Admin Kesbangpol') {
+                    return;
+                } else {
+                    window.location.href = '/userpanel';
+                }
+            } catch (err) {
+                console.error(err);
             }
         };
 
-        if (!user) {
-            fetchUser();
-        }
-    }, [user,]);
+        if (!user) fetchUser();
+    }, [user, setUser]);
 
-    const logout = async () => {
+    // Handle scroll effect
+    useEffect(() => {
+        const { header, bgHamburger } = hamburgerRefs;
+
+        if (typeof window === 'undefined' || !header.current || !bgHamburger.current) return;
+
+        const handleScroll = () => {
+            const fixedNav = header.current!.offsetTop;
+            if (window.scrollY > fixedNav) {
+                header.current!.classList.add('navbar-admin-fixed');
+                bgHamburger.current!.classList.add('bg-opacity-0');
+            } else {
+                header.current!.classList.remove('navbar-admin-fixed');
+                bgHamburger.current!.classList.remove('bg-opacity-0');
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Logout function
+    const logout = useCallback(async () => {
         const result = await Swal.fire({
             title: 'Yakin ingin logout?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#2563eb',
             cancelButtonColor: '#d33',
-            // cancelButtonText: 'Batal',
             confirmButtonText: 'Ya'
         });
 
@@ -54,605 +111,609 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
                 });
-                setUser(null); // Hapus data user dari context
+                setUser(null);
                 window.location.href = '/';
             } catch (error) {
                 console.error('Error logout:', error);
                 Swal.fire({ icon: 'error', text: 'Gagal logout' });
             }
         }
-    };
+    }, [setUser]);
 
-    const [colorTheme, setTheme] = darkMode();
-
-    const [isColaps, setColaps] = useState(false);
-
-    const sidebarRef = useRef<HTMLDivElement>(null);
-    const appNameRef = useRef<HTMLParagraphElement>(null);
-    const topbarRef = useRef<HTMLDivElement>(null);
-    const mainContentRef = useRef<HTMLElement>(null);
-    const menuNameRef = useRef<HTMLParagraphElement>(null);
-    const menuName1Ref = useRef<HTMLParagraphElement>(null);
-    const menuName2Ref = useRef<HTMLParagraphElement>(null);
-    const menuName3Ref = useRef<HTMLParagraphElement>(null);
-    const menuName4Ref = useRef<HTMLParagraphElement>(null);
-    const menuName5Ref = useRef<HTMLParagraphElement>(null);
-
-    const hamburgerAdminRef = useRef<HTMLDivElement>(null);
-    const videooverContainerRef = useRef<HTMLDivElement>(null);
-    const videooverBGRef = useRef<HTMLDivElement>(null);
-    const videooverRef = useRef<HTMLDivElement>(null);
-    const headerRef = useRef<HTMLElement>(null);
-    const bgHamburgerRef = useRef<HTMLDivElement>(null);
-
-    // Efek untuk menangani scroll
-    useEffect(() => {
-        if (typeof window !== 'undefined' && headerRef.current && bgHamburgerRef.current) {
-            const handleScroll = () => {
-                const header = headerRef.current;
-                const bgHamburger = bgHamburgerRef.current;
-                if (header && bgHamburger) {
-                    const fixedNav = header.offsetTop;
-                    if (window.scrollY > fixedNav) {
-                        header.classList.add('navbar-admin-fixed');
-                        bgHamburger.classList.add('bg-opacity-0');
-                    } else {
-                        header.classList.remove('navbar-admin-fixed');
-                        bgHamburger.classList.remove('bg-opacity-0');
-                    }
-                }
-            };
-
-            window.addEventListener('scroll', handleScroll);
-            return () => {
-                window.removeEventListener('scroll', handleScroll);
-            };
-        }
-    }, []);
-
-    function btnColaps() {
-        setColaps((prevIsColaps) => {
+    // Toggle sidebar collapse
+    const btnColaps = useCallback(() => {
+        setColaps(prevIsColaps => {
             const newIsColaps = !prevIsColaps;
 
-            if (appNameRef.current) appNameRef.current.classList.toggle('app-name-colaps', newIsColaps);
-            if (topbarRef.current) topbarRef.current.classList.toggle('topbar-expanse', newIsColaps);
-            if (mainContentRef.current) mainContentRef.current.classList.toggle('main-content-expanse', newIsColaps);
+            // Toggle classes for sidebar elements
+            const elementsToToggle = [
+                { ref: appNameRef, className: 'app-name-colaps' },
+                { ref: topbarRef, className: 'topbar-expanse' },
+                { ref: mainContentRef, className: 'main-content-expanse' },
+                { ref: sidebarRef, className: 'menu-name-colaps' },
+                ...Object.values(menuRefs).map(ref => ({ ref, className: 'menu-name-colaps' }))
+            ];
 
+            elementsToToggle.forEach(({ ref, className }) => {
+                ref.current?.classList.toggle(className, newIsColaps);
+            });
+
+            // Toggle classes for multiple elements
             if (typeof window !== 'undefined') {
-                document.querySelectorAll('.menu-arrow').forEach(function (element) {
+                document.querySelectorAll('.menu-arrow').forEach(element => {
                     element.classList.toggle('hidden', newIsColaps);
                 });
-                document.querySelectorAll('.menu-separator').forEach(function (element) {
+                document.querySelectorAll('.menu-separator').forEach(element => {
                     element.classList.toggle('menu-separator-hidden', newIsColaps);
                 });
-                document.querySelectorAll('.menu-list').forEach(function (element) {
+                document.querySelectorAll('.menu-list').forEach(element => {
                     element.classList.toggle('menu-list-colaps', newIsColaps);
                 });
             }
 
-            if (sidebarRef.current) sidebarRef.current.classList.toggle('menu-name-colaps', newIsColaps);
-            if (menuNameRef.current) menuNameRef.current.classList.toggle('menu-name-colaps', newIsColaps);
-            if (menuName1Ref.current) menuName1Ref.current.classList.toggle('menu-name-colaps', newIsColaps);
-            if (menuName2Ref.current) menuName2Ref.current.classList.toggle('menu-name-colaps', newIsColaps);
-            if (menuName3Ref.current) menuName3Ref.current.classList.toggle('menu-name-colaps', newIsColaps);
-            if (menuName4Ref.current) menuName4Ref.current.classList.toggle('menu-name-colaps', newIsColaps);
-            if (menuName5Ref.current) menuName5Ref.current.classList.toggle('menu-name-colaps', newIsColaps);
-
             return newIsColaps;
         });
-    }
+    }, [menuRefs]);
 
-    const hamburgerHandle = () => {
-        if (hamburgerAdminRef.current && videooverContainerRef.current && videooverBGRef.current && videooverRef.current) {
-            hamburgerAdminRef.current.classList.toggle('hamburgera-active');
-            videooverContainerRef.current.classList.toggle('invisible');
-            videooverBGRef.current.classList.toggle('opacity-50');
-            videooverRef.current.classList.toggle('translate-x-full');
-        }
+    // Hamburger menu handler
+    const hamburgerHandle = useCallback(() => {
+        const { hamburgerAdmin, slideoverContainer, slideoverBG, slideover } = hamburgerRefs;
+
+        hamburgerAdmin.current?.classList.toggle('hamburgera-active');
+        slideoverContainer.current?.classList.toggle('invisible');
+        slideoverBG.current?.classList.toggle('opacity-50');
+        slideover.current?.classList.toggle('translate-x-full');
+    }, []);
+
+    // Menu handlers
+    const createMenuHandler = (menuId: string, listId: string, activeClass: string) => {
+        return () => {
+            const menu = document.getElementById(menuId);
+            const list = document.getElementById(listId);
+
+            if (menu && list) {
+                if (menu.classList.contains(activeClass)) {
+                    menu.classList.remove(activeClass);
+                    list.classList.add('hidden');
+                    setIsButtonClicked(true);
+                } else {
+                    menu.classList.add(activeClass);
+                    list.classList.remove('hidden');
+                }
+            }
+        };
     };
 
-    const regex = /(geowisata)/i;
-    const regex1 = /(geotourism-events)/i;
+    const handlePelaksanaMenu = createMenuHandler('pelaksana-menu', 'pelaksana-list', 'grup2-active');
+    const handlePdpMenu = createMenuHandler('pdp-menu', 'pdp-list', 'grup3-active');
+    const regexPdp = /(pdp)/i;
+    const regexPdpBelumRegistrasi = /(belum-registrasi)/i;
+    const regexPdpBelumDiverifikasi = /(belum-diverifikasi)/i;
+    const regexPdpVerified = /(verified)/i;
+    const regexPdpSimental = /(simental)/i;
+    const regexPdpTidakAktif = /(tidak-aktif)/i;
+    const regexBerita = /(berita)/i;
+
+    if (!user) {
+        return (
+            <main className='mt-18'>
+                <div className='relative'>
+                    <div className='flex items-center justify-center min-h-screen'>
+                        <div className='text-center'>
+                            <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto'></div>
+                            <p className='mt-4 text-gray-600'>Memuat...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className='mt-18'>
             <div className='relative'>
-                {user ? (
-                    <div className='relative'>
-                        <div className='topbar header' id='topbar' ref={topbarRef}>
-                            <div className='flex w-full justify-end'>
-                                <header ref={headerRef}>
-                                    <div className='block' id='bg-hamburger' ref={bgHamburgerRef}>
-                                        <div className='hamburgera' onClick={hamburgerHandle} id='hamburger-admin' ref={hamburgerAdminRef}>
-                                            <span className='origin-top-left hamburger-admin-line'></span>
-                                            <span className='hamburger-admin-line'></span>
-                                            <span className='origin-bottom-left hamburger-admin-line'></span>
-                                        </div>
+                <div className='relative'>
+                    {/* Topbar */}
+                    <div className='topbar header' id='topbar' ref={topbarRef}>
+                        <div className='flex w-full justify-end'>
+                            <header ref={hamburgerRefs.header}>
+                                <div className='block' id='bg-hamburger' ref={hamburgerRefs.bgHamburger}>
+                                    <div
+                                        className='hamburgera'
+                                        onClick={hamburgerHandle}
+                                        id='hamburger-admin'
+                                        ref={hamburgerRefs.hamburgerAdmin}
+                                    >
+                                        <span className='origin-top-left hamburger-admin-line'></span>
+                                        <span className='hamburger-admin-line'></span>
+                                        <span className='origin-bottom-left hamburger-admin-line'></span>
                                     </div>
-                                    <div className='flex justify-end'>
-
-                                        {colorTheme === 'light' ? (
-                                            <span onClick={() => setTheme('light')} className='my-auto text-2xl fas fa-moon text-red-600 cursor-pointer'></span>
-                                        ) : (
-                                            <span onClick={() => setTheme('dark')} className='my-auto text-2xl fas fa-sun text-red-600 cursor-pointer'></span>
-                                        )}
-
-                                        <div className='relative ml-3 '>
-                                            <Dropdown>
-                                                <Dropdown.Trigger>
-                                                    <span className='inline-flex rounded-md cursor-pointer'>
-                                                        <button
-                                                            type='button'
-                                                            className='cursor-pointer inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-900 transition duration-150 ease-in-out border border-transparent rounded-md dark:text-gray-50 hover:text-gray-500 focus:outline-none'>
-                                                            {user.avatar ? (
-                                                                <img src={`${BaseUrl}/uploads/${user.avatar}`} alt={user.name} className='h-10 mr-3 rounded-full' />
-                                                            ) : (
-                                                                <img src='/assets/images/logo-dppi.png' className='h-10 mr-3 rounded-full' />
-                                                            )}
-                                                        </button>
-                                                    </span>
-                                                </Dropdown.Trigger>
-
-                                                <Dropdown.Content>
-                                                    <div className='flex bg-white dark:bg-gray-950'>
-                                                        {user.avatar ? (
-                                                            <img className='w-10 h-10 mx-2 my-2 rounded-full' src={`${BaseUrl}/uploads/${user.avatar}`} alt='Avatar User' />
-                                                        ) : (
-                                                            <img src='/assets/images/logo-dppi.png' className='w-10 h-10 mx-2 my-2 rounded-full' />
-                                                        )}
-                                                        <div className='block'>
-                                                            <p className='mx-2 my-auto mt-1 text-base font-bold text-black dark:text-gray-100'>{user.name}</p>
-                                                            <p className='mx-2 my-auto text-sm text-gray-400'>{user.role.toUpperCase()}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className='border-b dark:border-white0 border border-gray-200'></div>
-                                                    <div className='flex bg-white dark:bg-dark hover:bg-mute'>
-                                                        <Dropdown.Link href='/auth/profile'>
-                                                            <div className='flex'>
-                                                                <i className='text-base  pt-1 fas fa-user dark:text-gray-100 text-gray-900'></i>
-                                                                <div className='block mx-4 text-base dark:text-gray-100 text-gray-900'>
-                                                                    <p>Profile</p>
-                                                                </div>
-                                                            </div>
-                                                        </Dropdown.Link>
-                                                    </div>
-                                                    <div className='flex bg-white dark:bg-dark hover:bg-mute'>
-                                                        <Dropdown.Link href='/auth/password'>
-                                                            <div className='flex'>
-                                                                <i className='text-base  pt-1 fas fa-key dark:text-gray-100 text-gray-900'></i>
-                                                                <div className='block mx-4 text-base dark:text-gray-100 text-gray-900'>
-                                                                    <p>Password</p>
-                                                                </div>
-                                                            </div>
-                                                        </Dropdown.Link>
-                                                    </div>
-                                                    <button type='button' className='flex bg-white px-4 py-2 dark:bg-dark hover:bg-gray-900 w-full cursor-pointer' onClick={logout}>
-                                                        <div className='flex cursor-pointer'>
-                                                            <i className='text-base fas pt-1 fa-sign-out-alt dark:text-gray-100 text-red-500 cursor-pointer'></i>
-                                                            <div className='block mx-4 pt-0 text-base dark:text-gray-100 text-red-500 cursor-pointer'>
-                                                                <p>Logout</p>
-                                                            </div>
-                                                        </div>
-                                                    </button>
-                                                </Dropdown.Content>
-                                            </Dropdown>
-                                        </div>
-                                    </div>
-                                </header>
-                            </div>
-                        </div>
-
-                        <div id='videoover-container' className='fixed inset-0 z-10 invisible h-full max-w-full overflow-auto dark:bg-black/50 bg-white/50 lg:hidden ' ref={videooverContainerRef}>
-                            <div id='videoover-bg' className='navbar-admin-sm' ref={videooverBGRef}></div>
-                            <div
-                                id='videoover'
-                                className='absolute right-0 w-full h-full transition-all duration-300 ease-out translate-x-full  border-t-4 dark:text-white shadow-inner backdrop-blur-sm bg-opacity-80 border-secondary'
-                                ref={videooverRef}>
-                                <ul className='absolute leading-5 top-16 '>
-                                    {user.role === 'Superadmin' || user.role === 'Administrator' || user.role === 'Admin Kesbangpol' ? (
-                                        <>
-                                            <li className='mx-1 mr-3'>
-                                                <Link href='/adminpanel' className=''>
-                                                    <div className={pathname === '/adminpanel' ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'}>
-                                                        Adminpanel
-                                                    </div>
-                                                </Link>
-                                            </li>
-
-                                            {user.role === 'Superadmin' || user.role === 'Administrator' ? (
-                                                <>
-                                                    <div className='px-3 mt-4 text-gray-300'>--- Data</div>
-                                                    <li className='mx-1 mr-3'>
-                                                        <Link href='/adminpanel/video' className=''>
-                                                            <div
-                                                                className={
-                                                                    pathname === '/adminpanel/video' ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'
-                                                                }>
-                                                                Video
-                                                            </div>
-                                                        </Link>
-                                                    </li>
-                                                    <li className='mx-1 mr-3'>
-                                                        <Link href='/adminpanel/user' className=''>
-                                                            <div
-                                                                className={
-                                                                    pathname === '/adminpanel/user' ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'
-                                                                }>
-                                                                Pengguna
-                                                            </div>
-                                                        </Link>
-                                                    </li>
-                                                    <li className='mx-1 mr-3'>
-                                                        <Link href='/adminpanel/geowisata' className=''>
-                                                            <div
-                                                                className={
-                                                                    pathname === '/adminpanel/geowisata'
-                                                                        ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full '
-                                                                        : 'text-primary px-1 py-2 mx-1'
-                                                                }>
-                                                                Geowisata
-                                                            </div>
-                                                        </Link>
-                                                    </li>
-                                                    <li className='mx-1 mr-3'>
-                                                        <Link href='/adminpanel/geotourism-events' className=''>
-                                                            <div
-                                                                className={
-                                                                    pathname === '/adminpanel/geotourism-events'
-                                                                        ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full '
-                                                                        : 'text-primary px-1 py-2 mx-1'
-                                                                }>
-                                                                Event Wisata
-                                                            </div>
-                                                        </Link>
-                                                    </li>
-                                                </>
-                                            ) : (
-                                                ''
-                                            )}
-                                            {user.role === 'Superadmin' || user.role === 'Admin Kesbangpol' ? (
-                                                <>
-                                                    <div className='px-3 mt-4 text-gray-300'>--- Pengaturan</div>
-                                                    <li className='mx-1 mr-3'>
-                                                        <Link href='/adminpanel/data-wisatawan' className=''>
-                                                            <div
-                                                                className={
-                                                                    pathname === '/adminpanel/data-wisatawan'
-                                                                        ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full '
-                                                                        : 'text-primary px-1 py-2 mx-1'
-                                                                }>
-                                                                Data Wisatawan
-                                                            </div>
-                                                        </Link>
-                                                    </li>
-                                                    <li className='mx-1 mr-3'>
-                                                        <Link href='/adminpanel/data-penelitian' className=''>
-                                                            <div
-                                                                className={
-                                                                    pathname === '/adminpanel/data-penelitian'
-                                                                        ? 'bg-red-500 rounded-md px-2 text-primary py-2 mx-1 w-full '
-                                                                        : 'text-primary px-1 py-2 mx-1'
-                                                                }>
-                                                                Data Penelitian
-                                                            </div>
-                                                        </Link>
-                                                    </li>
-                                                </>
-                                            ) : (
-                                                ''
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <li className='mx-1 mr-3'>
-                                                <Link href='/userpanel' className=''>
-                                                    <div className={pathname === '/userpanel' ? 'bg-red-300 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'}>
-                                                        Dashboard
-                                                    </div>
-                                                </Link>
-                                            </li>
-                                            <div className='px-3 mt-4 text-gray-300'>--- Pengaturan</div>
-                                            <li className='mx-1 mr-3'>
-                                                <Link href='/userpanel/pengunjung' className=''>
-                                                    <div
-                                                        className={
-                                                            pathname === '/userpanel/pengunjung' ? 'bg-red-300 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'
-                                                        }>
-                                                        Input Wisatawan
-                                                    </div>
-                                                </Link>
-                                            </li>
-                                            <li className='mx-1 mr-3'>
-                                                <Link href='/userpanel/harga-tiket' className=''>
-                                                    <div
-                                                        className={
-                                                            pathname === '/userpanel/harga-tiket' ? 'bg-red-300 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'
-                                                        }>
-                                                        Update Tiket
-                                                    </div>
-                                                </Link>
-                                            </li>
-                                            <li className='mx-1 mr-3'>
-                                                <Link href='/userpanel/paket-wisata' className=''>
-                                                    <div
-                                                        className={
-                                                            pathname === '/userpanel/paket-wisata' ? 'bg-red-300 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'
-                                                        }>
-                                                        Paket Wisata
-                                                    </div>
-                                                </Link>
-                                            </li>
-                                            <li className='mx-1 mr-3'>
-                                                <Link href='/userpanel/order' className=''>
-                                                    <div className={pathname === '/userpanel/order' ? 'bg-red-300 rounded-md px-2 text-primary py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'}>
-                                                        Kelola Pesanan
-                                                    </div>
-                                                </Link>
-                                            </li>
-                                        </>
-                                    )}
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div className='relative'>
-                            <div className={`sidebar ${isColaps ? 'colaps' : ''}`} id='sidebar' ref={sidebarRef}>
-                                <div className='flex'>
-                                    <Link href='/adminpanel'>
-                                        <img className='w-12 h-auto my-2 ml-4' src='/assets/images/logo-dppi.png' alt='Logo' />
-                                    </Link>
-                                    <p className={`app-name pl-4 ${isColaps ? 'colaps' : ''}`} id='app-name' ref={appNameRef}>
-                                        DPPI BPIP RI
-                                    </p>
-
-                                    <button className={`btn-colaps ${isColaps ? 'colaps' : ''}`} id='btn-colaps' onClick={btnColaps}>
-                                        <i className='px-1 py-1 fas fa-chevron-left cursor-pointer'></i>
-                                    </button>
                                 </div>
-                                {user.role === 'Superadmin' || user.role === 'Administrator' || user.role === 'Admin Kesbangpol' ? (
-                                    <div className='pt-4'>
-                                        <Link
-                                            href='/adminpanel'
-                                            className={
-                                                pathname === '/adminpanel'
-                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
-                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                            }>
-                                            <i className={pathname === '/adminpanel' ? 'mx-2 text-xl py-auto fas fa-home text-red-600' : 'mx-2 text-xl py-auto fas fa-home text-red-600'}></i>
+                                <div className='flex justify-end items-center'>
+                                    {colorTheme === 'light' ? (
+                                        <button
+                                            onClick={() => setTheme('light')}
+                                            className='my-auto text-2xl fas fa-moon text-red-600 cursor-pointer focus:outline-none'
+                                            aria-label='Switch to dark mode'
+                                        />
+                                    ) : (
+                                        <button
+                                            onClick={() => setTheme('dark')}
+                                            className='my-auto text-2xl fas fa-sun text-red-600 cursor-pointer focus:outline-none'
+                                            aria-label='Switch to light mode'
+                                        />
+                                    )}
 
-                                            <p className='mx-1 menu-list' id='menu-name0'>
-                                                Dashboard
-                                            </p>
-                                        </Link>
+                                    <div className='relative ml-3'>
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <button
+                                                    type='button'
+                                                    className='cursor-pointer inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-900 transition duration-150 ease-in-out border border-transparent rounded-md dark:text-gray-50 hover:text-gray-500 focus:outline-none'
+                                                    aria-label='User menu'
+                                                >
+                                                    {user.avatar ? (
+                                                        <img
+                                                            src={`${BaseUrl + user.avatar}`}
+                                                            alt={user.name}
+                                                            className='h-10 w-10 mr-3 rounded-full object-cover'
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src='/assets/images/logo-dppi.png'
+                                                            alt="Default avatar"
+                                                            className='h-10 w-10 mr-3 rounded-full object-cover'
+                                                        />
+                                                    )}
+                                                </button>
+                                            </Dropdown.Trigger>
 
-                                        <div className='flex mx-4'>
-                                            <span className='w-10 dash-separator'></span>
-                                            <p className='ml-2 menu-separator'>Input Data</p>
-                                        </div>
-                                        {user.role === 'Superadmin' || user.role === 'Administrator' ? (
-                                            <>
-                                                <div>
-                                                    <Link
-                                                        href='/adminpanel/video'
-                                                        className={
-                                                            pathname === '/adminpanel/video'
-                                                                ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
-                                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                                        }>
-                                                        <i
-                                                            className={
-                                                                pathname === '/adminpanel/video'
-                                                                    ? 'mx-2 text-xl py-auto fas fa-film text-red-600'
-                                                                    : 'mx-2 text-xl py-auto fas fa-film text-red-600'
-                                                            }></i>
-
-                                                        <p className='mx-1 menu-list' id='menu-name0'>
-                                                            Video
-                                                        </p>
-                                                    </Link>
-                                                    <Link
-                                                        href='/adminpanel/user'
-                                                        className={
-                                                            pathname === '/adminpanel/user'
-                                                                ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
-                                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                                        }>
-                                                        <i
-                                                            className={
-                                                                pathname === '/adminpanel/user' ? 'mx-2 text-xl py-auto fas fa-user text-red-600' : 'mx-2 text-xl py-auto fas fa-user text-red-600'
-                                                            }></i>
-
-                                                        <p className='mx-1 menu-list' id='menu-name0'>
-                                                            User
-                                                        </p>
-                                                    </Link>
-                                                    <Link
-                                                        href='/adminpanel/geowisata'
-                                                        className={
-                                                            regex.test(location.pathname)
-                                                                ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
-                                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                                        }>
-                                                        <i
-                                                            className={
-                                                                regex.test(location.pathname)
-                                                                    ? 'mx-2 text-xl py-auto fas fa-torii-gate text-red-600'
-                                                                    : 'mx-2 text-xl py-auto fas fa-torii-gate text-red-600'
-                                                            }></i>
-
-                                                        <p className='mx-1 menu-list' id='menu-name0'>
-                                                            Geowisata
-                                                        </p>
-                                                    </Link>
-                                                    <Link
-                                                        href='/adminpanel/geotourism-events'
-                                                        className={
-                                                            regex1.test(location.pathname)
-                                                                ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
-                                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                                        }>
-                                                        <i
-                                                            className={
-                                                                regex1.test(location.pathname)
-                                                                    ? 'mx-2 text-xl py-auto fas fa-calendar-check text-red-600'
-                                                                    : 'mx-2 text-xl py-auto fas fa-calendar-check text-red-600'
-                                                            }></i>
-
-                                                        <p className='mx-1 menu-list' id='menu-name0'>
-                                                            Event Wisata
-                                                        </p>
-                                                    </Link>
+                                            <Dropdown.Content>
+                                                <div className='flex bg-white dark:bg-gray-950 p-2'>
+                                                    {user.avatar ? (
+                                                        <img
+                                                            className='w-10 h-10 mx-2 rounded-full object-cover'
+                                                            src={`${BaseUrl + user.avatar}`}
+                                                            alt='Avatar User'
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src='/assets/images/logo-dppi.png'
+                                                            alt="Default avatar"
+                                                            className='w-10 h-10 mx-2 rounded-full object-cover'
+                                                        />
+                                                    )}
+                                                    <div className='block'>
+                                                        <p className='mx-2 mt-1 text-base font-bold text-black dark:text-gray-100'>{user.name}</p>
+                                                        <p className='mx-2 text-sm text-gray-400'>{user.role.toUpperCase()}</p>
+                                                    </div>
                                                 </div>
-                                            </>
-                                        ) : (
-                                            <div></div>
-                                        )}
-                                        {user.role === 'Superadmin' || user.role === 'Admin Kesbangpol' ? (
-                                            <div>
-                                                <Link
-                                                    href='/adminpanel/data-wisatawan'
-                                                    className={
-                                                        pathname === '/adminpanel/data-wisatawan'
-                                                            ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
-                                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                                    }>
-                                                    <i
-                                                        className={
-                                                            pathname === '/adminpanel/data-wisatawan'
-                                                                ? 'mx-2 text-xl py-auto fas fa-users text-red-600'
-                                                                : 'mx-2 text-xl py-auto fas fa-users text-red-600'
-                                                        }></i>
+                                                <div className='border-b dark:border-white/20 border-gray-200'></div>
 
-                                                    <p className='mx-1 menu-list' id='menu-name0'>
-                                                        Data Wisatawan
-                                                    </p>
-                                                </Link>
-                                                <Link
-                                                    href='/adminpanel/data-penelitian'
-                                                    className={
-                                                        pathname === '/adminpanel/data-penelitian'
-                                                            ? 'active flex w-[95%] px-2 py-2 mx-2 font-semibold hover:rounded-md hover:bg-red-500/20 group1:'
-                                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                                    }>
-                                                    <i
-                                                        className={
-                                                            pathname === '/adminpanel/data-penelitian'
-                                                                ? 'mx-2 text-xl py-auto fas fa-flask text-red-600'
-                                                                : 'mx-2 text-xl py-auto fas fa-flask text-red-600'
-                                                        }></i>
+                                                <Dropdown.Link href='/auth/profile'>
+                                                    <div className=''>
+                                                        <i className='text-base fas fa-user dark:text-gray-100 text-gray-900 w-5'></i>
+                                                        <span className='ml-3 text-base dark:text-gray-100 text-gray-900'>Profile</span>
+                                                    </div>
+                                                </Dropdown.Link>
 
-                                                    <p className='mx-1 ml-3 menu-list' id='menu-name0'>
-                                                        Data Penelitian
-                                                    </p>
-                                                </Link>
-                                            </div>
-                                        ) : (
-                                            <></>
-                                        )}
+                                                <Dropdown.Link href='/auth/password'>
+                                                    <div className=''>
+                                                        <i className='text-base fas fa-key dark:text-gray-100 text-gray-900 w-5'></i>
+                                                        <span className='ml-3 text-base dark:text-gray-100 text-gray-900'>Password</span>
+                                                    </div>
+                                                </Dropdown.Link>
+
+                                                <button
+                                                    type='button'
+                                                    className='flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer text-red-500 dark:text-red-400'
+                                                    onClick={logout}
+                                                >
+                                                    <i className='text-base fas fa-sign-out-alt w-5'></i>
+                                                    <span className='ml-3 text-base'>Logout</span>
+                                                </button>
+                                            </Dropdown.Content>
+                                        </Dropdown>
                                     </div>
-                                ) : (
-                                    <div className='mt-4 w-full'>
-                                        <Link
-                                            href='/userpanel'
-                                            className={
-                                                pathname === '/userpanel'
-                                                    ? 'active flex w-[95%] px-2 py-2 hover:rounded-md font-semibold hover:bg-red-500/20 group1:'
-                                                    : 'flex w-[95%] px-2 py-2  hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                            }>
-                                            <i className={pathname === '/userpanel' ? 'mx-2 text-xl py-auto fas fa-home text-red-600' : 'mx-2 text-xl py-auto fas fa-home text-red-600'}></i>
-
-                                            <p className='mx-1 menu-list' id='menu-name0'>
-                                                Dashboard
-                                            </p>
-                                        </Link>
-
-                                        <Link
-                                            href='/userpanel/pengunjung'
-                                            className={
-                                                pathname === '/userpanel/pengunjung'
-                                                    ? 'active flex w-[95%] px-2 py-2 hover:rounded-md font-semibold hover:bg-red-500/20 group1:'
-                                                    : 'flex w-[95%] px-2 py-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                            }>
-                                            <i
-                                                className={
-                                                    pathname === '/userpanel/pengunjung'
-                                                        ? 'mx-2 text-xl py-auto fas fa-user-friends text-red-600'
-                                                        : 'mx-2 text-xl py-auto fas fa-user-friends text-red-600'
-                                                }></i>
-
-                                            <p className='mx-1 menu-list' id='menu-name0'>
-                                                Wisatawan
-                                            </p>
-                                        </Link>
-                                        <Link
-                                            href='/userpanel/harga-tiket'
-                                            rel='prefetch'
-                                            className={
-                                                pathname === '/userpanel/harga-tiket'
-                                                    ? 'active flex w-[95%] px-2 py-2 hover:rounded-md font-semibold hover:bg-red-500/20 group1:'
-                                                    : 'flex w-[95%] px-2 py-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                            }>
-                                            <i
-                                                className={
-                                                    pathname === '/userpanel/harga-tiket'
-                                                        ? 'mx-2 text-xl py-auto fas fa-ticket-alt text-red-600'
-                                                        : 'mx-2 text-xl py-auto fas fa-ticket-alt text-red-600'
-                                                }></i>
-
-                                            <p className='mx-1 menu-list' id='menu-name0'>
-                                                Harga Tiket
-                                            </p>
-                                        </Link>
-                                        <Link
-                                            href='/userpanel/paket-wisata'
-                                            rel='prefetch'
-                                            className={
-                                                pathname === '/userpanel/paket-wisata'
-                                                    ? 'active flex w-[95%] px-2 py-2 hover:rounded-md font-semibold hover:bg-red-500/20 group1:'
-                                                    : 'flex w-[95%] px-2 py-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                            }>
-                                            <i
-                                                className={
-                                                    pathname === '/userpanel/paket-wisata'
-                                                        ? 'mx-2 text-xl py-auto fas fa-plane-departure text-red-600'
-                                                        : 'mx-2 text-xl py-auto fas fa-plane-departure text-red-600'
-                                                }></i>
-
-                                            <p className='mx-1 menu-list' id='menu-name0'>
-                                                Paket Wisata
-                                            </p>
-                                        </Link>
-                                        <Link
-                                            href='/userpanel/order'
-                                            rel='prefetch'
-                                            className={
-                                                pathname === '/userpanel/order'
-                                                    ? 'active flex w-[95%] px-2 py-2 hover:rounded-md font-semibold hover:bg-red-500/20 group1:'
-                                                    : 'flex w-[95%] px-2 py-2 hover:rounded-md hover:bg-red-500/20 text-red-600 dark:text-white'
-                                            }>
-                                            <i
-                                                className={
-                                                    pathname === '/userpanel/order'
-                                                        ? 'mx-2 text-xl py-auto fas fa-plane-arrival text-red-600'
-                                                        : 'mx-2 text-xl py-auto fas fa-plane-arrival text-red-600'
-                                                }></i>
-
-                                            <p className='mx-1 menu-list' id='menu-name0'>
-                                                Kelola Pesanan
-                                            </p>
-                                        </Link>
-                                    </div>
-                                )}
-
-                            </div>
+                                </div>
+                            </header>
                         </div>
-                        <main className='main-content-dashboard' id='main-content' ref={mainContentRef}>
-                            {children}
-                        </main>
                     </div>
-                ) : (
-                    <></>
-                )}
-            </div>
-        </main>
+
+                    {/* Mobile Slideover Menu */}
+                    <div
+                        id='slideover-container'
+                        ref={hamburgerRefs.slideoverContainer}
+                        className='fixed inset-0 z-10 invisible h-full max-w-full overflow-auto bg-white/50 lg:hidden'
+                    >
+                        <div id='slideover-bg' className='navbar-sm'></div>
+                        <div
+                            id='slideover'
+                            ref={hamburgerRefs.slideover}
+                            className='absolute right-0 w-full h-full transition-all duration-300 ease-out translate-x-full bg-white border-t-4 shadow-inner backdrop-blur-sm bg-opacity-80 border-secondary'
+                        >
+                            <nav className='absolute top-16 w-full'>
+                                <ul className='leading-5'>
+                                    <li>
+                                        <a
+                                            href='/adminpanel'
+                                            className={`block px-4 py-2 ${pathname === '/adminpanel'
+                                                ? 'bg-violet-500 text-white rounded-md'
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            {user.role === "Administrator" || user.role === "Superadmin" ? "Adminpanel" : "Dashboard"}
+                                        </a>
+                                    </li>
+                                    {user.role === "Administrator" || user.role === "Superadmin" ? (
+
+
+                                        <li>
+                                            <a
+                                                href='/adminpanel/video'
+                                                className={`block px-4 py-2 ${pathname === '/adminpanel/video'
+                                                    ? 'bg-violet-500 text-white rounded-md'
+                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                Video
+                                            </a>
+                                        </li>
+                                    ) : ''}
+                                    <li className='px-3 mt-4 text-gray-500 text-sm'>--- Data PDP</li>
+
+
+                                    {[
+
+                                        { href: '/adminpanel/pdp/belum-registrasi', label: 'PDP Belum Registrasi' },
+                                        { href: '/adminpanel/pdp/belum-diverifikasi', label: 'PDP Belum Diverifikasi' },
+                                        { href: '/adminpanel/pdp/verified', label: 'PDP Verified' },
+                                        { href: '/adminpanel/pdp/Simental', label: 'PDP Simental' },
+                                        { href: '/adminpanel/pdp/tidak-aktif', label: 'PDP Tidak Aktif' },
+
+                                    ].map((item) => (
+                                        <li key={item.href}>
+                                            <a
+                                                href={item.href}
+                                                className={`block px-4 py-2 ${pathname === item.href
+                                                    ? 'bg-violet-500 text-white rounded-md'
+                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {item.label}
+                                            </a>
+                                        </li>
+                                    ))}
+
+
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className='relative'>
+                        <div className={`sidebar ${isColaps == true ? 'colaps' : ''}`} id='sidebar'>
+                            <div className='flex'>
+                                <a href='/adminpanel'>
+                                    <img className='w-10 h-10 my-2 ml-4' src='/assets/images/simental.png' alt='Logo Simental Perkasa DPPI RI' />
+                                </a>
+                                <p className={`app-name ${isColaps == true ? 'colaps' : ''}`} id='app-name'>
+                                    SIMENTAL PERKASA
+                                </p>
+
+                                <button className={`btn-colaps ${isColaps == true ? 'colaps' : ''}`} id='btn-colaps' onClick={btnColaps}>
+                                    <i className='px-1 py-1 fas fa-chevron-left'></i>
+                                </button>
+                            </div>
+                            <button className={pathname === '/adminpanel' ? 'active bg-violet-500 flex py-2 mx-2 mt-4 ' : 'text-white flex py-2 mx-2 mt-4'} disabled={isButtonClicked}>
+                                <a className='flex' href='/adminpanel'>
+                                    <i className='pl-2 mx-2 text-xl fas fa-home text-accent'></i>
+                                    <p className='menu-list'>Dashboard</p>
+                                </a>
+                            </button>
+                            <div className='flex mx-4'>
+                                <span className='w-10 dash-separator'></span>
+                                <p className='ml-2 menu-separator'>Input Data</p>
+                            </div>
+                            {user.role === "Administrator" || user.role === "Superadmin" ? (
+
+                                <a
+                                    href='/adminpanel/video'
+                                    className={
+                                        pathname === '/adminpanel/video'
+                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                    }>
+                                    <i className={pathname === '/adminpanel/video' ? 'mx-2 text-xl py-auto fas fa-video text-purple-600' : 'mx-2 text-xl py-auto fas fa-video text-accent'}></i>
+
+                                    <p className='mx-1 menu-list' id='menu-name0'>
+                                        Video
+                                    </p>
+                                </a>
+                            ) : ''}
+                            {/* pdp */}
+                            <div className={regexPdp.test(window.location.href) ? 'grup3 grup3-active' : 'grup3'} onClick={handlePdpMenu} id='pdp-menu'>
+                                <button
+                                    className={
+                                        regexPdp.test(window.location.href)
+                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                    }>
+                                    <i className='mx-2 text-xl py-auto fas fa-users text-accent'></i>
+                                    <div className='grid grid-cols-12'>
+                                        <span className='col-span-11 py-1 mx-0 text-left menu-list' id='menu-name3'>
+                                            Data PDP
+                                        </span>
+                                        <span className='my-auto'>
+                                            <svg
+                                                className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
+                                                xmlns='http://www.w3.org/2000/svg'
+                                                viewBox='0 0 20 20'>
+                                                <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </button>
+                                <div className={regexPdp.test(window.location.href) ? '' : 'hidden'} id='pdp-list'>
+                                    <div className='flex py-2 mx-2'>
+                                        <a className='flex' href='/adminpanel/pdp/belum-registrasi'>
+                                            <i
+                                                className={
+                                                    regexPdpBelumRegistrasi.test(window.location.href)
+                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                }></i>
+                                            <p className={regexPdpBelumRegistrasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                PDP Belum Registrasi
+                                            </p>
+                                        </a>
+                                    </div>
+                                    <div className='flex py-2 mx-2'>
+                                        <a className='flex' href='/adminpanel/pdp/belum-diverifikasi'>
+                                            <i
+                                                className={
+                                                    regexPdpBelumDiverifikasi.test(window.location.href)
+                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                }></i>
+                                            <p className={regexPdpBelumDiverifikasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                PDP Belum Diverifikasi
+                                            </p>
+                                        </a>
+                                    </div>
+
+                                    <div className='flex py-2 mx-2'>
+                                        <a className='flex' href='/adminpanel/pdp/verified'>
+                                            <i
+                                                className={
+                                                    regexPdpVerified.test(window.location.href)
+                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                }></i>
+                                            <p className={regexPdpVerified.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Verified </p>
+                                        </a>
+                                    </div>
+                                    <div className='flex py-2 mx-2'>
+                                        <a className='flex' href='/adminpanel/pdp/simental'>
+                                            <i
+                                                className={
+                                                    regexPdpSimental.test(window.location.href)
+                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                }></i>
+                                            <p className={regexPdpSimental.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Simental </p>
+                                        </a>
+                                    </div>
+                                    <div className='flex py-2 mx-2'>
+                                        <a className='flex' href='/adminpanel/pdp/tidak-aktif'>
+                                            <i
+                                                className={
+                                                    regexPdpTidakAktif.test(window.location.href)
+                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                }></i>
+                                            <p className={regexPdpTidakAktif.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Tidak Aktif</p>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                <a
+                                    href='/adminpanel/berita'
+                                    className={
+                                        regexBerita.test(window.location.href)
+                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                    }>
+                                    <i
+                                        className={
+                                            regexBerita.test(window.location.href)
+                                                ? 'mx-2 text-xl py-auto fas fa-newspaper text-purple-600'
+                                                : 'mx-2 text-xl py-auto fas fa-newspaper text-accent'
+                                        }></i>
+
+                                    <p className='mx-0 menu-list' id='menu-name1'>
+                                        Data Berita
+                                    </p>
+                                </a>
+                            ) : ''}
+
+                            {/* pelaksana */}
+
+                            <div
+                                className={
+                                    pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-kabupaten'
+                                        ? 'grup2 grup2-active'
+                                        : 'grup2'
+                                }
+                                onClick={handlePelaksanaMenu}
+                                id='pelaksana-menu'>
+                                <button
+                                    className={
+                                        pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-kabupaten'
+                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                    }>
+                                    <i className='mx-2 text-xl py-auto fas fa-user-tie text-accent'></i>
+                                    <div className='grid grid-cols-12'>
+                                        <span className='col-span-11 py-1 mx-1 text-left menu-list' id='menu-name2'>
+                                            Pelaksana
+                                        </span>
+                                        <span className='my-auto'>
+                                            <svg
+                                                className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
+                                                xmlns='http://www.w3.org/2000/svg'
+                                                viewBox='0 0 20 20'>
+                                                <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </button>
+                                <div
+                                    className={
+                                        pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-kabupaten' ? '' : 'hidden'
+                                    }
+                                    id='pelaksana-list'>
+                                    {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                        <div className='flex py-2 mx-2'>
+                                            <a className='flex' href='/adminpanel/pelaksana-pusat'>
+                                                <i
+                                                    className={
+                                                        pathname === '/adminpanel/pelaksana-pusat'
+                                                            ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                            : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                    }></i>
+                                                <p className={pathname === '/adminpanel/pelaksana-pusat' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Pelaksana Pusat</p>
+                                            </a>
+                                        </div>
+                                    ) : ''}
+                                    {user.role === "Administrator" || user.role === "Superadmin" || (user.role === "Admin Kesbangpol" && user.id_kabupaten == 0)
+                                        ? (
+                                            // Tampilkan Pelaksana Provinsi
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/adminpanel/pelaksana-provinsi'>
+                                                    <i
+                                                        className={
+                                                            pathname === '/adminpanel/pelaksana-provinsi'
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }
+                                                    />
+                                                    <p className={pathname === '/adminpanel/pelaksana-provinsi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                        Pelaksana Provinsi
+                                                    </p>
+                                                </a>
+                                            </div>
+                                        ) : ""}
+                                    {user.role === "Administrator" || user.role === "Superadmin" || (user.role === "Admin Kesbangpol" && user.id_kabupaten !== 0)
+                                        ? (
+                                            // Tampilkan Pelaksana Kabupaten
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/adminpanel/pelaksana-kabupaten'>
+                                                    <i
+                                                        className={
+                                                            pathname === '/adminpanel/pelaksana-kabupaten'
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }
+                                                    />
+                                                    <p className={pathname === '/adminpanel/pelaksana-kabupaten' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                        Pelaksana Kabupaten
+                                                    </p>
+                                                </a>
+                                            </div>
+                                        )
+                                        : null // Jika tidak memenuhi kondisi manapun, tampilkan 'null' (tidak ada apa-apa)
+                                    }
+                                </div>
+                            </div>
+                            {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                <>
+                                    <a
+                                        href='/adminpanel/galeri-foto'
+                                        className={
+                                            pathname === '/adminpanel/galeri-foto'
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i
+                                            className={
+                                                pathname === '/adminpanel/galeri-foto'
+                                                    ? 'ml-2 mr-1 text-xl py-auto fas fa-image text-purple-600'
+                                                    : 'ml-2 mr-1 text-xl py-auto fas fa-image text-accent'
+                                            }></i>
+
+                                        <p className='mx-1 menu-list' id='menu-name3'>
+                                            Galeri Kegiatan
+                                        </p>
+                                    </a>
+                                    <a
+                                        href='/adminpanel/kegiatan'
+                                        className={
+                                            pathname === '/adminpanel/kegiatan'
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i
+                                            className={
+                                                pathname === '/adminpanel/kegiatan'
+                                                    ? 'mx-2 text-xl py-auto fas fa-calendar-check text-purple-600'
+                                                    : 'mx-2 text-xl py-auto fas fa-calendar-check text-accent'
+                                            }></i>
+
+                                        <p className='mx-1 menu-list' id='menu-name4'>
+                                            Kegiatan
+                                        </p>
+                                    </a>
+                                    <a
+                                        href='/adminpanel/regulasi'
+                                        className={
+                                            pathname === '/adminpanel/regulasi'
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i
+                                            className={
+                                                pathname === '/adminpanel/regulasi' ? 'mx-2 text-xl py-auto fas fa-file-alt text-purple-600' : 'mx-2 text-xl py-auto fas fa-file-alt text-accent'
+                                            }></i>
+
+                                        <p className='mx-1 menu-list' id='menu-name5'>
+                                            Regulasi
+                                        </p>
+                                    </a>
+                                </>) : ''}
+                            {user.role === "Superadmin" ? (
+                                <a
+                                    href='/adminpanel/user'
+                                    className={
+                                        pathname === '/adminpanel/user'
+                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                    }>
+                                    <i
+                                        className={
+                                            pathname === '/adminpanel/user' ? 'mx-2 text-xl py-auto fas fa-users-cog text-purple-600' : 'mx-2 text-xl py-auto fas fa-users-cog text-accent'
+                                        }></i>
+
+                                    <p className='mx-1 menu-list' id='menu-name6'>
+                                        Users
+                                    </p>
+                                </a>) : ''}
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <main
+                        className='main-content-dashboard'
+                        id='main-content'
+                        ref={mainContentRef}
+                    >
+                        {children}
+                    </main>
+                </div>
+            </div >
+        </main >
     );
 }

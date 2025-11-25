@@ -31,7 +31,7 @@ interface PaginatedResponse {
 
 export default function RegulasiList() {
     const [data, setData] = useState<PaginatedResponse | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage]: any = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [perPage, setPerPage] = useState(8);
     const [loading, setLoading] = useState(false);
@@ -186,7 +186,7 @@ export default function RegulasiList() {
                                         <div className='grid md:grid-cols-6 my-5'>
                                             <div className='bg-gray-100 md:col-span-4 flex flex-col md:flex-row rounded-lg border'>
                                                 <img
-                                                    src={`${BaseUrl}/uploads/${item.icon_regulasi}`}
+                                                    src={`${BaseUrl + item.icon_regulasi}`}
                                                     className='w-28 p-2 mx-auto md:mx-0'
                                                     alt={item.nama_regulasi}
                                                 />
@@ -200,8 +200,8 @@ export default function RegulasiList() {
                                             <div className='flex flex-row md:justify-center md:gap-4 justify-between md:col-span-2 border-b border-gray-300 pb-2'>
                                                 <div className='mt-4 col-span-1 flex'>
                                                     <a
-                                                        href={`${BaseUrl}/uploads/${item.file_regulasi}`}
-                                                        download 
+                                                        href={`${BaseUrl + item.file_regulasi}`}
+                                                        download
                                                         className='text-xl py-2 px-8 text-accent mx-auto my-auto bg-gray-100 hover:bg-green-600 hover:text-white border border-accent rounded-3xl transition-colors duration-200'
                                                     >
                                                         <i className='fas fa-file-download'></i> Unduh
@@ -229,8 +229,6 @@ export default function RegulasiList() {
                                     <Pagination
                                         links={generateLinks()}
                                         onPageChange={handlePageChange}
-                                        currentPage={currentPage}
-                                        lastPage={data.last_page}
                                     />
                                 </div>
                             )}

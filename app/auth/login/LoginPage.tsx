@@ -84,7 +84,7 @@ function LoginForm() {
                 body: JSON.stringify({
                     email: dataUser.email,
                     password: dataUser.password,
-                    recaptchaToken: recaptcha_token, 
+                    recaptchaToken: recaptcha_token,
                 }),
             });
 
@@ -160,11 +160,19 @@ function LoginForm() {
                     </label>
                 </div>
 
-                <div className='flex flex-row justify-end'>
+                <div className='flex flex-row justify-between'>
+                    <div className="flex items-center justify-between mt-4">
+                        <a
+                            href="/auth/forgot-password"
+                            className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                        >
+                            Lupa Password?
+                        </a>
+                    </div>
                     <button type='submit' className='cursor-pointer ms-4 bg-blue-600 dark:text-gray-200 text-white px-4 py-1 rounded-lg'>
                         {processing ? (
                             <div className='flex flex-row items-center'>
-                                <ScaleLoader barCount={3} height={24} />
+                                <ScaleLoader barCount={3} height={24} color='red' />
                                 <span className='ml-2'>Loading</span>
                             </div>
                         ) : (
@@ -183,7 +191,6 @@ export default function LoginPage() {
 
         <GoogleReCaptchaProvider
             reCaptchaKey={RECAPTCHA_SITE_KEY}
-            // opsional: hindari race condition jika perlu
             scriptProps={{ async: true, defer: true }}
             container={{ element: 'recaptcha-badge', parameters: {} }}
         >

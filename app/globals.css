@@ -279,7 +279,7 @@ input[type="date"]:focus {
 }
 
 input[type="text"] {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
@@ -287,8 +287,9 @@ input[type="text"] {
     outline: none;
 }
 
+
 input[type="date"] {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
@@ -297,7 +298,7 @@ input[type="date"] {
 }
 
 input[type="number"] {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
@@ -306,7 +307,7 @@ input[type="number"] {
 }
 
 input[type="password"] {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
@@ -315,7 +316,7 @@ input[type="password"] {
 }
 
 input[type="email"] {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
@@ -324,7 +325,7 @@ input[type="email"] {
 }
 
 input[type="file"] {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     box-sizing: border-box;
     border: 1px solid #ccc;
@@ -332,7 +333,7 @@ input[type="file"] {
 }
 
 textarea {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     box-sizing: border-box;
     border: 1px solid #ccc;
@@ -353,7 +354,7 @@ select:focus {
 }
 
 select {
-    border-radius: 0.5em;
+    border-radius: 0.7em;
     width: 100%;
     padding: 8px;
     margin: 0px 0;
@@ -494,7 +495,14 @@ select {
     height: calc(100vh - 100px);
 }
 
+a {
 
+    cursor: pointer;
+}
+
+button {
+    cursor: pointer;
+}
 
 input::placeholder {
     color: #999;
@@ -815,6 +823,11 @@ li:hover>button svg {
     .form-find-input {
         width: 12rem;
     }
+}
+
+ol>li {
+    list-style-type: decimal;
+
 }
 
 .select-option {

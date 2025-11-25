@@ -121,11 +121,14 @@ export default function Beranda() {
     }, []);
 
 
+
     return (
         <div>
             <div className='w-full max-h-[600px] 2xl:max-h-[750px] flex justify-center'>
                 {video ?
-                    <video src={BaseUrl + '/uploads/' + `${video.file_video}`} className='object-cover' loop autoPlay={true} /> : ''
+                    <video src={BaseUrl + video.file_video.replace('/uploads', 'uploads')} className='object-cover' loop autoPlay={true} />
+                    :
+                    <Image src='/assets/images/capture.png' width='1980' height='800' alt="" />
                 }
 
             </div>
@@ -225,7 +228,7 @@ export default function Beranda() {
                                 }
 
                                 const imageUrl = firstFoto
-                                    ? BaseUrl + `/uploads/assets/images/gallery/${firstFoto}`
+                                    ? BaseUrl + `uploads/assets/images/gallery/${firstFoto}`
                                     : 'https://placehold.co/600x400/CCCCCC/333333?text=Tidak+Ada+Foto';
 
                                 return (
@@ -269,7 +272,7 @@ export default function Beranda() {
                                                 {item.biaya == 0 ? 'Gratis' : item.biaya.toLocaleString()}
                                             </div>
                                         </div>
-                                        <img className='object-cover lg:max-h-34 xl:max-h-40 2xl:max-h-96 w-[30em] ' src={BaseUrl + `/uploads/${item.photo}`} alt='Foto Kegiatan' />
+                                        <img className='object-cover lg:max-h-34 xl:max-h-40 2xl:max-h-96 w-[30em] ' src={BaseUrl + item.photo} alt='Foto Kegiatan' />
                                         <div className='absolute bottom-0 justify-center w-full mx-auto my-0 overflow-hidden text-center rounded-b-md justify-items-center'>
                                             <div className='h-16 w-full py-2 px-2 my-0 text-xs text-center text-white bg-black/70 font-semibold'>
                                                 {item.nama_kegiatan}

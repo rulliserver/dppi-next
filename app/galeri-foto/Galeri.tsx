@@ -51,8 +51,11 @@ export default function Galeri() {
                 setLoading(false);
             });
     };
+    useEffect(() => {
+        getData(currentPage);
+    }, [currentPage]);
 
-    const handlePageChange = (page: number) => {
+    const handlePageChange = (url: string, page: number) => {
         setCurrentPage(page);
         getData(page);
     };
@@ -94,9 +97,9 @@ export default function Galeri() {
     // Function untuk mendapatkan URL gambar
     const getImageUrl = (foto: string | string[]): string => {
         if (Array.isArray(foto) && foto.length > 0) {
-            return `${BaseUrl}/uploads/assets/images/gallery/${foto[0]}`;
+            return `${BaseUrl}uploads/assets/images/gallery/${foto[0]}`;
         } else if (typeof foto === 'string') {
-            return `${BaseUrl}/uploads/assets/images/gallery/${foto}`;
+            return `${BaseUrl}uploads/assets/images/gallery/${foto}`;
         }
         return '/images/placeholder.jpg'; // Fallback image
     };
@@ -161,8 +164,6 @@ export default function Galeri() {
                                 <Pagination
                                     links={generateLinks()}
                                     onPageChange={handlePageChange}
-                                    currentPage={currentPage}
-                                    lastPage={data.last_page}
                                 />
                             </div>
                         )}

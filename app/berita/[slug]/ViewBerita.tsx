@@ -78,7 +78,7 @@ export default function ViewBerita() {
             });
     };
 
-    const handlePageChange = (page: number) => {
+    const handlePageChange = (Link:string, page: number) => {
         setCurrentPage(page);
         getData(page, searchQuery);
     };
@@ -147,7 +147,7 @@ export default function ViewBerita() {
                             {FormatLongDate(berita.tanggal)}
                             <span className='ml-2'>👁️ {berita.view}</span>
                         </p>
-                        <Image src={`${BaseUrl}/uploads/${berita.photo}`} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
+                        <Image src={`${BaseUrl}/${berita.photo}`} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
                         {berita.caption == 'null' || berita.caption == '-' ? '' : <p className='mb-4 text-sm'>{berita.caption}</p>}
                         <TextEditor data={berita.body} />
                     </div>
@@ -209,7 +209,7 @@ export default function ViewBerita() {
 
                                         </p>
                                         <a href={`/berita/${slug}`}>
-                                            <Image src={`${BaseUrl}/uploads/${photo}`} width={800} height={400} alt='Photo Berita' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
+                                            <Image src={`${BaseUrl}/${photo}`} width={800} height={400} alt='Photo Berita' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
                                             <TextEditor data={preview} />
                                         </a>
                                         <a href={`/berita/${slug}`} className='text-accent'>
@@ -226,9 +226,7 @@ export default function ViewBerita() {
                         <div className="flex justify-center mt-8">
                             <Pagination
                                 links={generateLinks()}
-                                onPageChange={handlePageChange}
-                                currentPage={currentPage}
-                                lastPage={data.last_page}
+                                onPageChange={handlePageChange}                           
                             />
                         </div>
                     )}
