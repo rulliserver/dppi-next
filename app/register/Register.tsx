@@ -1098,7 +1098,7 @@ function RegisterForm() {
                                 </select>
                             </div>
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='no_piagam'>Nomor Piagam / SK:</InputLabel>
+                                <InputLabel htmlFor='no_piagam'>Nomor Piagam / SK / STTP PDP:</InputLabel>
                                 <TextInput
                                     id='no_piagam'
                                     type='text'
@@ -1110,7 +1110,7 @@ function RegisterForm() {
                                 />
                             </div>
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='Piagam'>File Piagam / SK Purnapaskibraka Duta Pancasila:</InputLabel>
+                                <InputLabel htmlFor='Piagam'>File Piagam/SK/STTP PDP:</InputLabel>
                                 <input
                                     className='text-sm border-2 w-full rounded-md'
                                     tabIndex={16}
