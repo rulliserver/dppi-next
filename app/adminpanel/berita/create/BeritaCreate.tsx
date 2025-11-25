@@ -6,14 +6,14 @@ import ReactCrop, { centerCrop, makeAspectCrop, Crop, PixelCrop } from 'react-im
 import 'react-image-crop/dist/ReactCrop.css';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
-import InputLabel from '@/app/Components/InputLabel';
+import InputLabel from '@/app/components/InputLabel';
 import axios from 'axios';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import { UrlApi } from '@/app/Components/apiUrl';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { BaseUrl } from '@/app/components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
 import Link from 'next/link';
-import { useUser } from '@/app/Components/UserContext';
+import { useUser } from '@/app/components/UserContext';
 import Swal from 'sweetalert2';
 
 function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {

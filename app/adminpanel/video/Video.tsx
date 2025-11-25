@@ -1,8 +1,8 @@
 'use client';
 
-import { UrlApi } from '@/app/Components/apiUrl';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import InputLabel from '@/app/Components/InputLabel';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
+import InputLabel from '@/app/components/InputLabel';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 

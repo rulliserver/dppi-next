@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Pagination from '../Components/Pagination';
-import FormatLongDate from '../Components/FormatLongDate';
-import { UrlApi } from '../Components/apiUrl';
-import { BaseUrl } from '../Components/baseUrl';
+import Pagination from '../components/Pagination';
+import FormatLongDate from '../components/FormatLongDate';
+import { UrlApi } from '../components/apiUrl';
+import { BaseUrl } from '../components/baseUrl';
 
 interface RegulasiItem {
     id: number;

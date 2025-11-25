@@ -6,13 +6,13 @@ import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
 import Swal from 'sweetalert2';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import { UrlApi } from '@/app/Components/apiUrl';
-import TextInput from '@/app/Components/TextInput';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import { useDebounceEffect2 } from '@/app/Components/useDebounceEffect2';
-import { canvasPreview2 } from '@/app/Components/CanvasPreview2';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { UrlApi } from '@/app/components/apiUrl';
+import TextInput from '@/app/components/TextInput';
+import { BaseUrl } from '@/app/components/baseUrl';
+import { useDebounceEffect2 } from '@/app/components/useDebounceEffect2';
+import { canvasPreview2 } from '@/app/components/CanvasPreview2';
 import axios from 'axios';
 
 function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {

@@ -2,10 +2,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
-import InputLabel from '@/app/Components/InputLabel';
-import { UrlApi } from '@/app/Components/apiUrl';
+import InputLabel from '@/app/components/InputLabel';
+import { UrlApi } from '@/app/components/apiUrl';
 import { useParams } from 'next/navigation';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
 
 type GalleryItem = {
     id: number;

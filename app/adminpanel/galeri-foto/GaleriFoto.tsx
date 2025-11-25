@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
-import InputLabel from '@/app/Components/InputLabel';
-import { UrlApi } from '@/app/Components/apiUrl';
-import Pagination from '@/app/Components/Pagination';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import InputLabel from '@/app/components/InputLabel';
+import { UrlApi } from '@/app/components/apiUrl';
+import Pagination from '@/app/components/Pagination';
+import { BaseUrl } from '@/app/components/baseUrl';
 import Swal from 'sweetalert2';
-import { useUser } from '@/app/Components/UserContext';
+import { useUser } from '@/app/components/UserContext';
 
 
 interface GalleryItem {

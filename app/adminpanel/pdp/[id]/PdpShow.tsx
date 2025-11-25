@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { useUser } from '@/app/Components/UserContext';
-import FormatLongDate from '@/app/Components/FormatLongDate';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
+import { useUser } from '@/app/components/UserContext';
+import FormatLongDate from '@/app/components/FormatLongDate';
+import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
-import DownloadCVButton from '@/app/Components/DownloadCVButton';
+import DownloadCVButton from '@/app/components/DownloadCVButton';
 
 // Interface untuk data PDP - SESUAI DENGAN BACKEND
 interface PdpData {

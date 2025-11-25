@@ -1,7 +1,7 @@
 // export-contacts-xlsx.ts (judul A1–H1, tabel mulai A3)
 import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
-import FormatLongDate from '../Components/FormatLongDate';
+import FormatLongDate from '../components/FormatLongDate';
 
 export interface ContactMessage {
     nama: string;

@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import AppLogo from '../Components/ApplicationLogo';
+import AppLogo from '../components/ApplicationLogo';
 import Link from 'next/link';
 
 export default function AuthLayout({ children }: PropsWithChildren) {

@@ -3,7 +3,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UrlApi } from '../Components/apiUrl';
+import { UrlApi } from '../components/apiUrl';
 export default function GuestLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const pathname = usePathname()
     const [isScrolled, setIsScrolled] = useState(false);
@@ -358,7 +358,7 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                         <p>DPPI BPIP RI ©2025 All Rights Reserved </p>
                     </div>
                 </div>
-             
+
             </footer>
         </div>
     );

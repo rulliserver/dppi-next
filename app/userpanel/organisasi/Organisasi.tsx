@@ -3,14 +3,14 @@ import { useEffect, useRef, useState, FormEvent } from 'react';
 import axios from 'axios';
 import 'datatables.net-dt';
 import $ from 'jquery';
-import InputLabel from '@/app/Components/InputLabel';
-import TextInput from '@/app/Components/TextInput';
+import InputLabel from '@/app/components/InputLabel';
+import TextInput from '@/app/components/TextInput';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
 
 import Swal from 'sweetalert2';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { useUser } from '@/app/Components/UserContext';
+import { UrlApi } from '@/app/components/apiUrl';
+import { useUser } from '@/app/components/UserContext';
 
 export default function Organisasi() {
     const { user } = useUser();

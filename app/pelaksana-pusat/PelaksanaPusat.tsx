@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { UrlApi } from "../Components/apiUrl";
+import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
-import { BaseUrl } from "../Components/baseUrl";
+import { BaseUrl } from "../components/baseUrl";
 import Image from "next/image";
 
 export default function PelaksanaPusat() {
@@ -19,7 +19,7 @@ export default function PelaksanaPusat() {
             .get(`${UrlApi}/pelaksana-pusat`)
             .then((response: any) => {
                 setPelaksana(response.data);
-               const ketuaUmum = response.data.find((item: any) => item.jabatan === 'Ketua Umum');
+                const ketuaUmum = response.data.find((item: any) => item.jabatan === 'Ketua Umum');
                 setKetum(ketuaUmum);
                 const waketSatu = response.data.find((item: any) => item.jabatan === 'Wakil Ketua I');
                 setWaket1(waketSatu);

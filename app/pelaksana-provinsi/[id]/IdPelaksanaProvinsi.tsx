@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 
 import axios from "axios";
 import Link from "next/link";
-import { UrlApi } from "@/app/Components/apiUrl";
+import { UrlApi } from "@/app/components/apiUrl";
 import { useParams } from "next/navigation";
-import { BaseUrl } from "@/app/Components/baseUrl";
+import { BaseUrl } from "@/app/components/baseUrl";
 
 export default function IdPelaksanaProvinsi() {
     const { id } = useParams();

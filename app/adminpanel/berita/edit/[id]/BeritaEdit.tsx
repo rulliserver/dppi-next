@@ -9,13 +9,13 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
 import axios from 'axios';
 
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import { UrlApi } from '@/app/Components/apiUrl';
-import InputLabel from '@/app/Components/InputLabel';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { UrlApi } from '@/app/components/apiUrl';
+import InputLabel from '@/app/components/InputLabel';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useUser } from '@/app/Components/UserContext';
+import { useUser } from '@/app/components/UserContext';
 import Swal from 'sweetalert2';
 
 interface Post {

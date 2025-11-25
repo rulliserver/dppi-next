@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { UrlApi } from '../../Components/apiUrl';
-import InputError from '../../Components/InputError';
+import { UrlApi } from '../../components/apiUrl';
+import InputError from '../../components/InputError';
 import { ScaleLoader } from 'react-spinners';
 
 const RECAPTCHA_SITE_KEY = '6LeemygqAAAAAJP7iYrptxnFS1gAmP9iwjx_Lydx';

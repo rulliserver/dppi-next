@@ -2,13 +2,13 @@
 import React, { useState, useRef, FormEvent } from 'react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { useUser } from '@/app/Components/UserContext';
+import { useUser } from '@/app/components/UserContext';
 import Swal from 'sweetalert2';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import InputLabel from '@/app/Components/InputLabel';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import InputLabel from '@/app/components/InputLabel';
+import { BaseUrl } from '@/app/components/baseUrl';
 import { ScaleLoader } from 'react-spinners';
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: any) {

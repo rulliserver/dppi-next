@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { UrlApi } from '../../Components/apiUrl';
-import InputError from '../../Components/InputError';
+import { UrlApi } from '../../components/apiUrl';
+import InputError from '../../components/InputError';
 import { ScaleLoader } from 'react-spinners';
 
 const RECAPTCHA_SITE_KEY = '6LeemygqAAAAAJP7iYrptxnFS1gAmP9iwjx_Lydx';

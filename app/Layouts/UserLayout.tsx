@@ -2,14 +2,14 @@
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Swal from 'sweetalert2';
-import { UrlApi } from '../Components/apiUrl';
-import { BaseUrl } from '../Components/baseUrl';
-import darkMode from '../Components/DarkMode';
-import Dropdown from '../Components/Dropdown';
-import { useUser } from '../Components/UserContext';
+import { UrlApi } from '../components/apiUrl';
+import { BaseUrl } from '../components/baseUrl';
+import darkMode from '../components/DarkMode';
+import Dropdown from '../components/Dropdown';
+import { useUser } from '../components/UserContext';
 import Link from 'next/link';
 import axios from 'axios';
-import DownloadCVButton from '../Components/DownloadCVButton';
+import DownloadCVButton from '../components/DownloadCVButton';
 
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {

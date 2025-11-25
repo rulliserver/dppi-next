@@ -4,13 +4,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import Pagination from '@/app/Components/Pagination';
-import TextEditor from '@/app/Components/TextEditor';
+import { BaseUrl } from '@/app/components/baseUrl';
+import Pagination from '@/app/components/Pagination';
+import TextEditor from '@/app/components/TextEditor';
 import Image from 'next/image';
-import { UrlApi } from '@/app/Components/apiUrl';
+import { UrlApi } from '@/app/components/apiUrl';
 import { useParams } from 'next/navigation';
-import FormatLongDate from '@/app/Components/FormatLongDate';
+import FormatLongDate from '@/app/components/FormatLongDate';
 
 interface Post {
     id: number;
@@ -78,7 +78,7 @@ export default function ViewBerita() {
             });
     };
 
-    const handlePageChange = (Link:string, page: number) => {
+    const handlePageChange = (Link: string, page: number) => {
         setCurrentPage(page);
         getData(page, searchQuery);
     };
@@ -226,7 +226,7 @@ export default function ViewBerita() {
                         <div className="flex justify-center mt-8">
                             <Pagination
                                 links={generateLinks()}
-                                onPageChange={handlePageChange}                           
+                                onPageChange={handlePageChange}
                             />
                         </div>
                     )}

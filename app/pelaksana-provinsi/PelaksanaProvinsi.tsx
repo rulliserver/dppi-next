@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from "react";
-import { UrlApi } from "../Components/apiUrl";
+import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
 import Link from "next/link";
 

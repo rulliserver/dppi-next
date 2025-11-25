@@ -1,20 +1,20 @@
 'use client';
 import { useEffect, useRef, useState, FormEvent } from 'react';
 import axios from 'axios';
-import InputLabel from '@/app/Components/InputLabel';
-import TextInput from '@/app/Components/TextInput';
+import InputLabel from '@/app/components/InputLabel';
+import TextInput from '@/app/components/TextInput';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import Swal from 'sweetalert2';
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import { canvasPreview2 } from '@/app/Components/CanvasPreview2';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import { useDebounceEffect2 } from '@/app/Components/useDebounceEffect2';
-import { UrlApi } from '@/app/Components/apiUrl';
-import Pagination from '@/app/Components/Pagination';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { canvasPreview2 } from '@/app/components/CanvasPreview2';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { useDebounceEffect2 } from '@/app/components/useDebounceEffect2';
+import { UrlApi } from '@/app/components/apiUrl';
+import Pagination from '@/app/components/Pagination';
+import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
-import { useUser } from '@/app/Components/UserContext';
+import { useUser } from '@/app/components/UserContext';
 
 
 type Pelaksana = {

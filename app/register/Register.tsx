@@ -7,12 +7,12 @@ import makeAnimated from 'react-select/animated';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
 import axios from 'axios';
-import { useDebounceEffect } from '../Components/useDebounceEffect';
-import { canvasPreview } from '../Components/CanvasPreview';
-import { UrlApi } from '../Components/apiUrl';
+import { useDebounceEffect } from '../components/useDebounceEffect';
+import { canvasPreview } from '../components/CanvasPreview';
+import { UrlApi } from '../components/apiUrl';
 import Link from 'next/link';
-import InputLabel from '../Components/InputLabel';
-import TextInput from '../Components/TextInput';
+import InputLabel from '../components/InputLabel';
+import TextInput from '../components/TextInput';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 
@@ -446,7 +446,7 @@ function RegisterForm() {
                 msg = 'Koneksi timeout. Silakan coba lagi atau periksa koneksi internet Anda.';
             }
             if (typeof data === 'string' && data.includes('<html')) {
-                msg = 'Gagal upload: ukuran file terlalu besar.';
+                msg = 'Gagal upload: ukuran file terlalu besar/text terlalu panjang';
             }
 
             Swal.fire({

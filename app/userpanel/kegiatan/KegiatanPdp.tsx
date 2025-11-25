@@ -5,8 +5,8 @@ import 'datatables.net-dt';
 import $ from 'jquery';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { useUser } from '@/app/Components/UserContext';
+import { UrlApi } from '@/app/components/apiUrl';
+import { useUser } from '@/app/components/UserContext';
 
 export default function KegiatanPdp(props: any) {
     const { user } = useUser();

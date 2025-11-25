@@ -2,8 +2,8 @@
 'use client';
 import { useState } from 'react';
 import jsPDF from 'jspdf';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import FormatLongDate from '@/app/Components/FormatLongDate';
+import { BaseUrl } from '@/app/components/baseUrl';
+import FormatLongDate from '@/app/components/FormatLongDate';
 
 const DownloadCVButton = ({ pdp, pendidikan, organisasi }: any) => {
     const [generating, setGenerating] = useState(false);

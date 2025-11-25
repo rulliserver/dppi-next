@@ -6,11 +6,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 import Link from 'next/link';
-import { UrlApi } from '../Components/apiUrl';
-import { BaseUrl } from '../Components/baseUrl';
-import Pagination from '../Components/Pagination';
-import FormatDateMonth from '../Components/FormatDateMonth';
-import TextEditor from '../Components/TextEditor';
+import { UrlApi } from '../components/apiUrl';
+import { BaseUrl } from '../components/baseUrl';
+import Pagination from '../components/Pagination';
+import FormatDateMonth from '../components/FormatDateMonth';
+import TextEditor from '../components/TextEditor';
 import Image from 'next/image';
 
 interface Post {

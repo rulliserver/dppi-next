@@ -1,11 +1,11 @@
 'use client';
-import Pagination from '@/app/Components/Pagination';
+import Pagination from '@/app/components/Pagination';
 import { useEffect, useState } from 'react';
 import ImageGallery from 'react-image-gallery';
 import 'react-image-gallery/styles/css/image-gallery.css';
 import axios from 'axios';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import { UrlApi } from '@/app/Components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 

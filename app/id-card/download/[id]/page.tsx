@@ -5,11 +5,11 @@ import $ from 'jquery';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
 import axios from 'axios';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { useUser } from '@/app/Components/UserContext';
-import FormatLongDate from '@/app/Components/FormatLongDate';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import { downloadIdCardPDF } from '@/app/Components/IdCard';
+import { UrlApi } from '@/app/components/apiUrl';
+import { useUser } from '@/app/components/UserContext';
+import FormatLongDate from '@/app/components/FormatLongDate';
+import { BaseUrl } from '@/app/components/baseUrl';
+import { downloadIdCardPDF } from '@/app/components/IdCard';
 import QRCode from 'qrcode';
 import { useParams } from 'next/navigation';
 export default function IdCard() {
@@ -119,7 +119,7 @@ export default function IdCard() {
                             <i className='text-accent fas fa-calendar-check text-2xl md:text-3xl pr-1 md:pr-5'></i>
                             <p className='md:text-2xl py-1 font-semibold text-accent'>ID CARD</p>
                         </div>
-                        <button onClick={downloadPdf} className='mr-4 bg-green-600 text-white py-2 px-4 rounded-md'>Download ID Card</button>                        
+                        <button onClick={downloadPdf} className='mr-4 bg-green-600 text-white py-2 px-4 rounded-md'>Download ID Card</button>
                     </div>
                 </div>
             </div>
@@ -206,7 +206,7 @@ export default function IdCard() {
                                         </div>
                                     </div>
                                     <div className='absolute bottom-2 right-4'>
-                                        <img src={`/next-api/qr?t=${encodeURIComponent(targetUrl)}`} alt="QR" className="w-12 md:w-20 lg:w-28" />                                   
+                                        <img src={`/next-api/qr?t=${encodeURIComponent(targetUrl)}`} alt="QR" className="w-12 md:w-20 lg:w-28" />
 
                                     </div>
                                 </div>

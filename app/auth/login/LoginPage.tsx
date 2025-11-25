@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { UrlApi } from '../../Components/apiUrl';
-import InputError from '../../Components/InputError';
-import Checkbox from '../../Components/Checkbox';
-import { useUser } from '../../Components/UserContext';
+import { UrlApi } from '../../components/apiUrl';
+import InputError from '../../components/InputError';
+import Checkbox from '../../components/Checkbox';
+import { useUser } from '../../components/UserContext';
 import { ScaleLoader } from 'react-spinners';
 
 type LoginResponse =

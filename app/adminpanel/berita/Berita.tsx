@@ -3,12 +3,12 @@
 
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { UrlApi } from '@/app/Components/apiUrl';
-import Pagination from '@/app/Components/Pagination';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
+import Pagination from '@/app/components/Pagination';
+import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
-import FormatLongDate from '@/app/Components/FormatLongDate';
-import TextEditor from '@/app/Components/TextEditor';
+import FormatLongDate from '@/app/components/FormatLongDate';
+import TextEditor from '@/app/components/TextEditor';
 
 interface Post {
     id: number;

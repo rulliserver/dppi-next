@@ -13,10 +13,10 @@ import {
 import type { PdpData } from '@/app/lib/pdp-types';
 import { http } from '@/app/lib/https';
 import { createLogger, withLog } from '@/app/lib/logger';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
 import QRCode from 'qrcode';
-import IdCardDocument from '@/app/Components/IdCardDocument';
+import IdCardDocument from '@/app/components/IdCardDocument';
 
 export const runtime = 'nodejs';
 

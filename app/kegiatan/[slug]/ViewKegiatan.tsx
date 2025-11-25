@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import axios from 'axios';
 import Link from 'next/link';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
 import { useParams } from 'next/navigation';
-import FormatLongDate from '@/app/Components/FormatLongDate';
+import FormatLongDate from '@/app/components/FormatLongDate';
 
 export default function ViewKegiatan() {
     const { slug } = useParams();

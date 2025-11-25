@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 
 import axios from "axios";
 import Link from "next/link";
-import { UrlApi } from "@/app/Components/apiUrl";
+import { UrlApi } from "@/app/components/apiUrl";
 import { useParams } from "next/navigation";
-import { BaseUrl } from "@/app/Components/baseUrl";
+import { BaseUrl } from "@/app/components/baseUrl";
 
 export default function IdPelaksanaKabupaten() {
     const { id } = useParams();
@@ -17,8 +17,8 @@ export default function IdPelaksanaKabupaten() {
     const getPelaksana = () => {
         axios
             .get(`${UrlApi}/pelaksana-kabupaten/${id}`)
-            .then((response: any) => {      
-                
+            .then((response: any) => {
+
                 const ketuaUmum = response.data.find((item: any) => item.jabatan === 'Ketua');
                 setKetum(ketuaUmum);
                 const waket = response.data.find((item: any) => item.jabatan === 'Wakil Ketua');

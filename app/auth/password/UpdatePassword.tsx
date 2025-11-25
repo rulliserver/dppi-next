@@ -1,6 +1,6 @@
 'use client';
 
-import { UrlApi } from '@/app/Components/apiUrl';
+import { UrlApi } from '@/app/components/apiUrl';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { ScaleLoader } from 'react-spinners';

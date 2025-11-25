@@ -2,15 +2,15 @@
 import { useState, useEffect, useRef } from 'react';
 import 'datatables.net-dt';
 import $ from 'jquery';
-import InputLabel from '@/app/Components/InputLabel';
+import InputLabel from '@/app/components/InputLabel';
 import axios from 'axios';
 import ReactCrop, { centerCrop, makeAspectCrop, Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import Swal from 'sweetalert2';
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
 function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {
     return centerCrop(
         makeAspectCrop(

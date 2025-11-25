@@ -10,13 +10,13 @@ import Swal from 'sweetalert2';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { id } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import FormatLongDate from '@/app/Components/FormatLongDate';
-import { UrlApi } from '@/app/Components/apiUrl';
-import InputLabel from '@/app/Components/InputLabel';
-import TextInput from '@/app/Components/TextInput';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import FormatLongDate from '@/app/components/FormatLongDate';
+import { UrlApi } from '@/app/components/apiUrl';
+import InputLabel from '@/app/components/InputLabel';
+import TextInput from '@/app/components/TextInput';
+import { BaseUrl } from '@/app/components/baseUrl';
 
 registerLocale('id', id);
 

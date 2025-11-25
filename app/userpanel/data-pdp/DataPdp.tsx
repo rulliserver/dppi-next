@@ -1,12 +1,12 @@
 'use client';
 import { useState, FormEvent, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { UrlApi } from '@/app/Components/apiUrl';
-import FormatLongDate from '@/app/Components/FormatLongDate';
+import { UrlApi } from '@/app/components/apiUrl';
+import FormatLongDate from '@/app/components/FormatLongDate';
 import Link from 'next/link';
-import Pagination from '@/app/Components/Pagination';
-import InputLabel from '@/app/Components/InputLabel';
-import { BaseUrl } from '@/app/Components/baseUrl';
+import Pagination from '@/app/components/Pagination';
+import InputLabel from '@/app/components/InputLabel';
+import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
 import axios from 'axios';
 
@@ -414,15 +414,15 @@ function DataPdp() {
                                                 >
                                                     Lihat
                                                 </a>
-                                                {item.status !== 'Verified' && item.status !== 'Simental' ?  (
+                                                {item.status !== 'Verified' && item.status !== 'Simental' ? (
                                                     <button
                                                         className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
                                                         onClick={() => clickModalStatus(item)}
                                                     >
                                                         Update Status
                                                     </button>
-                                                    
-                                                ):<></>}
+
+                                                ) : <></>}
 
                                                 {/* <button onClick={() => clickModalDelete(item)} className='bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-white text-xs'>
                                                     Hapus

@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import 'datatables.net-dt';
 import $ from 'jquery';
-import { UrlApi } from '../Components/apiUrl';
-import { BaseUrl } from '../Components/baseUrl';
+import { UrlApi } from '../components/apiUrl';
+import { BaseUrl } from '../components/baseUrl';
 import { exportContactsXlsx } from '../utils/export-contacts-xlsx';
-import { useUser } from '../Components/UserContext';
+import { useUser } from '../components/UserContext';
 export default function Dashboard() {
     const { user } = useUser()
     //fetching Contact

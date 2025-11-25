@@ -7,13 +7,13 @@ import makeAnimated from 'react-select/animated';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
 import axios from 'axios';
-import { useDebounceEffect } from '@/app/Components/useDebounceEffect';
-import { canvasPreview } from '@/app/Components/CanvasPreview';
-import { UrlApi } from '@/app/Components/apiUrl';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { UrlApi } from '@/app/components/apiUrl';
 import Link from 'next/link';
-import InputLabel from '@/app/Components/InputLabel';
-import TextInput from '@/app/Components/TextInput';
-import { useUser } from '@/app/Components/UserContext';
+import InputLabel from '@/app/components/InputLabel';
+import TextInput from '@/app/components/TextInput';
+import { useUser } from '@/app/components/UserContext';
 import { useParams, useRouter } from 'next/navigation';
 
 

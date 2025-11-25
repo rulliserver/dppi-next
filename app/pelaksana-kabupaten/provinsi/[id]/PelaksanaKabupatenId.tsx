@@ -3,19 +3,19 @@ import { useEffect, useState } from "react";
 
 import axios from "axios";
 import Link from "next/link";
-import { UrlApi } from "@/app/Components/apiUrl";
+import { UrlApi } from "@/app/components/apiUrl";
 import { useParams } from "next/navigation";
 
 export default function PelaksanaKabupatenId() {
     const { id } = useParams();
     const [kabupaten, setKabupaten]: any = useState();
 
-    
+
     const getPelaksana = () => {
         axios
             .get(`${UrlApi}/pelaksana-kabupaten/provinsi/${id}`)
             .then((response: any) => {
-                setKabupaten(response.data);             
+                setKabupaten(response.data);
             })
             .catch((error) => {
                 console.error('Error fetching data setting:', error);

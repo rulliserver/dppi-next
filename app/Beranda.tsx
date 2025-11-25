@@ -3,10 +3,10 @@
 import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { UrlApi } from "./Components/apiUrl";
-import { BaseUrl } from "./Components/baseUrl";
-import SlideBerita from "./Components/SlideBerita";
-import Peta from "./Components/Peta";
+import { UrlApi } from "./components/apiUrl";
+import { BaseUrl } from "./components/baseUrl";
+import SlideBerita from "./components/SlideBerita";
+import Peta from "./components/Peta";
 import Image from "next/image";
 
 

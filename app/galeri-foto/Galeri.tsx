@@ -2,10 +2,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import Pagination from '../Components/Pagination';
+import Pagination from '../components/Pagination';
 import axios from 'axios';
-import { UrlApi } from '../Components/apiUrl';
-import { BaseUrl } from '../Components/baseUrl';
+import { UrlApi } from '../components/apiUrl';
+import { BaseUrl } from '../components/baseUrl';
 
 interface GalleryItem {
     id: number;

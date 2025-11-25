@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import TextEditor from "../Components/TextEditor";
-import { UrlApi } from "../Components/apiUrl";
+import TextEditor from "../components/TextEditor";
+import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
 
 export default function Profil() {
@@ -33,7 +33,7 @@ export default function Profil() {
                                 I. <span className='pl-5'>DASAR HUKUM</span>
                             </p>
                             <div className='pl-8'>
-                                <TextEditor data={profile.dasar_hukum} /> 
+                                <TextEditor data={profile.dasar_hukum} />
                             </div>
                         </div>
                         <div className='px-0 mx-auto mt-6 dark:text-white'>
@@ -82,7 +82,7 @@ export default function Profil() {
                                 </div>
                             </div>
                         </div>
-                
+
                         <div className='px-0 mx-auto mt-6 dark:text-white'>
                             <div className='relative px-4 mb-4'>
                                 <p className='mt-4 mb-2 text-xl font-bold'>
@@ -168,7 +168,7 @@ export default function Profil() {
                             </div>
                         </div>
                     </div>
-:''}
+                    : ''}
             </div>
         </div>
     )

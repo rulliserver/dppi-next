@@ -1,7 +1,7 @@
 //app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import { UserProvider } from "./Components/UserContext";
+import { UserProvider } from "./components/UserContext";
 
 
 export const metadata: Metadata = {

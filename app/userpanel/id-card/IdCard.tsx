@@ -5,11 +5,11 @@ import $ from 'jquery';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
 import axios from 'axios';
-import { UrlApi } from '@/app/Components/apiUrl';
-import { useUser } from '@/app/Components/UserContext';
-import FormatLongDate from '@/app/Components/FormatLongDate';
-import { BaseUrl } from '@/app/Components/baseUrl';
-import { downloadIdCardPDF } from '@/app/Components/IdCard';
+import { UrlApi } from '@/app/components/apiUrl';
+import { useUser } from '@/app/components/UserContext';
+import FormatLongDate from '@/app/components/FormatLongDate';
+import { BaseUrl } from '@/app/components/baseUrl';
+import { downloadIdCardPDF } from '@/app/components/IdCard';
 import QRCode from 'qrcode';
 export default function IdCard() {
     const { user } = useUser();
