@@ -326,8 +326,8 @@ function PdpSimental() {
                             </tr>
                         </thead>
                         <tbody>
-                            {pdp && pdp.data.length > 0 ? (
-                                pdp.data.map((item, index) => (
+                            {pdp && pdp.data?.length > 0 ? (
+                                pdp.data?.map((item, index) => (
                                     <tr key={item.id} className='hover:bg-gray-50 dark:hover:bg-gray-700'>
                                         <td className='border p-2 text-center'>{pdp.from + index}</td>
                                         <td className='border text-center'>

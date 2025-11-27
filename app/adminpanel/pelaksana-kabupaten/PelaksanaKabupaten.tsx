@@ -16,7 +16,6 @@ import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
 import { useUser } from '@/app/components/UserContext';
 
-
 type Pelaksana = {
     id: number;
     id_pdp?: number;
@@ -61,6 +60,8 @@ export default function PelaksanaKabupaten() {
     const [page, setPage] = useState<number>(1);
     const [perPage, setPerPage] = useState<number>(10);
     const [q, setQ] = useState<string>('');
+    const [filterProvinsi, setFilterProvinsi] = useState<string>(''); // State untuk filter provinsi
+    const [filterKabupaten, setFilterKabupaten] = useState<string>(''); // State untuk filter kabupaten
     const [loading, setLoading] = useState<boolean>(false);
     const [jabatan, setJabatan] = useState<{ nama_jabatan: string }[]>([]);
 
@@ -86,8 +87,20 @@ export default function PelaksanaKabupaten() {
         nama_provinsi: '',
         nama_kabupaten: '',
     });
-    const filteredKabupaten = kabupaten.filter((kabupaten: any) => kabupaten.id_provinsi === Number(dataCreate.id_provinsi));
-    const filteredKabupatenEdit = kabupaten.filter((kabupaten: any) => kabupaten.id_provinsi === Number(dataPelaksana.id_provinsi));
+
+    // Filter kabupaten berdasarkan provinsi yang dipilih
+    const filteredKabupaten = kabupaten.filter((kabupaten: any) =>
+        kabupaten.id_provinsi === Number(dataCreate.id_provinsi)
+    );
+    const filteredKabupatenEdit = kabupaten.filter((kabupaten: any) =>
+        kabupaten.id_provinsi === Number(dataPelaksana.id_provinsi)
+    );
+
+    // Filter kabupaten untuk filter tabel
+    const filteredKabupatenForFilter = kabupaten.filter((kabupaten: any) =>
+        kabupaten.id_provinsi === Number(filterProvinsi)
+    );
+
     // crop (create)
     const [imgSrc, setImgSrc] = useState('');
     const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -162,25 +175,33 @@ export default function PelaksanaKabupaten() {
     );
 
     // --------- fetchers ---------
-    const fetchList = async (p = page, pp = perPage, qq = q) => {
+    const fetchList = async (p = page, pp = perPage, qq = q, fp = filterProvinsi, fk = filterKabupaten) => {
         setLoading(true);
         try {
-            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+            let url = '';
 
-                const res = await axios.get<ListResp>(
-                    `${UrlApi}/adminpanel/pelaksana-kabupaten?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`,
-                    { withCredentials: true, headers: { Accept: 'application/json' } }
-                );
-                setItems(res.data.data || []);
-                setLinks(res.data.links || []);
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                url = `${UrlApi}/adminpanel/pelaksana-kabupaten?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`;
             } else {
-                const res = await axios.get<ListResp>(
-                    `${UrlApi}/kesbangpol/pelaksana-kabupaten?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`,
-                    { withCredentials: true, headers: { Accept: 'application/json' } }
-                );
-                setItems(res.data.data || []);
-                setLinks(res.data.links || []);
+                url = `${UrlApi}/kesbangpol/pelaksana-kabupaten?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`;
             }
+
+            // Tambahkan filter provinsi jika dipilih
+            if (fp) {
+                url += `&id_provinsi=${fp}`;
+            }
+
+            // Tambahkan filter kabupaten jika dipilih
+            if (fk) {
+                url += `&id_kabupaten=${fk}`;
+            }
+
+            const res = await axios.get<ListResp>(
+                url,
+                { withCredentials: true, headers: { Accept: 'application/json' } }
+            );
+            setItems(res.data.data || []);
+            setLinks(res.data.links || []);
         } catch (err: any) {
             console.error(err);
             Swal.fire({ icon: 'error', text: err.response?.data || 'Gagal memuat data' });
@@ -201,6 +222,7 @@ export default function PelaksanaKabupaten() {
             setJabatan([]);
         }
     };
+
     const fetchKabupaten = async () => {
         try {
             if (user?.role === "Administrator" || user?.role === "Superadmin") {
@@ -209,8 +231,7 @@ export default function PelaksanaKabupaten() {
                     headers: { Accept: 'application/json' },
                 });
                 setKabupaten(res.data || []);
-            }
-            else {
+            } else {
                 const res = await axios.get(`${UrlApi}/kabupaten/${user?.id_kabupaten}`, {
                     withCredentials: true,
                     headers: { Accept: 'application/json' },
@@ -222,6 +243,7 @@ export default function PelaksanaKabupaten() {
             setKabupaten([]);
         }
     };
+
     const fetchProvinsi = async () => {
         try {
             if (user?.role === "Administrator" || user?.role === "Superadmin") {
@@ -244,7 +266,7 @@ export default function PelaksanaKabupaten() {
     };
 
     useEffect(() => {
-        fetchList(1, perPage, q);
+        fetchList(1, perPage, q, filterProvinsi, filterKabupaten);
         fetchJabatan();
         fetchKabupaten();
         fetchProvinsi();
@@ -252,7 +274,7 @@ export default function PelaksanaKabupaten() {
     }, []);
 
     useEffect(() => {
-        fetchList(page, perPage, q);
+        fetchList(page, perPage, q, filterProvinsi, filterKabupaten);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, perPage]);
 
@@ -260,7 +282,14 @@ export default function PelaksanaKabupaten() {
     const openCreate = () => document.getElementById('createModal')?.classList.remove('hidden');
     const closeCreate = () => document.getElementById('createModal')?.classList.add('hidden');
     const openEdit = (row: Pelaksana) => {
-        setDataPelaksana({ id: row.id, nama_lengkap: row.nama_lengkap ?? '', jabatan: row.jabatan ?? '', id_pdp: row.id_pdp ?? '', id_kabupaten: row.id_kabupaten ?? '', id_provinsi: row.id_provinsi ?? '' });
+        setDataPelaksana({
+            id: row.id,
+            nama_lengkap: row.nama_lengkap ?? '',
+            jabatan: row.jabatan ?? '',
+            id_pdp: row.id_pdp ?? '',
+            id_kabupaten: row.id_kabupaten ?? '',
+            id_provinsi: row.id_provinsi ?? ''
+        });
         document.getElementById('editModal')?.classList.remove('hidden');
     };
     const closeEdit = () => document.getElementById('editModal')?.classList.add('hidden');
@@ -283,7 +312,33 @@ export default function PelaksanaKabupaten() {
     const onSearch = async (e: FormEvent) => {
         e.preventDefault();
         setPage(1);
-        await fetchList(1, perPage, q);
+        await fetchList(1, perPage, q, filterProvinsi, filterKabupaten);
+    };
+
+    // filter provinsi
+    const onFilterProvinsi = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setFilterProvinsi(value);
+        setFilterKabupaten(''); // Reset kabupaten ketika provinsi berubah
+        setPage(1);
+        fetchList(1, perPage, q, value, '');
+    };
+
+    // filter kabupaten
+    const onFilterKabupaten = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setFilterKabupaten(value);
+        setPage(1);
+        fetchList(1, perPage, q, filterProvinsi, value);
+    };
+
+    // reset filter
+    const resetFilter = () => {
+        setFilterProvinsi('');
+        setFilterKabupaten('');
+        setQ('');
+        setPage(1);
+        fetchList(1, perPage, '', '', '');
     };
 
     // delete → DELETE /pelaksana-kabupaten/{id}
@@ -297,7 +352,7 @@ export default function PelaksanaKabupaten() {
             });
             Swal.fire({ icon: 'success', text: 'Pelaksana berhasil dihapus', confirmButtonColor: '#2563eb' });
             closeDelete();
-            fetchList(page, perPage, q);
+            fetchList(page, perPage, q, filterProvinsi, filterKabupaten);
         } catch (error: any) {
             console.error(error);
             Swal.fire({ icon: 'error', text: error.response?.data || 'Gagal menghapus data' });
@@ -337,9 +392,7 @@ export default function PelaksanaKabupaten() {
                 window.location.href = '/adminpanel/pelaksana-kabupaten'
             }
         });
-
     };
-
 
     // create → POST /pelaksana-kabupaten
     const handleSubmitCreate = async (e: FormEvent) => {
@@ -362,7 +415,7 @@ export default function PelaksanaKabupaten() {
 
         await axios.post(`${UrlApi}/adminpanel/pelaksana-kabupaten`, form, {
             withCredentials: true,
-            headers: { Accept: 'application/json' }, // JANGAN set Content-Type manual
+            headers: { Accept: 'application/json' },
         });
         Swal.fire({
             icon: 'success',
@@ -375,8 +428,6 @@ export default function PelaksanaKabupaten() {
                 window.location.href = '/adminpanel/pelaksana-kabupaten'
             }
         });
-
-
     };
 
     // pagination handler
@@ -385,25 +436,74 @@ export default function PelaksanaKabupaten() {
     return (
         <>
             <div className='py-4'>
-                <div className='text-gray-9000 flex flex-row justify-between'>
+                <div className='text-gray-9000 md:flex md:flex-row justify-between'>
                     <div className='flex flex-row'>
                         <i className='text-accent fa fa-user-tie text-5xl pr-5'></i>
-                        <p className='text-2xl py-2 font-semibold text-accent'>PELAKSANA KABUPATEN</p>
+                        <p className='text-2xl py-2 mb-5 md:mb-0 font-semibold text-accent'>PELAKSANA KABUPATEN</p>
                     </div>
-                    <div className='flex flex-row gap-2'>
-                        <form onSubmit={onSearch} className='flex gap-2'>
+                    <div className='mx-0 flex-col-reverse flex lg:flex-row lg:gap-2'>
+                        <form onSubmit={onSearch} className='flex w-full mb-2'>
                             <input
                                 value={q}
                                 onChange={(e) => setQ(e.target.value)}
-                                className='border px-2 rounded-md text-sm'
+                                className='border px-2 rounded-md text-sm py-2 lg:py-0 w-full mr-2 lg:mr-0'
                                 placeholder='Cari nama/jabatan...'
                             />
-                            <button className='text-center bg-gray-200 hover:bg-gray-300 px-3 rounded-lg' type='submit'>
+                            <button className='text-center bg-gray-200 hover:bg-gray-300 px-3 mr-2 rounded-lg' type='submit'>
                                 Cari
                             </button>
                         </form>
-                        <button className='text-center bg-green-700 hover:bg-green-800 px-2 rounded-lg text-white' onClick={openCreate}>
+                        <button className='text-center bg-green-700 hover:bg-green-800 px-2 mb-3 lg:mb-0 mr-2 py-2 lg:py-0 rounded-lg text-white' onClick={openCreate}>
                             Tambah Data Pelaksana
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filter Section */}
+            <div className='mb-4 mr-2 lg:p-4 bg-white rounded-md shadow-lg dark:bg-default'>
+                <div className='flex flex-col lg:flex-row gap-4'>
+                    <div className='flex-1'>
+                        <InputLabel htmlFor='filter_provinsi'>Filter Berdasarkan Provinsi:</InputLabel>
+                        <select
+                            name='filter_provinsi'
+                            id='filter_provinsi'
+                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
+                            value={filterProvinsi}
+                            onChange={onFilterProvinsi}
+                        >
+                            <option value=''>Semua Provinsi</option>
+                            {provinsi.map((item: any) => (
+                                <option value={item.id} key={item.id}>
+                                    {item.nama_provinsi}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className='flex-1'>
+                        <InputLabel htmlFor='filter_kabupaten'>Filter Berdasarkan Kabupaten:</InputLabel>
+                        <select
+                            name='filter_kabupaten'
+                            id='filter_kabupaten'
+                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
+                            value={filterKabupaten}
+                            onChange={onFilterKabupaten}
+                            disabled={!filterProvinsi} // Disable jika provinsi belum dipilih
+                        >
+                            <option value=''>Semua Kabupaten</option>
+                            {filteredKabupatenForFilter.map((item: any) => (
+                                <option value={item.id} key={item.id}>
+                                    {item.nama_kabupaten}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className='flex gap-2'>
+                        <button
+                            onClick={resetFilter}
+                            className='px-4 py-2 bg-yellow-500 hover:bg-yellow-600 mb-5 lg:mb-0 text-white rounded-md text-sm'
+                        >
+                            Reset Filter
                         </button>
                     </div>
                 </div>
@@ -430,7 +530,7 @@ export default function PelaksanaKabupaten() {
                             <tbody>
                                 {items.length === 0 && !loading && (
                                     <tr className=''>
-                                        <td colSpan={5} className='py-4 text-center text-gray-500'>
+                                        <td colSpan={8} className='py-4 text-center text-gray-500'>
                                             Tidak ada data
                                         </td>
                                     </tr>
@@ -481,7 +581,6 @@ export default function PelaksanaKabupaten() {
                     </div>
                 </div>
             </div>
-
             {/* create Modal */}
             <div id='createModal' className='fixed top-0 left-0 right-0 z-50 hidden p-4 xl:inset-0 backdrop-blur-sm bg-white/50 min-h-svh'>
                 <div className='md:absolute left-0 right-0 relative w-full h-full max-w-xl xl:max-h-[700px] mx-auto xl:top-20 top-4 xl:h-auto overflow-x-hidden overflow-y-auto'>

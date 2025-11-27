@@ -57,6 +57,7 @@ export default function PelaksanaProvinsi() {
     const [page, setPage] = useState<number>(1);
     const [perPage, setPerPage] = useState<number>(10);
     const [q, setQ] = useState<string>('');
+    const [filterProvinsi, setFilterProvinsi] = useState<string>(''); // State untuk filter provinsi
     const [loading, setLoading] = useState<boolean>(false);
     // jabatan
     const [jabatan, setJabatan] = useState<{ nama_jabatan: string }[]>([]);
@@ -154,26 +155,28 @@ export default function PelaksanaProvinsi() {
     );
 
     // --------- fetchers ---------
-    const fetchList = async (p = page, pp = perPage, qq = q) => {
+    const fetchList = async (p = page, pp = perPage, qq = q, fp = filterProvinsi) => {
         setLoading(true);
         try {
+            let url = '';
+
             if (user?.role === "Administrator" || user?.role === "Superadmin") {
-
-                const res = await axios.get<ListResp>(
-                    `${UrlApi}/adminpanel/pelaksana-provinsi?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`,
-                    { withCredentials: true, headers: { Accept: 'application/json' } }
-                );
-                setItems(res.data.data || []);
-                setLinks(res.data.links || []);
+                url = `${UrlApi}/adminpanel/pelaksana-provinsi?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`;
             } else {
-
-                const res = await axios.get<ListResp>(
-                    `${UrlApi}/kesbangpol/pelaksana-provinsi?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`,
-                    { withCredentials: true, headers: { Accept: 'application/json' } }
-                );
-                setItems(res.data.data || []);
-                setLinks(res.data.links || []);
+                url = `${UrlApi}/kesbangpol/pelaksana-provinsi?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`;
             }
+
+            // Tambahkan filter provinsi jika dipilih
+            if (fp) {
+                url += `&id_provinsi=${fp}`;
+            }
+
+            const res = await axios.get<ListResp>(
+                url,
+                { withCredentials: true, headers: { Accept: 'application/json' } }
+            );
+            setItems(res.data.data || []);
+            setLinks(res.data.links || []);
         } catch (err: any) {
             console.error(err);
             Swal.fire({ icon: 'error', text: err.response?.data || 'Gagal memuat data' });
@@ -194,10 +197,10 @@ export default function PelaksanaProvinsi() {
             setJabatan([]);
         }
     };
+
     const fetchProvinsi = async () => {
         try {
             if (user?.role === "Administrator" || user?.role === "Superadmin") {
-
                 const res = await axios.get(`${UrlApi}/provinsi`, {
                     withCredentials: true,
                     headers: { Accept: 'application/json' },
@@ -217,14 +220,14 @@ export default function PelaksanaProvinsi() {
     };
 
     useEffect(() => {
-        fetchList(1, perPage, q);
+        fetchList(1, perPage, q, filterProvinsi);
         fetchJabatan();
         fetchProvinsi();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        fetchList(page, perPage, q);
+        fetchList(page, perPage, q, filterProvinsi);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, perPage]);
 
@@ -255,7 +258,23 @@ export default function PelaksanaProvinsi() {
     const onSearch = async (e: FormEvent) => {
         e.preventDefault();
         setPage(1);
-        await fetchList(1, perPage, q);
+        await fetchList(1, perPage, q, filterProvinsi);
+    };
+
+    // filter provinsi
+    const onFilterProvinsi = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setFilterProvinsi(value);
+        setPage(1);
+        fetchList(1, perPage, q, value);
+    };
+
+    // reset filter
+    const resetFilter = () => {
+        setFilterProvinsi('');
+        setQ('');
+        setPage(1);
+        fetchList(1, perPage, '', '');
     };
 
     // delete → DELETE /pelaksana-provinsi/{id}
@@ -269,7 +288,7 @@ export default function PelaksanaProvinsi() {
             });
             Swal.fire({ icon: 'success', text: 'Pelaksana berhasil dihapus', confirmButtonColor: '#2563eb' });
             closeDelete();
-            fetchList(page, perPage, q);
+            fetchList(page, perPage, q, filterProvinsi);
         } catch (error: any) {
             console.error(error);
             Swal.fire({ icon: 'error', text: error.response?.data || 'Gagal menghapus data' });
@@ -311,7 +330,6 @@ export default function PelaksanaProvinsi() {
 
     };
 
-
     // create → POST /pelaksana-provinsi
     const handleSubmitCreate = async (e: FormEvent) => {
         e.preventDefault();
@@ -345,8 +363,6 @@ export default function PelaksanaProvinsi() {
                 window.location.href = '/adminpanel/pelaksana-provinsi'
             }
         });
-
-
     };
 
     // pagination handler
@@ -355,25 +371,56 @@ export default function PelaksanaProvinsi() {
     return (
         <>
             <div className='py-4'>
-                <div className='text-gray-9000 flex flex-row justify-between'>
+                <div className='text-gray-9000 md:flex md:flex-row justify-between'>
                     <div className='flex flex-row'>
                         <i className='text-accent fa fa-user-tie text-5xl pr-5'></i>
-                        <p className='text-2xl py-2 font-semibold text-accent'>PELAKSANA PROVINSI</p>
+                        <p className='text-2xl py-2 mb-5 md:mb-0 font-semibold text-accent'>PELAKSANA PROVINSI</p>
                     </div>
-                    <div className='flex flex-row gap-2'>
-                        <form onSubmit={onSearch} className='flex gap-2'>
+                    <div className='mx-0 flex-col-reverse flex lg:flex-row lg:gap-2'>
+                        <form onSubmit={onSearch} className='flex w-full mb-2'>
                             <input
                                 value={q}
                                 onChange={(e) => setQ(e.target.value)}
-                                className='border px-2 rounded-md text-sm'
+                                className='border px-2 rounded-md text-sm py-2 lg:py-0 w-full mr-2 lg:mr-0'
                                 placeholder='Cari nama/jabatan...'
                             />
-                            <button className='text-center bg-gray-200 hover:bg-gray-300 px-3 rounded-lg' type='submit'>
+                            <button className='text-center bg-gray-200 hover:bg-gray-300 px-3 mr-2 rounded-lg' type='submit'>
                                 Cari
                             </button>
                         </form>
-                        <button className='text-center bg-green-700 hover:bg-green-800 px-2 rounded-lg text-white' onClick={openCreate}>
+                        <button className='text-center bg-green-700 hover:bg-green-800 px-2 mb-3 lg:mb-0 mr-2 py-2 lg:py-0 rounded-lg text-white' onClick={openCreate}>
                             Tambah Data Pelaksana
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filter Section */}
+            <div className='mb-4 mr-2 lg:p-4 bg-white rounded-md shadow-lg dark:bg-default'>
+                <div className='flex flex-col lg:flex-row gap-4'>
+                    <div className='flex-1'>
+                        <InputLabel htmlFor='filter_provinsi'>Filter Berdasarkan Provinsi:</InputLabel>
+                        <select
+                            name='filter_provinsi'
+                            id='filter_provinsi'
+                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
+                            value={filterProvinsi}
+                            onChange={onFilterProvinsi}
+                        >
+                            <option value=''>Semua Provinsi</option>
+                            {provinsi.map((item: any) => (
+                                <option value={item.id} key={item.id}>
+                                    {item.nama_provinsi}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className='flex gap-2 items-end'>
+                        <button
+                            onClick={resetFilter}
+                            className='px-4 py-2 mb-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-sm'
+                        >
+                            Reset Filter
                         </button>
                     </div>
                 </div>
