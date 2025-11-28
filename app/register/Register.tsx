@@ -409,7 +409,7 @@ function RegisterForm() {
 
             Swal.fire({
                 icon: 'success',
-                text: 'Data Anda berhasil dikirim, Kami akan mengirimkan tautan email Anda secara berkala untuk informasi selanjutnya',
+                text: 'Data Anda berhasil disimpan, kami akan mengirimkan password via email yang Anda daftarkan. Cek secara berkala email Anda untuk informasi selanjutnya',
                 showConfirmButton: true,
                 confirmButtonText: 'Kembali ke Beranda',
                 confirmButtonColor: '#2563eb',

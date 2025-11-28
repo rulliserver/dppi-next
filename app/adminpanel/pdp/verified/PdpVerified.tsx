@@ -11,6 +11,11 @@ import Image from 'next/image';
 import axios from 'axios';
 import { useUser } from '@/app/components/UserContext';
 
+interface Wilayah {
+    id: number;
+    nama_provinsi: string;
+    nama_kabupaten: string;
+}
 // Interface untuk data PDP - SESUAI DENGAN BACKEND
 interface PdpData {
     id: number;
@@ -52,17 +57,247 @@ interface PaginationResponse {
 }
 
 function PdpVerified() {
-    const { user } = useUser();
+    const { user } = useUser()
     const [pdp, setPdp] = useState<PaginationResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
-    const [dataStatus, setDataStatus] = useState<{ id?: number, status?: string }>({});
-    const [modalUpdateStatus, setModalUpdateStatus] = useState(false);
 
-    // ambil data - GUNAKAN ENDPOINT YANG BENAR
-    const getPdp = async (page: number = 1, query: string = '') => {
+    // State untuk filter wilayah
+    const [provinsiList, setProvinsiList] = useState<Wilayah[]>([]);
+    const [kabupatenList, setKabupatenList] = useState<Wilayah[]>([]);
+    const [selectedProvinsi, setSelectedProvinsi] = useState<number | ''>('');
+    const [selectedKabupaten, setSelectedKabupaten] = useState<number | ''>('');
+    const [loadingWilayah, setLoadingWilayah] = useState(false);
+
+    const [dataStatus, setDataStatus] = useState<{
+        id?: number,
+        status?: string,
+        keterangan?: string
+    }>({});
+    const [modalUpdateStatus, setModalUpdateStatus] = useState(false);
+    const [showRejectionReason, setShowRejectionReason] = useState(false);
+
+    const getProvinsi = async () => {
+        try {
+            const response = await axios.get(`${UrlApi}/provinsi`);
+            setProvinsiList(response.data);
+        } catch (error) {
+            console.error('Error fetching provinsi:', error);
+        }
+    };
+
+    // Ambil data kabupaten berdasarkan provinsi
+    const getKabupaten = async (provinsiId: number) => {
+        if (!provinsiId) {
+            setKabupatenList([]);
+            return;
+        }
+
+        setLoadingWilayah(true);
+        try {
+            const response = await axios.get(`${UrlApi}/wilayah/kabupaten/${provinsiId}`);
+            setKabupatenList(response.data);
+        } catch (error) {
+            console.error('Error fetching kabupaten:', error);
+            setKabupatenList([]);
+        } finally {
+            setLoadingWilayah(false);
+        }
+    };
+
+    //delete Data
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleteName, setDeleteName] = useState<string>('');
+
+    const openDelete = (row: PdpData) => {
+        setDeleteId(row.id);
+        setDeleteName(row.nama_lengkap);
+        document.getElementById('deleteModal')?.classList.remove('hidden');
+        document.getElementById('deleteModal')?.classList.add('flex');
+    };
+    const closeDelete = () => {
+        document.getElementById('deleteModal')?.classList.add('hidden');
+        document.getElementById('deleteModal')?.classList.remove('flex');
+    };
+
+    const deleteSubmit = async (e: any) => {
+        e.preventDefault();
+        if (!deleteId) return;
+        try {
+            await axios.delete(`${UrlApi}/adminpanel/pdp/${deleteId}`, {
+                withCredentials: true,
+                headers: { Accept: 'application/json' },
+            });
+            Swal.fire({ icon: 'success', text: 'Pelaksana berhasil dihapus', confirmButtonColor: '#2563eb' });
+            window.location.reload();
+
+        } catch (error: any) {
+            console.error(error);
+            Swal.fire({ icon: 'error', text: error.response?.data || 'Gagal menghapus data' });
+        }
+    };
+
+    // Reset filter kabupaten ketika provinsi berubah
+    useEffect(() => {
+        if (selectedProvinsi) {
+            getKabupaten(selectedProvinsi);
+        } else {
+            setKabupatenList([]);
+            setSelectedKabupaten('');
+        }
+    }, [selectedProvinsi]);
+
+    // ambil data
+    const handleOnChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setDataStatus({
+            ...dataStatus,
+            [name]: value,
+        });
+
+        // Jika status dipilih menjadi "Ditolak", tampilkan form alasan
+        if (name === 'status' && value === 'Ditolak') {
+            setShowRejectionReason(true);
+        } else if (name === 'status') {
+            setShowRejectionReason(false);
+        }
+    };
+
+    const clickModalStatus = (item: PdpData) => {
+        setModalUpdateStatus(true);
+        setDataStatus({
+            id: item.id,
+            status: item.status || '',
+            keterangan: ''
+        });
+        setShowRejectionReason(false);
+    };
+
+    const submitUpdateStatus = async (e: FormEvent) => {
+        e.preventDefault();
+
+        if (!dataStatus.id) {
+            Swal.fire({
+                icon: 'error',
+                text: 'ID PDP tidak valid',
+            });
+            return;
+        }
+
+        // Validasi untuk status Ditolak
+        if (dataStatus.status === 'Ditolak' && (!dataStatus.keterangan || dataStatus.keterangan.trim() === '')) {
+            Swal.fire({
+                icon: 'error',
+                text: 'Alasan penolakan wajib diisi',
+            });
+            return;
+        }
+
+        // Konfirmasi khusus untuk status Ditolak
+        let confirmationMessage = '';
+        let confirmButtonColor = '#2563eb';
+
+        if (dataStatus.status === 'Verified') {
+            confirmationMessage = 'Anda yakin ingin mengubah status menjadi "Verified"?';
+            confirmButtonColor = '#28a745';
+        } else if (dataStatus.status === 'Ditolak') {
+            confirmationMessage =
+                'PERHATIAN: Data PDP akan dihapus permanen dari sistem!\n\n' +
+                'Alasan: ' + dataStatus.keterangan + '\n\n' +
+                '\n\n. User dapat mendaftar ulang dengan email yang sama setelah data dihapus.\n' +
+                'Lanjutkan penolakan?';
+            confirmButtonColor = '#dc3545';
+        } else {
+            confirmationMessage = `Anda yakin ingin mengubah status menjadi "${dataStatus.status}"?`;
+        }
+
+        Swal.fire({
+            icon: dataStatus.status === 'Ditolak' ? 'warning' : 'question',
+            title: dataStatus.status === 'Ditolak' ? 'Konfirmasi Penolakan' : 'Konfirmasi Status',
+            text: confirmationMessage,
+            showDenyButton: true,
+            denyButtonText: 'Batal',
+            confirmButtonText: dataStatus.status === 'Ditolak' ? 'Ya, Tolak & Hapus' : 'Ya',
+            confirmButtonColor: confirmButtonColor,
+            customClass: {
+                actions: 'my-actions',
+                denyButton: 'order-1 right-gap',
+                confirmButton: 'order-3',
+            },
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+
+                Swal.fire({
+                    title: 'Mohon menunggu',
+                    text: dataStatus.status === 'Verified' ? 'Sedang mengirim email...' : 'Sedang memproses...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                });
+
+                try {
+                    const formData = new FormData();
+                    formData.append('status', dataStatus.status || '');
+
+                    // Tambahkan keterangan jika status Ditolak
+                    if (dataStatus.status === 'Ditolak' && dataStatus.keterangan) {
+                        formData.append('keterangan', dataStatus.keterangan);
+                    }
+
+                    const response = await fetch(`${UrlApi}/adminpanel/pdp-update-status/${dataStatus.id}`, {
+                        method: 'PUT',
+                        body: formData,
+                        credentials: 'include',
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    let successMessage = result.message || 'Status berhasil diupdate!';
+
+                    if (dataStatus.status === 'Verified') {
+                        successMessage += ' Password telah dikirim ke alamat email yang didaftarkan';
+                    } else if (dataStatus.status === 'Ditolak') {
+                        successMessage += ' Alasan penolakan telah dikirim via email';
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        text: successMessage,
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#2563eb',
+                    }).then(() => {
+                        setModalUpdateStatus(false);
+                        setShowRejectionReason(false);
+                        setDataStatus({});
+                        getPdp(currentPage, searchQuery);
+                    });
+                } catch (error: any) {
+                    console.error(error);
+                    Swal.fire({
+                        icon: 'error',
+                        text: error.message || 'Terjadi kesalahan saat mengirim data',
+                    });
+                }
+            }
+
+        });
+    };
+
+    useEffect(() => {
+        getPdp();
+        getProvinsi(); // Load data provinsi saat komponen mount
+    }, []);
+
+
+    const getPdp = async (page: number = 1, query: string = '', provinsiId: number | '' = '', kabupatenId: number | '' = '') => {
         setLoading(true);
         setError(null);
 
@@ -70,6 +305,12 @@ function PdpVerified() {
         params.append('page', page.toString());
         if (query) {
             params.append('q', query);
+        }
+        if (provinsiId) {
+            params.append('provinsi_id', provinsiId.toString());
+        }
+        if (kabupatenId) {
+            params.append('kabupaten_id', kabupatenId.toString());
         }
 
         try {
@@ -85,183 +326,45 @@ function PdpVerified() {
                 setPdp(response.data);
             }
         } catch (error: any) {
-
             setError(error);
-
         } finally {
             setLoading(false);
         }
     };
 
-    const handleOnChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setDataStatus({
-            ...dataStatus,
-            [e.target.name]: e.target.value,
-        });
+
+    // Handle filter provinsi
+    const handleProvinsiChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value ? parseInt(e.target.value) : '';
+        setSelectedProvinsi(value);
+        setSelectedKabupaten(''); // Reset kabupaten ketika provinsi berubah
+        setCurrentPage(1);
+        getPdp(1, searchQuery, value, '');
     };
 
-    const clickModalStatus = (item: PdpData) => {
-        setModalUpdateStatus(true);
-        setDataStatus({
-            id: item.id,
-            status: item.status || '',
-        });
+    // Handle filter kabupaten
+    const handleKabupatenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value ? parseInt(e.target.value) : '';
+        setSelectedKabupaten(value);
+        setCurrentPage(1);
+        getPdp(1, searchQuery, selectedProvinsi, value);
     };
 
-    const handlePageChange = (url: string, page: number) => {
-
-        setCurrentPage(page);
-
-        getPdp(page, searchQuery);
+    // Reset semua filter
+    const handleResetFilter = () => {
+        setSelectedProvinsi('');
+        setSelectedKabupaten('');
+        setSearchQuery('');
+        setCurrentPage(1);
+        getPdp(1);
     };
 
-    const submitUpdateStatus = async (e: FormEvent) => {
-        e.preventDefault();
-
-        if (!dataStatus.id) {
-            Swal.fire({
-                icon: 'error',
-                text: 'ID PDP tidak valid',
-            });
-            return;
-        }
-
-        if (dataStatus.status === 'Verified') {
-            Swal.fire({
-                icon: 'question',
-                text: 'Anda yakin ingin mengubah status menjadi "Verified"?',
-                showDenyButton: true,
-                denyButtonText: 'Tidak',
-                confirmButtonText: 'Ya',
-                customClass: {
-                    actions: 'my-actions',
-                    denyButton: 'order-1 right-gap',
-                    confirmButton: 'order-3',
-                },
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Mohon menunggu',
-                        text: 'Sedang mengirim email...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        },
-                    });
-
-                    try {
-                        const formData = new FormData();
-                        formData.append('status', dataStatus.status || '');
-
-                        const response = await fetch(`${UrlApi}/adminpanel/pdp-update-status/${dataStatus.id}`, {
-                            method: 'PUT',
-                            body: formData,
-                            credentials: 'include',
-                        });
-
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-
-                        const result = await response.json();
-
-                        Swal.fire({
-                            icon: 'success',
-                            text: result.message || 'Status berhasil diupdate! Password telah dikirim ke alamat email yang didaftarkan',
-                            showConfirmButton: true,
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#2563eb',
-                        }).then(() => {
-                            setModalUpdateStatus(false);
-                            getPdp(currentPage, searchQuery);
-                        });
-                    } catch (error: any) {
-                        console.error(error);
-                        Swal.fire({
-                            icon: 'error',
-                            text: error.message || 'Terjadi kesalahan saat mengirim data',
-                        });
-                    }
-                }
-            });
-        } else {
-            try {
-                const formData = new FormData();
-                formData.append('status', dataStatus.status || '');
-
-                const response = await fetch(`${UrlApi}/adminpanel/pdp-update-status/${dataStatus.id}`, {
-                    method: 'PUT',
-                    body: formData,
-                    credentials: 'include',
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-
-                Swal.fire({
-                    icon: 'success',
-                    text: result.message || 'Status berhasil diupdate!',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#2563eb',
-                }).then(() => {
-                    setModalUpdateStatus(false);
-                    getPdp(currentPage, searchQuery);
-                });
-            } catch (error: any) {
-                console.error(error);
-                Swal.fire({
-                    icon: 'error',
-                    text: error.message || 'Terjadi kesalahan saat mengirim data',
-                });
-            }
-        }
-    };
-
+    // Update handleSearch untuk include filter wilayah
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setCurrentPage(1);
-        getPdp(1, searchQuery);
+        getPdp(1, searchQuery, selectedProvinsi, selectedKabupaten);
     };
-
-    useEffect(() => {
-        getPdp();
-    }, []);
-
-    const generateLinks = () => {
-        if (!pdp) return [];
-
-        const links = [];
-
-        // Previous page link
-        links.push({
-            url: pdp.current_page > 1 ? `?page=${pdp.current_page - 1}&q=${searchQuery}` : null,
-            label: '<<',
-            active: false
-        });
-
-        // Page number links
-        for (let i = 1; i <= pdp.last_page; i++) {
-            links.push({
-                url: `?page=${i}&q=${searchQuery}`,
-                label: i.toString(),
-                active: i === pdp.current_page
-            });
-        }
-
-        // Next page link
-        links.push({
-            url: pdp.current_page < pdp.last_page ? `?page=${pdp.current_page + 1}&q=${searchQuery}` : null,
-            label: '>>',
-            active: false
-        });
-
-        return links;
-    };
-
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -270,36 +373,139 @@ function PdpVerified() {
         );
     }
 
+    const handlePageChange = (url: string, page: number) => {
+        console.log('Navigating to page:', page, 'URL:', url);
+        setCurrentPage(page);
+        getPdp(page, searchQuery, selectedProvinsi, selectedKabupaten);
+    };
+
+    const generateLinks = () => {
+        if (!pdp) return [];
+
+        const links = [];
+
+        // Previous page link
+        links.push({
+            url: pdp.current_page > 1 ? `?page=${pdp.current_page - 1}&q=${searchQuery}&provinsi_id=${selectedProvinsi}&kabupaten_id=${selectedKabupaten}` : null,
+            label: '<<',
+            active: false
+        });
+
+        // Page number links
+        for (let i = 1; i <= pdp.last_page; i++) {
+            links.push({
+                url: `?page=${i}&q=${searchQuery}&provinsi_id=${selectedProvinsi}&kabupaten_id=${selectedKabupaten}`,
+                label: i.toString(),
+                active: i === pdp.current_page
+            });
+        }
+
+        // Next page link
+        links.push({
+            url: pdp.current_page < pdp.last_page ? `?page=${pdp.current_page + 1}&q=${searchQuery}&provinsi_id=${selectedProvinsi}&kabupaten_id=${selectedKabupaten}` : null,
+            label: '>>',
+            active: false
+        });
+
+        return links;
+    };
+
+
+
+
+
     return (
         <div className='dark:bg-slate-900 min-h-screen p-4'>
             {/* Header dan Search */}
             <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6'>
                 <div className='flex items-center mb-4 lg:mb-0'>
                     <i className='fas fa-server text-accent text-3xl'></i>
-                    <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>DATA PDP VERIFIED</p>
+                    <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>DATA PDP DIVERIFIKASI</p>
                 </div>
                 <Link href='/adminpanel/pdp/create' className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-accent hover:bg-red-800'>
                     <i className='fas fa-plus-circle mr-2'></i> Tambah PDP
                 </Link>
             </div>
 
-            {/* Search Form */}
-            <form onSubmit={handleSearch} className='mb-6'>
-                <div className='relative'>
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder='Cari berdasarkan Nomor Piagam, Nama, NIK, Tingkat Penugasan, Provinsi, Kabupaten, atau Tahun Tugas'
-                        className='block w-full py-4 h-12 text-sm text-gray-900 border border-gray-300 rounded-3xl bg-gray-50 focus:ring-accent focus:border-accent px-4'
-                    />
-                    <button
-                        type='submit'
-                        className='text-white absolute right-1.5 bottom-1.5 bg-accent hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2'>
-                        Cari
-                    </button>
+            {/* Filter Wilayah dan Search */}
+            <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-6'>
+                <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+                    {/* Filter Provinsi */}
+                    <div>
+                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                            Provinsi
+                        </label>
+                        <select
+                            value={selectedProvinsi}
+                            onChange={handleProvinsiChange}
+                            className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                        >
+                            <option value=''>Semua Provinsi</option>
+                            {provinsiList.map(provinsi => (
+                                <option key={provinsi.id} value={provinsi.id}>
+                                    {provinsi.nama_provinsi}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Filter Kabupaten */}
+                    <div>
+                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                            Kabupaten/Kota
+                        </label>
+                        <select
+                            value={selectedKabupaten}
+                            onChange={handleKabupatenChange}
+                            disabled={!selectedProvinsi || loadingWilayah}
+                            className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white disabled:opacity-50'
+                        >
+                            <option value=''>Semua Kabupaten</option>
+                            {kabupatenList.map(kabupaten => (
+                                <option key={kabupaten.id} value={kabupaten.id}>
+                                    {kabupaten.nama_kabupaten}
+                                </option>
+                            ))}
+                        </select>
+                        {loadingWilayah && (
+                            <p className='text-xs text-gray-500 mt-1'>Memuat kabupaten...</p>
+                        )}
+                    </div>
+
+                    {/* Search Form */}
+                    <div className='md:col-span-2'>
+                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                            Pencarian
+                        </label>
+                        <form onSubmit={handleSearch} className='flex gap-2'>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder='Cari berdasarkan Nama, NIK, Email, atau No. Piagam...'
+                                className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                            />
+                            <button
+                                type='submit'
+                                className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
+                            >
+                                <i className='fas fa-search'></i>
+                            </button>
+                            {(selectedProvinsi || selectedKabupaten || searchQuery) && (
+                                <button
+                                    type='button'
+                                    onClick={handleResetFilter}
+                                    className='px-4 py-2 bg-gray-400 text-secondary  rounded-md hover:bg-gray-600'
+                                >
+                                    <i className='fas fa-sync'></i>
+                                </button>
+                            )}
+                        </form>
+                    </div>
                 </div>
-            </form>
+
+
+            </div>
 
             {/* Table */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden'>
@@ -393,7 +599,7 @@ function PdpVerified() {
                                                 >
                                                     Lihat
                                                 </a>
-                                                {item.status !== 'Verified' && (
+                                                {user?.role === 'Superadmin' && (
                                                     <button
                                                         className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
                                                         onClick={() => clickModalStatus(item)}
@@ -407,7 +613,14 @@ function PdpVerified() {
                                                 >
                                                     Edit
                                                 </a>
-
+                                                {user?.role === 'Superadmin' && (
+                                                    <button
+                                                        className='text-white rounded-md hover:bg-red-700 bg-accent px-4 py-1'
+                                                        onClick={() => openDelete(item)}
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -447,7 +660,11 @@ function PdpVerified() {
                                 Update Status PDP
                             </h3>
                             <button
-                                onClick={() => setModalUpdateStatus(false)}
+                                onClick={() => {
+                                    setModalUpdateStatus(false);
+                                    setShowRejectionReason(false);
+                                    setDataStatus({});
+                                }}
                                 className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                             >
                                 <i className='fas fa-times text-xl'></i>
@@ -455,34 +672,67 @@ function PdpVerified() {
                         </div>
 
                         <form onSubmit={submitUpdateStatus}>
-                            <div className='p-4'>
-                                <InputLabel htmlFor='status'>Status:</InputLabel>
-                                <select
-                                    name='status'
-                                    id='status'
-                                    value={dataStatus.status || ''}
-                                    onChange={handleOnChange}
-                                    className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
-                                    required
-                                >
-                                    <option value=''>-- Pilih Status --</option>
-                                    <option value='Belum Diverifikasi'>Belum Diverifikasi</option>
-                                    <option value='Ditolak'>Ditolak</option>
-                                    <option value='Verified'>Verified</option>
-                                </select>
+                            <div className='p-4 space-y-4'>
+                                <div>
+                                    <InputLabel htmlFor='status'>Status:</InputLabel>
+                                    <select
+                                        name='status'
+                                        id='status'
+                                        value={dataStatus.status || ''}
+                                        onChange={handleOnChange}
+                                        className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                                        required
+                                    >
+                                        <option value=''>-- Pilih Status --</option>
+                                        <option value='Belum Diverifikasi'>Belum Diverifikasi</option>
+                                        <option value='Ditolak'>Ditolak</option>
+                                        {/* <option value='Verified'>Verified</option> */}
+                                    </select>
+                                </div>
+
+                                {/* Form Alasan Penolakan */}
+                                {showRejectionReason && (
+                                    <div>
+                                        <InputLabel htmlFor='keterangan'>
+                                            Alasan Penolakan <span className="text-red-500">*</span>:
+                                        </InputLabel>
+                                        <textarea
+                                            name='keterangan'
+                                            id='keterangan'
+                                            value={dataStatus.keterangan || ''}
+                                            onChange={handleOnChange}
+                                            rows={4}
+                                            placeholder='Masukkan alasan penolakan yang jelas dan informatif...'
+                                            className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                                            required
+                                        />
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Alasan ini akan dikirimkan via email ke PDP.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className='flex justify-between p-4 border-t'>
                                 <button
                                     type='button'
-                                    onClick={() => setModalUpdateStatus(false)}
+                                    onClick={() => {
+                                        setModalUpdateStatus(false);
+                                        setShowRejectionReason(false);
+                                        setDataStatus({});
+                                    }}
                                     className='px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700'
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type='submit'
-                                    className='px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700'
+                                    className={`px-4 py-2 text-white rounded-md ${dataStatus.status === 'Ditolak'
+                                        ? 'bg-red-600 hover:bg-red-700'
+                                        : dataStatus.status === 'Verified'
+                                            ? 'bg-green-600 hover:bg-green-700'
+                                            : 'bg-blue-600 hover:bg-blue-700'
+                                        }`}
                                 >
                                     Simpan
                                 </button>
@@ -491,6 +741,40 @@ function PdpVerified() {
                     </div>
                 </div>
             )}
+            {/* delete Modal */}
+            <div id='deleteModal' className='justify-center fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full'>
+                <div className='fixed z-30 w-full justify-center max-w-[500px] mx-auto md:top-12 lg:top-40 top-14'>
+                    <div className='w-full mx-auto bg-gray-100 border-2 border-red-200 rounded-md shadow-md dark:bg-default'>
+                        <div className='flex flex-col px-4 py-2 rounded-t border-b dark:border-gray-600'>
+                            <div className='flex font-semibold text-gray-900 dark:text-white'>
+                                <span className='mr-1 text-accent'>Hapus Data</span>
+                                <button type='button' onClick={closeDelete} className='text-gray-400 hover:text-gray-900 rounded-lg p-1.5 ml-auto'>
+                                    <i className='fas fa-times-circle'></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div className='mt-4 px-4'>
+                            <span className='dark:text-white'>Anda yakin ingin menghapus </span>
+                            <span className='dark:text-white font-semibold'>{deleteName}</span>
+                            <span className='dark:text-white'>?</span>
+                        </div>
+                        <div className='mt-2 border-b dark:border-gray-600'></div>
+                        <div className='px-4 mb-4'>
+                            <form onSubmit={deleteSubmit}>
+                                <div className='flex flex-row justify-between'>
+                                    <button type='button' onClick={closeDelete} className='py-1 px-4 mt-2 bg-yellow-500 rounded-md text-dark'>
+                                        Batal
+                                    </button>
+                                    <button type='submit' className='px-4 py-1 mt-2 text-white rounded-md bg-accent'>
+                                        Hapus
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     );
 }
