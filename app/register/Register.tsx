@@ -740,8 +740,23 @@ function RegisterForm() {
 
                             <div className='border-t-2 my-4'>
                                 <p className='font-semibold'>DOMISILI</p>
+                                <p className="text-sm text-gray-600">Tempat tinggal saat ini</p>
                             </div>
-
+                            <div className='grid gap-2 mt-4'>
+                                <InputLabel htmlFor='alamat'>Alamat:</InputLabel>
+                                <TextInput
+                                    className='text-sm'
+                                    id='alamat'
+                                    type='text'
+                                    name='alamat'
+                                    required
+                                    tabIndex={8}
+                                    autoComplete='alamat'
+                                    defaultValue={data.alamat}
+                                    onChange={handleOnChange}
+                                    placeholder='Alamat (nama jalan, no. rumah, RT/RW, Desa, Kecamatan)'
+                                />
+                            </div>
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='id_provinsi_domisili'>Provinsi:</InputLabel>
                                 <select
@@ -782,21 +797,7 @@ function RegisterForm() {
                                     ))}
                                 </select>
                             </div>
-                            <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='alamat'>Alamat:</InputLabel>
-                                <TextInput
-                                    className='text-sm'
-                                    id='alamat'
-                                    type='text'
-                                    name='alamat'
-                                    required
-                                    tabIndex={8}
-                                    autoComplete='alamat'
-                                    defaultValue={data.alamat}
-                                    onChange={handleOnChange}
-                                    placeholder='Alamat (nama jalan, no. rumah, RT/RW, Desa, Kecamatan)'
-                                />
-                            </div>
+
 
                             <div className='border-t-2 my-4'>
                                 <p className='font-semibold'>PENDIDIKAN</p>
@@ -887,7 +888,87 @@ function RegisterForm() {
 
                         <div className='md:pl-2 pl-0'>
                             <div className='border-t-2 md:border-t-0 mt-4 md:mt-0'>
-                                <p className='font-semibold'>PENUGASAN</p>
+                                <p className='font-semibold'>PENUGASAN DAN KEPENGURUSAN</p>
+                            </div>
+
+                            <div className='grid gap-2 mt-4'>
+                                <InputLabel htmlFor='tingkat_penugasan'>Tingkat Penugasan:</InputLabel>
+                                <select
+                                    name='tingkat_penugasan'
+                                    id='tingkat_penugasan'
+                                    onChange={handleTingkatPenugasan}
+                                    defaultValue={data.tingkat_penugasan}
+                                    tabIndex={12}
+                                    required
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    <option value=''>--Pilih Tingkat Penugasan--</option>
+                                    <option value='Paskibraka Tingkat Kabupaten/Kota'>Paskibraka Tingkat Kabupaten/Kota</option>
+                                    <option value='Paskibraka Tingkat Provinsi'>Paskibraka Tingkat Provinsi</option>
+                                    <option value='Paskibraka Tingkat Pusat'>Paskibraka Tingkat Pusat</option>
+                                </select>
+                            </div>
+                            {data.tingkat_penugasan !== '' ? (
+                                <div className='grid gap-2 mt-4'>
+                                    <InputLabel htmlFor='id_provinsi'>Provinsi:</InputLabel>
+                                    <select
+                                        name='id_provinsi'
+                                        id='id_provinsi'
+                                        onChange={handleProvinsiChange}
+                                        value={data.id_provinsi}
+                                        tabIndex={13}
+                                        required
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        <option value=''>--Pilih Provinsi--</option>
+                                        {provinsi && provinsi.map((item: any) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.nama_provinsi}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                ''
+                            )}
+                            {data.tingkat_penugasan == 'Paskibraka Tingkat Kabupaten/Kota' ? (
+                                <div className='grid gap-2 mt-4'>
+                                    <InputLabel htmlFor='id_kabupaten'>Kabupaten:</InputLabel>
+                                    <select
+                                        name='id_kabupaten'
+                                        id='id_kabupaten'
+                                        tabIndex={14}
+                                        disabled={!selectedProvinsi}
+                                        onChange={handleOnChange}
+                                        value={data.id_kabupaten}
+                                        required
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        <option value=''>--Pilih kabupaten--</option>
+                                        {filteredKabupaten.map((item: any) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.nama_kabupaten}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                ''
+                            )}
+                            <div className='grid gap-2 mt-4'>
+                                <InputLabel htmlFor='thn_tugas'>Tahun Penugasan:</InputLabel>
+                                <select
+                                    name='thn_tugas'
+                                    id='thn_tugas'
+                                    onChange={handleOnChange}
+                                    tabIndex={15}
+                                    defaultValue={data.thn_tugas}
+                                    required
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    <option value=''>--Pilih Tahun Penugasan--</option>
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='tingkat_penugasan'>Status Kepengurusan di DPPI:</InputLabel>
@@ -1018,85 +1099,36 @@ function RegisterForm() {
                             ) : (
                                 ''
                             )}
-                            <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='tingkat_penugasan'>Tingkat Penugasan:</InputLabel>
-                                <select
-                                    name='tingkat_penugasan'
-                                    id='tingkat_penugasan'
-                                    onChange={handleTingkatPenugasan}
-                                    defaultValue={data.tingkat_penugasan}
-                                    tabIndex={12}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
-                                    <option value=''>--Pilih Tingkat Penugasan--</option>
-                                    <option value='Paskibraka Tingkat Kabupaten/Kota'>Paskibraka Tingkat Kabupaten/Kota</option>
-                                    <option value='Paskibraka Tingkat Provinsi'>Paskibraka Tingkat Provinsi</option>
-                                    <option value='Paskibraka Tingkat Pusat'>Paskibraka Tingkat Pusat</option>
-                                </select>
-                            </div>
-                            {data.tingkat_penugasan !== '' ? (
+                            {(data.posisi === 'Pelaksana' &&
+                                data.tingkat_kepengurusan === 'Pelaksana Tingkat Kabupaten/Kota' &&
+                                data.tingkat_penugasan !== 'Paskibraka Tingkat Kabupaten/Kota') ? (
                                 <div className='grid gap-2 mt-4'>
-                                    <InputLabel htmlFor='id_provinsi'>Provinsi:</InputLabel>
-                                    <select
-                                        name='id_provinsi'
-                                        id='id_provinsi'
-                                        onChange={handleProvinsiChange}
-                                        value={data.id_provinsi}
-                                        tabIndex={13}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
-                                        <option value=''>--Pilih Provinsi--</option>
-                                        {provinsi && provinsi.map((item: any) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.nama_provinsi}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            ) : (
-                                ''
-                            )}
-                            {data.tingkat_penugasan == 'Paskibraka Tingkat Kabupaten/Kota' ? (
-                                <div className='grid gap-2 mt-4'>
-                                    <InputLabel htmlFor='id_kabupaten'>Kabupaten:</InputLabel>
+                                    <InputLabel htmlFor='id_kabupaten'>
+                                        Kabupaten/Kota Tempat Kepengurusan:
+                                        <span className="text-red-500">*</span>
+                                    </InputLabel>
                                     <select
                                         name='id_kabupaten'
                                         id='id_kabupaten'
-                                        tabIndex={14}
-                                        disabled={!selectedProvinsi}
+                                        value={data.id_kabupaten || ''}
                                         onChange={handleOnChange}
-                                        value={data.id_kabupaten}
                                         required
                                         className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
-                                        <option value=''>--Pilih kabupaten--</option>
-                                        {filteredKabupaten.map((item: any) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.nama_kabupaten}
-                                            </option>
-                                        ))}
+                                        <option value=''>--Pilih Kabupaten/Kota--</option>
+                                        {kabupaten
+                                            .filter((kab: any) => kab.id_provinsi === Number(data.id_provinsi))
+                                            .map((item: any) => (
+                                                <option key={item.id} value={item.id}>
+                                                    {item.nama_kabupaten}
+                                                </option>
+                                            ))
+                                        }
                                     </select>
+                                    <p className="text-xs text-gray-600">
+                                        Wajib diisi untuk Pelaksana Tingkat Kabupaten/Kota
+                                    </p>
                                 </div>
-                            ) : (
-                                ''
-                            )}
-                            <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='thn_tugas'>Tahun Penugasan:</InputLabel>
-                                <select
-                                    name='thn_tugas'
-                                    id='thn_tugas'
-                                    onChange={handleOnChange}
-                                    tabIndex={15}
-                                    defaultValue={data.thn_tugas}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
-                                    <option value=''>--Pilih Tahun Penugasan--</option>
-                                    {years.map((year) => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            ) : ''}
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='no_piagam'>Nomor Piagam / SK / STTP PDP:</InputLabel>
                                 <TextInput

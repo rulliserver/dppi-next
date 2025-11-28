@@ -444,7 +444,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                                             </a>
                                         </li>
                                         <li className='mx-1 mr-3'>
-                                            <a href='/userpanel/pdp' className=''>
+                                            <a href='/userpanel/data-pdp' className=''>
                                                 <div className={pathname === '/userpanel/data-pdp' ? 'bg-accent rounded-md px-2 text-white py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'}>
                                                     PDP
                                                 </div>

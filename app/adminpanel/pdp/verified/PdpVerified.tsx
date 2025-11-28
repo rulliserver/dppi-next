@@ -372,13 +372,11 @@ function PdpVerified() {
                                         <td className='border p-2 text-center'>{item.posisi || '-'}</td>
                                         <td className='border p-2 text-sm'>
                                             <div className='space-y-1'>
-                                                <div>{item.tingkat_penugasan || '-'}</div>
-                                                {item.kabupaten && (
-                                                    <div>{item.kabupaten}</div>
-                                                )}
-                                                {item.provinsi && (
-                                                    <div>Prov. {item.provinsi}</div>
-                                                )}
+                                                {item.tingkat_penugasan === "Paskibraka Tingkat Provinsi" ?
+                                                    (<div>Paskibraka Tingkat Provinsi {item.provinsi}</div>) : item.tingkat_penugasan === "Paskibraka Tingkat Kabupaten/Kota" ? (
+                                                        <><div>Paskibraka Tingkat {item.kabupaten}</div>  <div>Prov. {item.provinsi}</div></>) : ''
+                                                }
+
                                             </div>
                                         </td>
                                         <td className='border p-2 text-center'>{item.thn_tugas || '-'}</td>
