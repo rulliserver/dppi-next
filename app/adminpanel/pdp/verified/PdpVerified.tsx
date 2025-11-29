@@ -462,7 +462,7 @@ function PdpVerified() {
                 });
             } else {
                 // Untuk role lain, tetap gunakan endpoint biasa (mungkin perlu dibuat endpoint all juga)
-                response = await axios.get(`${UrlApi}/kesbangpol/pdp-verified?${params.toString()}`, {
+                response = await axios.get(`${UrlApi}/kesbangpol/pdp-verified-all?${params.toString()}`, {
                     withCredentials: true
                 });
             }
@@ -683,7 +683,7 @@ function PdpVerified() {
             ];
 
             // Tambahkan worksheet ke workbook
-            XLSX.utils.book_append_sheet(wb, ws, 'PDP Verified');
+            XLSX.utils.book_append_sheet(wb, ws, 'PDP VERIFIED');
 
             // Generate nama file
             let fileName = 'PDP_Verified_Semua_Data';
@@ -744,7 +744,7 @@ function PdpVerified() {
 
         return `Filter: ${filters.join(', ')}`;
     };
-
+    
     return (
         <div className='dark:bg-slate-900 min-h-screen p-4'>
 
