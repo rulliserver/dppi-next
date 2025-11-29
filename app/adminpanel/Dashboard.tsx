@@ -69,7 +69,7 @@ export default function Dashboard() {
                     throw new error(`This is an HTTP error: The status is ${response.status}`);
                 }
                 let pdp = await response.json();
-                setPdpTerdaftar(pdp);
+                setPdpTerdaftar(pdp.data);
                 setError(null);
             }
         } catch (err: any) {
@@ -102,7 +102,7 @@ export default function Dashboard() {
                     throw new error(`This is an HTTP error: The status is ${response.status}`);
                 }
                 let pdp = await response.json();
-                setPdpBelumDiverifikasi(pdp);
+                setPdpBelumDiverifikasi(pdp.data);
                 setError(null);
             }
         } catch (err: any) {
@@ -135,7 +135,7 @@ export default function Dashboard() {
                     throw new error(`This is an HTTP error: The status is ${response.status}`);
                 }
                 let pdp = await response.json();
-                setPdpDiverifikasi(pdp);
+                setPdpDiverifikasi(pdp.data);
                 setError(null);
             }
         } catch (err: any) {
@@ -168,7 +168,7 @@ export default function Dashboard() {
                     throw new error(`This is an HTTP error: The status is ${response.status}`);
                 }
                 let pdp = await response.json();
-                setPdpSimental(pdp);
+                setPdpSimental(pdp.data);
                 setError(null);
             }
         } catch (err: any) {
@@ -365,39 +365,37 @@ export default function Dashboard() {
 
     return (
         <>
-
-
             <div className='py-4'>
                 <div className='text-gray-900 '>
                     <div className='grid grid-cols-1 mt-2 md:grid-cols-4 md:gap-4 xl:gap-8'>
                         <div className='justify-center mt-2 shadow-md '>
-                            <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                            <a href="/adminpanel/pdp/belum-registrasi" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 <i className='text-5xl mx-auto  mt-4 fas fa-users'></i>
                                 <p className='text-center text-2xl'>{pdpTerdaftar && pdpTerdaftar.length} PDP</p>
                                 <p className='text-center text-2xl'>TERDAFTAR</p>
-                            </div>
+                            </a>
                         </div>
                         <div className='justify-center mt-2 shadow-md '>
-                            <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                            <a href="/adminpanel/pdp/belum-diverifikasi" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 <i className='text-5xl mx-auto  mt-4 fas fa-registered'></i>
                                 <p className='text-center text-2xl'>{pdpBelumDiverifikasi && pdpBelumDiverifikasi.length} PDP</p>
                                 <p className='text-center text-2xl'>TEREGISTER</p>
-                            </div>
+                            </a>
                         </div>
                         <div className='justify-center mt-2 shadow-md '>
-                            <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                            <a href="/adminpanel/pdp/verified" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 <i className='text-5xl mx-auto  mt-4 fas fa-user-check'></i>
                                 <p className='text-center text-2xl'>{pdpDiverifikasi && pdpDiverifikasi.length} PDP</p>
                                 <p className='text-center text-2xl'>TERVERIFIKASI</p>
-                            </div>
+                            </a>
                         </div>
                         <div className='justify-center mt-2 shadow-md '>
-                            <div className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                            <a href="/adminpanel/pdp/simental" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                 {/* <i className=' fas fa-users'></i> */}
                                 <i className='text-5xl mx-auto  mt-4 fab fa-creative-commons-by'></i>
                                 <p className='text-center text-2xl'>{pdpSimental && pdpSimental.length} PDP</p>
                                 <p className='text-center text-2xl'>AKTIF</p>
-                            </div>
+                            </a>
                         </div>
                     </div>
                 </div>

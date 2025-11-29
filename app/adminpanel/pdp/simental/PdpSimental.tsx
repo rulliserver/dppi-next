@@ -3,7 +3,6 @@ import { useState, FormEvent, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { UrlApi } from '@/app/components/apiUrl';
 import FormatLongDate from '@/app/components/FormatLongDate';
-import Link from 'next/link';
 import Pagination from '@/app/components/Pagination';
 import InputLabel from '@/app/components/InputLabel';
 import { BaseUrl } from '@/app/components/baseUrl';
@@ -11,6 +10,7 @@ import Image from 'next/image';
 import axios from 'axios';
 import { useUser } from '@/app/components/UserContext';
 import * as XLSX from 'xlsx-js-style';
+import LoadingIndikator from '@/app/components/loadingIndikator';
 
 interface Wilayah {
     id: number;
@@ -316,11 +316,13 @@ function PdpSimental() {
     };
 
     useEffect(() => {
-        getPdp();
-        getProvinsi(); // Load data provinsi saat komponen mount
-    }, []);
-
-
+        // Pastikan user sudah loaded
+        if (user !== undefined) {
+            setLoading(false);
+            getPdp();
+            getProvinsi();
+        }
+    }, [user]);
     const getPdp = async (page: number = 1, query: string = '', provinsiId: number | '' = '', kabupatenId: number | '' = '') => {
         setLoading(true);
         setError(null);
@@ -801,289 +803,290 @@ function PdpSimental() {
 
     return (
         <div className='dark:bg-slate-900 min-h-screen p-4'>
-            {/* Header dan Search */}
-            <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6'>
-                <div className='flex items-center mb-4 lg:mb-0'>
-                    <i className='fas fa-server text-accent text-3xl'></i>
-                    <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>DATA PDP SIMENTAL</p>
-                </div>
-                <div className='flex gap-2'>
-                    {/* Tombol Download Excel */}
-                    <button
-                        onClick={downloadAllExcel} // Ganti dari downloadExcel
-                        className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
-                    >
-                        <i className='fas fa-file-excel mr-2'></i> Download Semua Data
-                    </button>
-                </div>
-            </div>
-            {/* Filter Wilayah dan Search */}
-            <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-6'>
-                {user?.role === "Administrator" || user?.role === "Superadmin" ?
-                    <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-
-
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                Provinsi
-                            </label>
-                            <select
-                                value={selectedProvinsi}
-                                onChange={handleProvinsiChange}
-                                className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
-                            >
-                                <option value=''>Semua Provinsi</option>
-                                {provinsiList.map(provinsi => (
-                                    <option key={provinsi.id} value={provinsi.id}>
-                                        {provinsi.nama_provinsi}
-                                    </option>
-                                ))}
-                            </select>
+            {user ?
+                <>
+                    <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6'>
+                        <div className='flex items-center mb-4 lg:mb-0'>
+                            <i className='fas fa-server text-accent text-3xl'></i>
+                            <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>DATA PDP SIMENTAL</p>
                         </div>
+                        <div className='flex gap-2'>
 
-
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                Kabupaten/Kota
-                            </label>
-                            <select
-                                value={selectedKabupaten}
-                                onChange={handleKabupatenChange}
-                                disabled={!selectedProvinsi || loadingWilayah}
-                                className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white disabled:opacity-50'
-                            >
-                                <option value=''>Semua Kabupaten</option>
-                                {kabupatenList.map(kabupaten => (
-                                    <option key={kabupaten.id} value={kabupaten.id}>
-                                        {kabupaten.nama_kabupaten}
-                                    </option>
-                                ))}
-                            </select>
-                            {loadingWilayah && (
-                                <p className='text-xs text-gray-500 mt-1'>Memuat kabupaten...</p>
-                            )}
-                        </div>
-
-
-
-
-                        <div className='md:col-span-2'>
-                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                Pencarian
-                            </label>
-                            <form onSubmit={handleSearch} className='flex gap-2'>
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder='Cari berdasarkan Nama, NIK, Email, atau No. Piagam...'
-                                    className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
-                                />
-                                <button
-                                    type='submit'
-                                    className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
-                                >
-                                    <i className='fas fa-search'></i>
-                                </button>
-                                {(selectedProvinsi || selectedKabupaten || searchQuery) && (
-                                    <button
-                                        type='button'
-                                        onClick={handleResetFilter}
-                                        className='px-4 py-2  text-secondary  rounded-md hover:bg-gray-600'
-                                    >
-                                        <i className='fas fa-sync'></i>
-                                    </button>
-                                )}
-                            </form>
-                        </div>
-                    </div>
-                    : <div className='md:col-span-2'>
-                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                            Pencarian
-                        </label>
-                        <form onSubmit={handleSearch} className='flex gap-2'>
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder='Cari berdasarkan Nama, NIK, Email, atau No. Piagam...'
-                                className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
-                            />
                             <button
-                                type='submit'
-                                className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
+                                onClick={downloadAllExcel}
+                                className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
                             >
-                                <i className='fas fa-search'></i>
+                                <i className='fas fa-file-excel mr-2'></i> Download Semua Data
                             </button>
-                            {(selectedProvinsi || selectedKabupaten || searchQuery) && (
-                                <button
-                                    type='button'
-                                    onClick={handleResetFilter}
-                                    className='px-4 py-2  text-secondary  rounded-md hover:bg-gray-600'
-                                >
-                                    <i className='fas fa-sync'></i>
-                                </button>
-                            )}
-                        </form>
-                    </div>}
-
-                {/* Info Filter Aktif */}
-                {(selectedProvinsi || selectedKabupaten) && (
-                    <div className='mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md'>
-                        <p className='text-sm text-blue-700 dark:text-blue-300'>
-                            Filter aktif:
-                            {selectedProvinsi && ` Provinsi: ${provinsiList.find(p => p.id === selectedProvinsi)?.nama_provinsi}`}
-                            {selectedKabupaten && `, ${kabupatenList.find(k => k.id === selectedKabupaten)?.nama_kabupaten}`}
-                        </p>
-                    </div>
-                )}
-            </div>
-
-
-            {/* Table */}
-            <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden'>
-                <div className='overflow-x-auto'>
-                    <table className='w-full border-collapse text-sm'>
-                        <thead className='bg-gray-100 dark:bg-gray-700'>
-                            <tr>
-                                <th className='border p-2'>#</th>
-                                <th className='border p-2'>Foto</th>
-                                <th className='border p-2'>ID PDP</th>
-                                <th className='border p-2'>No Simental</th>
-                                <th className='border p-2'>No Piagam</th>
-                                <th className='border p-2'>Nama Lengkap</th>
-                                <th className='border p-2'>Jenis Kelamin</th>
-                                <th className='border p-2'>Kelahiran</th>
-                                <th className='border p-2'>Alamat Domisili</th>
-                                <th className='border p-2'>Email</th>
-                                <th className='border p-2'>Telepon</th>
-                                <th className='border p-2'>Posisi</th>
-                                <th className='border p-2'>Penugasan</th>
-                                <th className='border p-2'>Tahun</th>
-                                <th className='border p-2'>Status</th>
-                                <th className='border p-2'>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {pdp && pdp.data.length > 0 ? (
-                                pdp.data.map((item, index) => (
-                                    <tr key={item.id} className='hover:bg-gray-50 dark:hover:bg-gray-700'>
-                                        <td className='border p-2 text-center'>{pdp.from + index}</td>
-                                        <td className='border text-center'>
-                                            {item.photo ? (
-                                                <Image
-                                                    src={`${BaseUrl + item.photo.replace("/uploads", "uploads")}`}
-                                                    alt={item.nama_lengkap}
-                                                    width={80}
-                                                    height={120}
-                                                    className='max-w-20 mx-auto p-0'
-                                                />
-                                            ) : (
-                                                <img
-                                                    src={`/assets/images/logo-dppi.png`}
-                                                    alt="Default"
-                                                    className='max-w-20 mx-auto p-0'
-                                                />
-                                            )}
-                                        </td>
-                                        <td className='border p-2 text-center'>{item.id}</td>
-                                        <td className='border p-2'>{item.no_simental || '-'}</td>
-                                        <td className='border p-2'>{item.no_piagam || '-'}</td>
-                                        <td className='border p-2 font-medium'>{item.nama_lengkap}</td>
-                                        <td className='border p-2 text-center'>{item.jk || '-'}</td>
-                                        <td className='border p-2'>
-                                            {item.tempat_lahir || ''}{item.tempat_lahir && item.tgl_lahir ? ', ' : ''}
-                                            {item.tgl_lahir && item.tgl_lahir !== '0000-00-00' ? FormatLongDate(item.tgl_lahir) : ''}
-                                        </td>
-                                        <td className='border p-2 text-sm'>
-                                            <div className='space-y-1'>
-                                                <div>{item.alamat}</div>
-                                                {item.kabupaten_domisili && (
-                                                    <div>{item.kabupaten_domisili}</div>
-                                                )}
-                                                {item.provinsi_domisili && (
-                                                    <div>Prov. {item.provinsi_domisili}</div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className='border p-2'>{item.email || '-'}</td>
-                                        <td className='border p-2'>{item.telepon || '-'}</td>
-                                        <td className='border p-2 text-center'>{item.posisi || '-'}</td>
-                                        <td className='border p-2 text-sm'>
-                                            <div className='space-y-1'>
-                                                {item.tingkat_penugasan === "Paskibraka Tingkat Provinsi" ?
-                                                    (<div>Paskibraka Tingkat Provinsi {item.provinsi}</div>) : item.tingkat_penugasan === "Paskibraka Tingkat Kabupaten/Kota" ? (
-                                                        <><div>Paskibraka Tingkat {item.kabupaten}</div>  <div>Prov. {item.provinsi}</div></>) : ''
-                                                }
-
-                                            </div>
-                                        </td>
-                                        <td className='border p-2 text-center'>{item.thn_tugas || '-'}</td>
-                                        <td className='border p-2 text-center'>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium`}>
-                                                {item.status}
-                                            </span>
-                                        </td>
-                                        <td className='border p-2'>
-                                            <div className='flex flex-col gap-1'>
-                                                <a
-                                                    href={`/adminpanel/pdp/${item.id}`}
-                                                    className='bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded text-white text-center text-xs'
-                                                >
-                                                    Lihat
-                                                </a>
-                                                {user?.role === 'Superadmin' && (
-                                                    <button
-                                                        className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
-                                                        onClick={() => clickModalStatus(item)}
-                                                    >
-                                                        Update Status
-                                                    </button>
-                                                )}
-                                                <a
-                                                    href={`/adminpanel/pdp/${item.id}/edit`}
-                                                    className='bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded text-black text-center text-xs'
-                                                >
-                                                    Edit
-                                                </a>
-                                                {user?.role === 'Superadmin' && (
-                                                    <button
-                                                        className='text-white rounded-md hover:bg-red-700 bg-accent px-4 py-1'
-                                                        onClick={() => openDelete(item)}
-                                                    >
-                                                        Hapus
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={16} className='border p-4 text-center text-gray-500'>
-                                        PDP Tidak ditemukan
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                {pdp && pdp.last_page > 1 && (
-                    <div className="p-4 border-t">
-                        <Pagination
-                            links={generateLinks()}
-                            onPageChange={handlePageChange}
-
-                        />
-                        <div className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                            Menampilkan {pdp.from} - {pdp.to} dari {pdp.total_items} PDP
                         </div>
                     </div>
-                )}
-            </div>
 
+
+                    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-6'>
+                        {user?.role === "Administrator" || user?.role === "Superadmin" ?
+                            <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+
+
+                                <div>
+                                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                        Provinsi
+                                    </label>
+                                    <select
+                                        value={selectedProvinsi}
+                                        onChange={handleProvinsiChange}
+                                        className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                                    >
+                                        <option value=''>Semua Provinsi</option>
+                                        {provinsiList.map(provinsi => (
+                                            <option key={provinsi.id} value={provinsi.id}>
+                                                {provinsi.nama_provinsi}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+
+                                <div>
+                                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                        Kabupaten/Kota
+                                    </label>
+                                    <select
+                                        value={selectedKabupaten}
+                                        onChange={handleKabupatenChange}
+                                        disabled={!selectedProvinsi || loadingWilayah}
+                                        className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white disabled:opacity-50'
+                                    >
+                                        <option value=''>Semua Kabupaten</option>
+                                        {kabupatenList.map(kabupaten => (
+                                            <option key={kabupaten.id} value={kabupaten.id}>
+                                                {kabupaten.nama_kabupaten}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {loadingWilayah && (
+                                        <p className='text-xs text-gray-500 mt-1'>Memuat kabupaten...</p>
+                                    )}
+                                </div>
+
+
+
+
+                                <div className='md:col-span-2'>
+                                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                        Pencarian
+                                    </label>
+                                    <form onSubmit={handleSearch} className='flex gap-2'>
+                                        <input
+                                            type="text"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            placeholder='Cari berdasarkan Nama, NIK, Email, atau No. Piagam...'
+                                            className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                                        />
+                                        <button
+                                            type='submit'
+                                            className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
+                                        >
+                                            <i className='fas fa-search'></i>
+                                        </button>
+                                        {(selectedProvinsi || selectedKabupaten || searchQuery) && (
+                                            <button
+                                                type='button'
+                                                onClick={handleResetFilter}
+                                                className='px-4 py-2  text-secondary  rounded-md hover:bg-gray-600'
+                                            >
+                                                <i className='fas fa-sync'></i>
+                                            </button>
+                                        )}
+                                    </form>
+                                </div>
+                            </div>
+                            : <div className='md:col-span-2'>
+                                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                    Pencarian
+                                </label>
+                                <form onSubmit={handleSearch} className='flex gap-2'>
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder='Cari berdasarkan Nama, NIK, Email, atau No. Piagam...'
+                                        className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                                    />
+                                    <button
+                                        type='submit'
+                                        className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
+                                    >
+                                        <i className='fas fa-search'></i>
+                                    </button>
+                                    {(selectedProvinsi || selectedKabupaten || searchQuery) && (
+                                        <button
+                                            type='button'
+                                            onClick={handleResetFilter}
+                                            className='px-4 py-2  text-secondary  rounded-md hover:bg-gray-600'
+                                        >
+                                            <i className='fas fa-sync'></i>
+                                        </button>
+                                    )}
+                                </form>
+                            </div>}
+
+                        {/* Info Filter Aktif */}
+                        {(selectedProvinsi || selectedKabupaten) && (
+                            <div className='mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md'>
+                                <p className='text-sm text-blue-700 dark:text-blue-300'>
+                                    Filter aktif:
+                                    {selectedProvinsi && ` Provinsi: ${provinsiList.find(p => p.id === selectedProvinsi)?.nama_provinsi}`}
+                                    {selectedKabupaten && `, ${kabupatenList.find(k => k.id === selectedKabupaten)?.nama_kabupaten}`}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+
+                    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden'>
+                        <div className='overflow-x-auto'>
+                            <table className='w-full border-collapse text-sm'>
+                                <thead className='bg-gray-100 dark:bg-gray-700'>
+                                    <tr>
+                                        <th className='border p-2'>#</th>
+                                        <th className='border p-2'>Foto</th>
+                                        <th className='border p-2'>ID PDP</th>
+                                        <th className='border p-2'>No Simental</th>
+                                        <th className='border p-2'>No Piagam</th>
+                                        <th className='border p-2'>Nama Lengkap</th>
+                                        <th className='border p-2'>Jenis Kelamin</th>
+                                        <th className='border p-2'>Kelahiran</th>
+                                        <th className='border p-2'>Alamat Domisili</th>
+                                        <th className='border p-2'>Email</th>
+                                        <th className='border p-2'>Telepon</th>
+                                        <th className='border p-2'>Posisi</th>
+                                        <th className='border p-2'>Penugasan</th>
+                                        <th className='border p-2'>Tahun</th>
+                                        <th className='border p-2'>Status</th>
+                                        <th className='border p-2'>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pdp && pdp?.data?.length > 0 ? (
+                                        pdp?.data?.map((item, index) => (
+                                            <tr key={item.id} className='hover:bg-gray-50 dark:hover:bg-gray-700'>
+                                                <td className='border p-2 text-center'>{pdp?.from + index}</td>
+                                                <td className='border text-center'>
+                                                    {item.photo ? (
+                                                        <Image
+                                                            src={`${BaseUrl + item.photo.replace("/uploads", "uploads")}`}
+                                                            alt={item.nama_lengkap}
+                                                            width={80}
+                                                            height={120}
+                                                            className='max-w-20 mx-auto p-0'
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src={`/assets/images/logo-dppi.png`}
+                                                            alt="Default"
+                                                            className='max-w-20 mx-auto p-0'
+                                                        />
+                                                    )}
+                                                </td>
+                                                <td className='border p-2 text-center'>{item.id}</td>
+                                                <td className='border p-2'>{item.no_simental || '-'}</td>
+                                                <td className='border p-2'>{item.no_piagam || '-'}</td>
+                                                <td className='border p-2 font-medium'>{item.nama_lengkap}</td>
+                                                <td className='border p-2 text-center'>{item.jk || '-'}</td>
+                                                <td className='border p-2'>
+                                                    {item.tempat_lahir || ''}{item.tempat_lahir && item.tgl_lahir ? ', ' : ''}
+                                                    {item.tgl_lahir && item.tgl_lahir !== '0000-00-00' ? FormatLongDate(item.tgl_lahir) : ''}
+                                                </td>
+                                                <td className='border p-2 text-sm'>
+                                                    <div className='space-y-1'>
+                                                        <div>{item.alamat}</div>
+                                                        {item.kabupaten_domisili && (
+                                                            <div>{item.kabupaten_domisili}</div>
+                                                        )}
+                                                        {item.provinsi_domisili && (
+                                                            <div>Prov. {item.provinsi_domisili}</div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className='border p-2'>{item.email || '-'}</td>
+                                                <td className='border p-2'>{item.telepon || '-'}</td>
+                                                <td className='border p-2 text-center'>{item.posisi || '-'}</td>
+                                                <td className='border p-2 text-sm'>
+                                                    <div className='space-y-1'>
+                                                        {item.tingkat_penugasan === "Paskibraka Tingkat Provinsi" ?
+                                                            (<div>Paskibraka Tingkat Provinsi {item.provinsi}</div>) : item.tingkat_penugasan === "Paskibraka Tingkat Kabupaten/Kota" ? (
+                                                                <><div>Paskibraka Tingkat {item.kabupaten}</div>  <div>Prov. {item.provinsi}</div></>) : ''
+                                                        }
+
+                                                    </div>
+                                                </td>
+                                                <td className='border p-2 text-center'>{item.thn_tugas || '-'}</td>
+                                                <td className='border p-2 text-center'>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium`}>
+                                                        {item.status}
+                                                    </span>
+                                                </td>
+                                                <td className='border p-2'>
+                                                    <div className='flex flex-col gap-1'>
+                                                        <a
+                                                            href={`/adminpanel/pdp/${item.id}`}
+                                                            className='bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded text-white text-center text-xs'
+                                                        >
+                                                            Lihat
+                                                        </a>
+                                                        {user?.role === 'Superadmin' && (
+                                                            <button
+                                                                className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
+                                                                onClick={() => clickModalStatus(item)}
+                                                            >
+                                                                Update Status
+                                                            </button>
+                                                        )}
+                                                        <a
+                                                            href={`/adminpanel/pdp/${item.id}/edit`}
+                                                            className='bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded text-black text-center text-xs'
+                                                        >
+                                                            Edit
+                                                        </a>
+                                                        {user?.role === 'Superadmin' && (
+                                                            <button
+                                                                className='text-white rounded-md hover:bg-red-700 bg-accent px-4 py-1'
+                                                                onClick={() => openDelete(item)}
+                                                            >
+                                                                Hapus
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={16} className='border p-4 text-center text-gray-500'>
+                                                PDP Tidak ditemukan
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                        {pdp && pdp?.last_page > 1 && (
+                            <div className="p-4 border-t">
+                                <Pagination
+                                    links={generateLinks()}
+                                    onPageChange={handlePageChange}
+
+                                />
+                                <div className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                                    Menampilkan {pdp?.from} - {pdp?.to} dari {pdp?.total_items} PDP
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </> : <LoadingIndikator />}
             {/* Modal Update Status */}
             {modalUpdateStatus && (
                 <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20'>
