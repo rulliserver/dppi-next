@@ -1034,7 +1034,7 @@ function PdpVerified() {
                                                 >
                                                     Edit
                                                 </a>
-                                                {user?.role === 'Superadmin' && (
+                                                {user?.role === 'Superadmin'  && (
                                                     <button
                                                         className='text-white rounded-md hover:bg-red-700 bg-accent px-4 py-1'
                                                         onClick={() => openDelete(item)}

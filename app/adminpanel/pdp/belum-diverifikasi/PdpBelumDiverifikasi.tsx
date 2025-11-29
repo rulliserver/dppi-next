@@ -322,6 +322,38 @@ function PdpBelumDiverifikasi() {
         }
     };
 
+    //delete Data
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleteName, setDeleteName] = useState<string>('');
+
+    const openDelete = (row: PdpData) => {
+        setDeleteId(row.id);
+        setDeleteName(row.nama_lengkap);
+        document.getElementById('deleteModal')?.classList.remove('hidden');
+        document.getElementById('deleteModal')?.classList.add('flex');
+    };
+    const closeDelete = () => {
+        document.getElementById('deleteModal')?.classList.add('hidden');
+        document.getElementById('deleteModal')?.classList.remove('flex');
+    };
+
+    const deleteSubmit = async (e: any) => {
+        e.preventDefault();
+        if (!deleteId) return;
+        try {
+            await axios.delete(`${UrlApi}/adminpanel/pdp/${deleteId}`, {
+                withCredentials: true,
+                headers: { Accept: 'application/json' },
+            });
+            Swal.fire({ icon: 'success', text: 'Pelaksana berhasil dihapus', confirmButtonColor: '#2563eb' });
+            window.location.reload();
+
+        } catch (error: any) {
+            console.error(error);
+            Swal.fire({ icon: 'error', text: error.response?.data || 'Gagal menghapus data' });
+        }
+    };
+
     // Handle filter provinsi
     const handleProvinsiChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value ? parseInt(e.target.value) : '';
@@ -699,7 +731,7 @@ function PdpBelumDiverifikasi() {
                 { hpt: 30 }, // Baris 5 - Header
                 ...Array(allData.length).fill({ hpt: 30 }) // Data rows
             ];
-            
+
 
             // Tambahkan worksheet ke workbook
             XLSX.utils.book_append_sheet(wb, ws, 'PDP BELUM DIVERIFIKASI');
@@ -1011,7 +1043,14 @@ function PdpBelumDiverifikasi() {
                                                 >
                                                     Edit
                                                 </a>
-
+                                                {user?.role === 'Superadmin' && (
+                                                    <button
+                                                        className='text-white rounded-md hover:bg-red-700 bg-accent px-4 py-1'
+                                                        onClick={() => openDelete(item)}
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -1132,7 +1171,40 @@ function PdpBelumDiverifikasi() {
                     </div>
                 </div>
             )}
-
+            
+            {/* delete Modal */}
+            <div id='deleteModal' className='justify-center fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full'>
+                <div className='fixed z-30 w-full justify-center max-w-[500px] mx-auto md:top-12 lg:top-40 top-14'>
+                    <div className='w-full mx-auto bg-gray-100 border-2 border-red-200 rounded-md shadow-md dark:bg-default'>
+                        <div className='flex flex-col px-4 py-2 rounded-t border-b dark:border-gray-600'>
+                            <div className='flex font-semibold text-gray-900 dark:text-white'>
+                                <span className='mr-1 text-accent'>Hapus Data</span>
+                                <button type='button' onClick={closeDelete} className='text-gray-400 hover:text-gray-900 rounded-lg p-1.5 ml-auto'>
+                                    <i className='fas fa-times-circle'></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div className='mt-4 px-4'>
+                            <span className='dark:text-white'>Anda yakin ingin menghapus </span>
+                            <span className='dark:text-white font-semibold'>{deleteName}</span>
+                            <span className='dark:text-white'>?</span>
+                        </div>
+                        <div className='mt-2 border-b dark:border-gray-600'></div>
+                        <div className='px-4 mb-4'>
+                            <form onSubmit={deleteSubmit}>
+                                <div className='flex flex-row justify-between'>
+                                    <button type='button' onClick={closeDelete} className='py-1 px-4 mt-2 bg-yellow-500 rounded-md text-dark'>
+                                        Batal
+                                    </button>
+                                    <button type='submit' className='px-4 py-1 mt-2 text-white rounded-md bg-accent'>
+                                        Hapus
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
