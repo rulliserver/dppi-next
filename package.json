@@ -9,7 +9,7 @@
         "lint": "eslint"
     },
     "dependencies": {
-        "@ckeditor/ckeditor5-build-decoupled-document": "^41.4.2",
+        "@ckeditor/ckeditor5-build-decoupled-document": "^39.0.2",
         "@headlessui/react": "^2.2.9",
         "@react-pdf/renderer": "^4.3.1",
         "@tanstack/react-table": "^8.21.3",
@@ -37,6 +37,7 @@
         "sharp": "^0.34.4",
         "sweetalert2": "^11.26.3",
         "swiper": "^12.0.3",
+        "xlsx": "^0.18.5",
         "xlsx-js-style": "^1.2.0"
     },
     "devDependencies": {
@@ -51,6 +52,7 @@
         "@types/react-dom": "^19",
         "@types/react-image-gallery": "^1.2.4",
         "@types/sanitize-html": "^2.16.0",
+        "baseline-browser-mapping": "^2.8.32",
         "eslint": "^9",
         "eslint-config-next": "16.0.0",
         "tailwindcss": "^4",

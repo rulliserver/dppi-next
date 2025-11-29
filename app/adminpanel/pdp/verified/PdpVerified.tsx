@@ -10,6 +10,7 @@ import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
 import axios from 'axios';
 import { useUser } from '@/app/components/UserContext';
+import * as XLSX from 'xlsx';
 
 interface Wilayah {
     id: number;
@@ -413,6 +414,222 @@ function PdpVerified() {
 
 
 
+    // Tambahkan interface untuk data Excel
+    interface ExcelPdpData {
+        'ID PDP': number;
+        'No Simental': string;
+        'No Piagam': string;
+        'Nama Lengkap': string;
+        'Jenis Kelamin': string;
+        'Tempat Lahir': string;
+        'Tanggal Lahir': string;
+        'Alamat': string;
+        'Kabupaten Domisili': string;
+        'Provinsi Domisili': string;
+        'Email': string;
+        'Telepon': string;
+        'Posisi': string;
+        'Tingkat Penugasan': string;
+        'Kabupaten Penugasan': string;
+        'Provinsi Penugasan': string;
+        'Tahun Tugas': number | string;
+        'Status': string;
+    }
+
+    // Fungsi untuk download Excel
+    const downloadExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Menyiapkan Excel',
+                text: 'Sedang mengumpulkan data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Parameter yang sama dengan filter saat ini
+            const params = new URLSearchParams();
+            if (searchQuery) {
+                params.append('q', searchQuery);
+            }
+            if (selectedProvinsi) {
+                params.append('provinsi_id', selectedProvinsi.toString());
+            }
+            if (selectedKabupaten) {
+                params.append('kabupaten_id', selectedKabupaten.toString());
+            }
+
+            // Ambil semua data tanpa pagination untuk Excel
+            let response;
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                response = await axios.get(`${UrlApi}/adminpanel/pdp-verified?${params.toString()}`, {
+                    withCredentials: true
+                });
+            } else {
+                response = await axios.get(`${UrlApi}/kesbangpol/pdp-verified?${params.toString()}`, {
+                    withCredentials: true
+                });
+            }
+
+            const data: PdpData[] = response.data.data;
+
+            if (data.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Format data untuk Excel
+            const excelData: ExcelPdpData[] = data.map(item => ({
+                'ID PDP': item.id,
+                'No Simental': item.no_simental || '-',
+                'No Piagam': item.no_piagam || '-',
+                'Nama Lengkap': item.nama_lengkap,
+                'Jenis Kelamin': item.jk || '-',
+                'Tempat Lahir': item.tempat_lahir || '-',
+                'Tanggal Lahir': item.tgl_lahir && item.tgl_lahir !== '0000-00-00'
+                    ? FormatLongDate(item.tgl_lahir)
+                    : '-',
+                'Alamat': item.alamat || '-',
+                'Kabupaten Domisili': item.kabupaten_domisili || '-',
+                'Provinsi Domisili': item.provinsi_domisili || '-',
+                'Email': item.email || '-',
+                'Telepon': item.telepon || '-',
+                'Posisi': item.posisi || '-',
+                'Tingkat Penugasan': item.tingkat_penugasan || '-',
+                'Kabupaten Penugasan': item.kabupaten || '-',
+                'Provinsi Penugasan': item.provinsi || '-',
+                'Tahun Tugas': item.thn_tugas || '-',
+                'Status': item.status || '-'
+            }));
+
+            // Buat workbook dan worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(excelData);
+
+            // Style untuk header
+            const headerStyle = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "2563eb" } },
+                alignment: { horizontal: "center" as const }
+            };
+
+            // Terapkan style ke header
+            const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:Z1');
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const address = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+                if (!ws[address]) continue;
+                ws[address].s = headerStyle;
+            }
+
+            // Atur lebar kolom
+            ws['!cols'] = [
+                { width: 8 },  // ID PDP
+                { width: 15 }, // No Simental
+                { width: 15 }, // No Piagam
+                { width: 25 }, // Nama Lengkap
+                { width: 12 }, // Jenis Kelamin
+                { width: 15 }, // Tempat Lahir
+                { width: 12 }, // Tanggal Lahir
+                { width: 30 }, // Alamat
+                { width: 20 }, // Kabupaten Domisili
+                { width: 20 }, // Provinsi Domisili
+                { width: 25 }, // Email
+                { width: 15 }, // Telepon
+                { width: 15 }, // Posisi
+                { width: 20 }, // Tingkat Penugasan
+                { width: 20 }, // Kabupaten Penugasan
+                { width: 20 }, // Provinsi Penugasan
+                { width: 10 }, // Tahun Tugas
+                { width: 15 }  // Status
+            ];
+
+            // Tambahkan worksheet ke workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'PDP Verified');
+
+            // Generate nama file dengan timestamp dan filter info
+            let fileName = 'PDP_Verified';
+            if (selectedProvinsi) {
+                const provinsiName = provinsiList.find(p => p.id === selectedProvinsi)?.nama_provinsi || '';
+                fileName += `_${provinsiName.replace(/\s+/g, '_')}`;
+            }
+            if (selectedKabupaten) {
+                const kabupatenName = kabupatenList.find(k => k.id === selectedKabupaten)?.nama_kabupaten || '';
+                fileName += `_${kabupatenName.replace(/\s+/g, '_')}`;
+            }
+            if (searchQuery) {
+                fileName += `_search_${searchQuery.substring(0, 10)}`;
+            }
+            fileName += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            // Download file
+            XLSX.writeFile(wb, fileName);
+
+            Swal.fire({
+                icon: 'success',
+                text: `File Excel berhasil diunduh: ${fileName}`,
+                confirmButtonColor: '#2563eb',
+                timer: 3000
+            });
+
+        } catch (error: any) {
+            console.error('Error downloading Excel:', error);
+            Swal.fire({
+                icon: 'error',
+                text: 'Gagal mengunduh file Excel: ' + (error.response?.data?.message || error.message),
+                confirmButtonColor: '#2563eb'
+            });
+        }
+    };
+
+    // Fungsi untuk download template Excel
+    const downloadTemplate = () => {
+        const templateData = [
+            {
+                'No Simental': 'CONTOH: 1101202400001',
+                'No Piagam': 'CONTOH: PIAGAM/2024/001',
+                'Nama Lengkap': 'CONTOH: Ahmad Budiman',
+                'Jenis Kelamin': 'CONTOH: Laki-Laki / Perempuan',
+                'Tempat Lahir': 'CONTOH: Jakarta',
+                'Tanggal Lahir': 'CONTOH: 1990-01-15',
+                'Alamat': 'CONTOH: Jl. Merdeka No. 123',
+                'Kabupaten Domisili': 'CONTOH: Jakarta Selatan',
+                'Provinsi Domisili': 'CONTOH: DKI Jakarta',
+                'Email': 'CONTOH: ahmad@email.com',
+                'Telepon': 'CONTOH: 081234567890',
+                'Posisi': 'CONTOH: Pelaksana / Anggota',
+                'Tingkat Penugasan': 'CONTOH: Paskibraka Tingkat Provinsi',
+                'Kabupaten Penugasan': 'CONTOH: Jakarta Selatan',
+                'Provinsi Penugasan': 'CONTOH: DKI Jakarta',
+                'Tahun Tugas': 'CONTOH: 2024',
+                'Status': 'CONTOH: Verified'
+            }
+        ];
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(templateData);
+
+        // Style header
+        const headerStyle = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "059669" } },
+            alignment: { horizontal: "center" as const }
+        };
+
+        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:Z1');
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const address = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+            if (!ws[address]) continue;
+            ws[address].s = headerStyle;
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Template Import');
+        XLSX.writeFile(wb, 'Template_Import_PDP.xlsx');
+    };
 
     return (
         <div className='dark:bg-slate-900 min-h-screen p-4'>
@@ -426,7 +643,34 @@ function PdpVerified() {
                     <i className='fas fa-plus-circle mr-2'></i> Tambah PDP
                 </Link>
             </div>
+            {/* Header dan Search */}
+            <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6'>
+                <div className='flex items-center mb-4 lg:mb-0'>
+                    <i className='fas fa-server text-accent text-3xl'></i>
+                    <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>DATA PDP DIVERIFIKASI</p>
+                </div>
+                <div className='flex gap-2'>
+                    {/* Tombol Download Excel */}
+                    <button
+                        onClick={downloadExcel}
+                        className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
+                    >
+                        <i className='fas fa-file-excel mr-2'></i> Download Excel
+                    </button>
 
+                    {/* Tombol Template */}
+                    <button
+                        onClick={downloadTemplate}
+                        className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-blue-600 hover:bg-blue-700 flex items-center'
+                    >
+                        <i className='fas fa-download mr-2'></i> Template
+                    </button>
+
+                    <Link href='/adminpanel/pdp/create' className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-accent hover:bg-red-800 flex items-center'>
+                        <i className='fas fa-plus-circle mr-2'></i> Tambah PDP
+                    </Link>
+                </div>
+            </div>
             {/* Filter Wilayah dan Search */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-6'>
                 {user?.role === "Administrator" || user?.role === "Superadmin" ?
