@@ -396,55 +396,85 @@ function PdpBelumDiverifikasi() {
 
             {/* Filter Wilayah dan Search */}
             <div className='bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-6'>
-                <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-                    {/* Filter Provinsi */}
-                    {user?.role === "Administrator" || user?.role === "Superadmin" ?
-                        <>
-                            <div>
-                                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                    Provinsi
-                                </label>
-                                <select
-                                    value={selectedProvinsi}
-                                    onChange={handleProvinsiChange}
-                                    className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
-                                >
-                                    <option value=''>Semua Provinsi</option>
-                                    {provinsiList.map(provinsi => (
-                                        <option key={provinsi.id} value={provinsi.id}>
-                                            {provinsi.nama_provinsi}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                {user?.role === "Administrator" || user?.role === "Superadmin" ?
+                    <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
 
 
-                            <div>
-                                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                    Kabupaten/Kota
-                                </label>
-                                <select
-                                    value={selectedKabupaten}
-                                    onChange={handleKabupatenChange}
-                                    disabled={!selectedProvinsi || loadingWilayah}
-                                    className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white disabled:opacity-50'
+                        <div>
+                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                Provinsi
+                            </label>
+                            <select
+                                value={selectedProvinsi}
+                                onChange={handleProvinsiChange}
+                                className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                            >
+                                <option value=''>Semua Provinsi</option>
+                                {provinsiList.map(provinsi => (
+                                    <option key={provinsi.id} value={provinsi.id}>
+                                        {provinsi.nama_provinsi}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+
+                        <div>
+                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                Kabupaten/Kota
+                            </label>
+                            <select
+                                value={selectedKabupaten}
+                                onChange={handleKabupatenChange}
+                                disabled={!selectedProvinsi || loadingWilayah}
+                                className='w-full p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white disabled:opacity-50'
+                            >
+                                <option value=''>Semua Kabupaten</option>
+                                {kabupatenList.map(kabupaten => (
+                                    <option key={kabupaten.id} value={kabupaten.id}>
+                                        {kabupaten.nama_kabupaten}
+                                    </option>
+                                ))}
+                            </select>
+                            {loadingWilayah && (
+                                <p className='text-xs text-gray-500 mt-1'>Memuat kabupaten...</p>
+                            )}
+                        </div>
+
+
+
+
+                        <div className='md:col-span-2'>
+                            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                Pencarian
+                            </label>
+                            <form onSubmit={handleSearch} className='flex gap-2'>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder='Cari berdasarkan Nama, NIK, Email, atau No. Piagam...'
+                                    className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                                />
+                                <button
+                                    type='submit'
+                                    className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
                                 >
-                                    <option value=''>Semua Kabupaten</option>
-                                    {kabupatenList.map(kabupaten => (
-                                        <option key={kabupaten.id} value={kabupaten.id}>
-                                            {kabupaten.nama_kabupaten}
-                                        </option>
-                                    ))}
-                                </select>
-                                {loadingWilayah && (
-                                    <p className='text-xs text-gray-500 mt-1'>Memuat kabupaten...</p>
+                                    <i className='fas fa-search'></i>
+                                </button>
+                                {(selectedProvinsi || selectedKabupaten || searchQuery) && (
+                                    <button
+                                        type='button'
+                                        onClick={handleResetFilter}
+                                        className='px-4 py-2  text-secondary  rounded-md hover:bg-gray-600'
+                                    >
+                                        <i className='fas fa-sync'></i>
+                                    </button>
                                 )}
-                            </div>
-                        </>
-                        : ''}
-
-                    {/* Search Form */}
-                    <div className='md:col-span-2'>
+                            </form>
+                        </div>
+                    </div>
+                    : <div className='md:col-span-2'>
                         <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                             Pencarian
                         </label>
@@ -472,8 +502,7 @@ function PdpBelumDiverifikasi() {
                                 </button>
                             )}
                         </form>
-                    </div>
-                </div>
+                    </div>}
 
                 {/* Info Filter Aktif */}
                 {(selectedProvinsi || selectedKabupaten) && (

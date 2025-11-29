@@ -440,8 +440,8 @@ export default function User() {
                                     <th>Avatar</th>
                                     <th>Nama Lengkap</th>
                                     <th>Email</th>
-                                    <th>Telepon</th>
                                     <th>Alamat</th>
+                                    <th>Telepon</th>
                                     <th>role</th>
                                     <th>ID PDP</th>
                                     <th>Provinsi</th>
