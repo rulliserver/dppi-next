@@ -37,7 +37,6 @@
         "sharp": "^0.34.4",
         "sweetalert2": "^11.26.3",
         "swiper": "^12.0.3",
-        "xlsx": "^0.18.5",
         "xlsx-js-style": "^1.2.0"
     },
     "devDependencies": {

@@ -10,7 +10,7 @@ import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
 import axios from 'axios';
 import { useUser } from '@/app/components/UserContext';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 interface Wilayah {
     id: number;
     nama_provinsi: string;
@@ -519,77 +519,133 @@ function PdpBelumDiverifikasi() {
             const totalColumns = Object.keys(excelData[0]).length;
 
             // ===== STYLING =====
-
             // Style untuk judul utama
             const titleStyle = {
-                font: { bold: true, size: 16, color: { rgb: "FFFFFF" } },
-                fill: { fgColor: { rgb: "2563eb" } },
+                font: {
+                    name: 'Arial',
+                    sz: 16,
+                    bold: true,
+
+                },
+
                 alignment: {
-                    horizontal: "center" as const, vertical: "center" as const
+                    horizontal: "center",
+                    vertical: "center"
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
                 }
             };
 
             // Style untuk informasi
             const infoStyle = {
-                font: { italic: true, color: { rgb: "666666" } },
-                alignment: { horizontal: "left" as const }
+                font: {
+                    name: 'Arial',
+                    sz: 10,
+                    italic: true,
+                    color: { rgb: "666666" }
+                },
+                alignment: {
+                    horizontal: "left",
+                    vertical: "center"
+                }
             };
 
             // Style untuk header tabel
             const headerStyle = {
-                font: { bold: true, color: { rgb: "FFFFFF" } },
-                fill: { fgColor: { rgb: "059669" } },
-                alignment: { horizontal: "center" as const, vertical: "center" as const },
+                font: {
+                    name: 'Arial',
+                    sz: 11,
+                    bold: true,
+                    color: { rgb: "FFFFFF" }
+                },
+                fill: {
+                    fgColor: { rgb: "C80004" }
+                },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center",
+                    wrapText: true
+                },
                 border: {
-                    top: { style: "thin" as const, color: { rgb: "000000" } },
-                    left: { style: "thin" as const, color: { rgb: "000000" } },
-                    bottom: { style: "thin" as const, color: { rgb: "000000" } },
-                    right: { style: "thin" as const, color: { rgb: "000000" } }
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
                 }
             };
 
             // Style untuk data
             const dataStyle = {
-                alignment: { vertical: "center" as const },
+                font: {
+                    name: 'Arial',
+                    sz: 10
+                },
+                alignment: {
+                    vertical: "center",
+                    wrapText: true
+                },
                 border: {
-                    top: { style: "thin" as const, color: { rgb: "DDDDDD" } },
-                    left: { style: "thin" as const, color: { rgb: "DDDDDD" } },
-                    bottom: { style: "thin" as const, color: { rgb: "DDDDDD" } },
-                    right: { style: "thin" as const, color: { rgb: "DDDDDD" } }
+                    top: { style: "thin", color: { rgb: "DDDDDD" } },
+                    left: { style: "thin", color: { rgb: "DDDDDD" } },
+                    bottom: { style: "thin", color: { rgb: "DDDDDD" } },
+                    right: { style: "thin", color: { rgb: "DDDDDD" } }
                 }
             };
 
-            // Style khusus untuk kolom nomor (center aligned)
+            // Style khusus untuk kolom nomor
             const numberStyle = {
-                alignment: { horizontal: "center" as const, vertical: "center" as const }
+                ...dataStyle,
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
             };
 
             // ===== TERAPKAN STYLING =====
-
             // Judul utama (Baris 1, colspan seluruh kolom)
-            ws['!merges'] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } } // A1 sampai kolom terakhir
-            ];
+            ws['!merges'] = ws['!merges'] || [];
+            ws['!merges'].push(
+                { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } }
+            );
 
+            // Apply styles ke semua cell
+            const applyStyleToCell = (cell: XLSX.CellObject | undefined, style: any) => {
+                if (cell) {
+                    cell.s = style;
+                }
+            };
+
+            // Judul utama
             const titleCell = 'A1';
-            if (!ws[titleCell]) ws[titleCell] = { v: worksheetData[0][0], t: 's' };
-            ws[titleCell].s = titleStyle;
+            if (!ws[titleCell]) {
+                ws[titleCell] = { v: worksheetData[0][0], t: 's' };
+            }
+            applyStyleToCell(ws[titleCell], titleStyle);
 
-            // Informasi tanggal (Baris 2)
+            // Informasi tanggal
             const infoCell1 = 'A2';
-            if (!ws[infoCell1]) ws[infoCell1] = { v: worksheetData[1][0], t: 's' };
-            ws[infoCell1].s = infoStyle;
+            if (!ws[infoCell1]) {
+                ws[infoCell1] = { v: worksheetData[1][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell1], infoStyle);
 
-            // Informasi filter (Baris 3)
+            // Informasi filter
             const infoCell2 = 'A3';
-            if (!ws[infoCell2]) ws[infoCell2] = { v: worksheetData[2][0], t: 's' };
-            ws[infoCell2].s = infoStyle;
+            if (!ws[infoCell2]) {
+                ws[infoCell2] = { v: worksheetData[2][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell2], infoStyle);
 
             // Header tabel (Baris 5)
             for (let col = 0; col < totalColumns; col++) {
                 const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col });
-                if (!ws[cellAddress]) continue;
-                ws[cellAddress].s = headerStyle;
+                if (ws[cellAddress]) {
+                    applyStyleToCell(ws[cellAddress], headerStyle);
+                }
             }
 
             // Data rows (mulai dari baris 6)
@@ -600,19 +656,14 @@ function PdpBelumDiverifikasi() {
                     if (!ws[cellAddress]) continue;
 
                     // Apply base data style
-                    if (!ws[cellAddress].s) {
-                        ws[cellAddress].s = dataStyle;
-                    } else {
-                        ws[cellAddress].s = { ...ws[cellAddress].s, ...dataStyle };
-                    }
+                    let style: any = { ...dataStyle };
 
                     // Center align untuk kolom nomor (kolom 0)
                     if (col === 0) {
-                        ws[cellAddress].s = {
-                            ...ws[cellAddress].s,
-                            ...numberStyle
-                        };
+                        style = { ...style, ...numberStyle };
                     }
+
+                    applyStyleToCell(ws[cellAddress], style);
                 }
             }
 
@@ -620,16 +671,16 @@ function PdpBelumDiverifikasi() {
             ws['!cols'] = [
                 { width: 6 },   // No. Urut
                 { width: 8 },   // ID PDP
-                { width: 15 },  // No Simental
-                { width: 15 },  // No Piagam
-                { width: 25 },  // Nama Lengkap
+                { width: 16 },  // No Simental
+                { width: 25 },  // No Piagam
+                { width: 30 },  // Nama Lengkap
                 { width: 12 },  // Jenis Kelamin
-                { width: 15 },  // Tempat Lahir
-                { width: 12 },  // Tanggal Lahir
-                { width: 30 },  // Alamat
-                { width: 20 },  // Kabupaten Domisili
+                { width: 30 },  // Tempat Lahir
+                { width: 18 },  // Tanggal Lahir
+                { width: 56 },  // Alamat
+                { width: 25 },  // Kabupaten Domisili
                 { width: 20 },  // Provinsi Domisili
-                { width: 25 },  // Email
+                { width: 30 },  // Email
                 { width: 15 },  // Telepon
                 { width: 15 },  // Posisi
                 { width: 20 },  // Tingkat Penugasan
@@ -645,9 +696,10 @@ function PdpBelumDiverifikasi() {
                 { hpt: 20 }, // Baris 2 - Info
                 { hpt: 20 }, // Baris 3 - Filter
                 { hpt: 5 },  // Baris 4 - Spasi
-                { hpt: 25 }, // Baris 5 - Header
-                ...Array(allData.length).fill({ hpt: 20 }) // Data rows
+                { hpt: 30 }, // Baris 5 - Header
+                ...Array(allData.length).fill({ hpt: 30 }) // Data rows
             ];
+            
 
             // Tambahkan worksheet ke workbook
             XLSX.utils.book_append_sheet(wb, ws, 'PDP BELUM DIVERIFIKASI');
