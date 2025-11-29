@@ -523,8 +523,6 @@ export default function PdpEdit() {
         getDetailBakat()
     }, []);
 
-
-
     return (
         <div className='bg-gray-50 pb-28 dark:bg-gray-700'>
             {data ?

@@ -10,6 +10,7 @@ import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
 import axios from 'axios';
 import { useUser } from '@/app/components/UserContext';
+import * as XLSX from 'xlsx';
 
 interface Wilayah {
     id: number;
@@ -56,6 +57,28 @@ interface PaginationResponse {
     query: string;
 }
 
+// Tambahkan interface untuk data Excel
+interface ExcelPdpData {
+    'No.': number;
+    'ID PDP': number;
+    'No Simental': string;
+    'No Piagam': string;
+    'Nama Lengkap': string;
+    'Jenis Kelamin': string;
+    'Tempat Lahir': string;
+    'Tanggal Lahir': string;
+    'Alamat': string;
+    'Kabupaten Domisili': string;
+    'Provinsi Domisili': string;
+    'Email': string;
+    'Telepon': string;
+    'Posisi': string;
+    'Tingkat Penugasan': string;
+    'Kabupaten Penugasan': string;
+    'Provinsi Penugasan': string;
+    'Tahun Tugas': number | string;
+    'Status': string;
+}
 function PdpBelumRegistrasi() {
     const { user } = useUser()
     const [pdp, setPdp] = useState<PaginationResponse | null>(null);
@@ -264,9 +287,6 @@ function PdpBelumRegistrasi() {
         });
     };
 
-
-
-
     useEffect(() => {
         getPdp();
         getProvinsi(); // Load data provinsi saat komponen mount
@@ -385,6 +405,319 @@ function PdpBelumRegistrasi() {
         return links;
     };
 
+    const downloadAllExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Mengumpulkan Data',
+                text: 'Sedang mengambil semua data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const params = new URLSearchParams();
+            if (searchQuery) {
+                params.append('q', searchQuery);
+            }
+            if (selectedProvinsi) {
+                params.append('provinsi_id', selectedProvinsi.toString());
+            }
+            if (selectedKabupaten) {
+                params.append('kabupaten_id', selectedKabupaten.toString());
+            }
+
+            let response;
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                // Gunakan endpoint pdp-belum-registrasi-all yang mengembalikan SEMUA data sekaligus
+                response = await axios.get(`${UrlApi}/adminpanel/pdp-belum-registrasi-all?${params.toString()}`, {
+                    withCredentials: true
+                });
+            } else {
+                // Untuk role lain, tetap gunakan endpoint biasa (mungkin perlu dibuat endpoint all juga)
+                response = await axios.get(`${UrlApi}/kesbangpol/pdp-belum-registrasi-all?${params.toString()}`, {
+                    withCredentials: true
+                });
+            }
+
+            // Untuk pdp-belum-registrasi-all, response.data adalah array langsung, bukan object pagination
+            let allData: PdpData[] = [];
+
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                // Endpoint pdp-belum-registrasi-all mengembalikan array langsung
+                allData = response.data;
+            } else {
+                // Endpoint biasa mengembalikan object pagination
+                allData = response.data.data;
+            }
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Format data untuk Excel
+            const excelData: ExcelPdpData[] = allData.map((item, index) => ({
+                'No.': index + 1,
+                'ID PDP': item.id,
+                'No Simental': item.no_simental || '-',
+                'No Piagam': item.no_piagam || '-',
+                'Nama Lengkap': item.nama_lengkap,
+                'Jenis Kelamin': item.jk || '-',
+                'Tempat Lahir': item.tempat_lahir || '-',
+                'Tanggal Lahir': item.tgl_lahir && item.tgl_lahir !== '0000-00-00'
+                    ? FormatLongDate(item.tgl_lahir)
+                    : '-',
+                'Alamat': item.alamat || '-',
+                'Kabupaten Domisili': item.kabupaten_domisili || '-',
+                'Provinsi Domisili': item.provinsi_domisili || '-',
+                'Email': item.email || '-',
+                'Telepon': item.telepon || '-',
+                'Posisi': item.posisi || '-',
+                'Tingkat Penugasan': item.tingkat_penugasan || '-',
+                'Kabupaten Penugasan': item.kabupaten || '-',
+                'Provinsi Penugasan': item.provinsi || '-',
+                'Tahun Tugas': item.thn_tugas || '-',
+                'Status': item.status || '-'
+            }));
+
+            // Buat workbook dan worksheet
+            const wb = XLSX.utils.book_new();
+
+            // Buat data dengan judul
+            const worksheetData = [
+                // Baris 1: Judul Utama
+                ['DATA PDP BELUM REGISTRASI'],
+
+                // Baris 2: Informasi Filter
+                [`Data diambil pada: ${new Date().toLocaleString('id-ID')}`],
+
+                // Baris 3: Informasi Filter Detail
+                [getFilterInfo()],
+
+                [],
+
+                // Baris 5: Header Tabel
+                Object.keys(excelData[0])
+            ];
+
+            // Tambahkan data
+            excelData.forEach(row => {
+                worksheetData.push(Object.values(row));
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            // Hitung jumlah kolom
+            const totalColumns = Object.keys(excelData[0]).length;
+
+            // ===== STYLING =====
+
+            // Style untuk judul utama
+            const titleStyle = {
+                font: { bold: true, size: 16, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "2563eb" } },
+                alignment: {
+                    horizontal: "center" as const, vertical: "center" as const
+                }
+            };
+
+            // Style untuk informasi
+            const infoStyle = {
+                font: { italic: true, color: { rgb: "666666" } },
+                alignment: { horizontal: "left" as const }
+            };
+
+            // Style untuk header tabel
+            const headerStyle = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "059669" } },
+                alignment: { horizontal: "center" as const, vertical: "center" as const },
+                border: {
+                    top: { style: "thin" as const, color: { rgb: "000000" } },
+                    left: { style: "thin" as const, color: { rgb: "000000" } },
+                    bottom: { style: "thin" as const, color: { rgb: "000000" } },
+                    right: { style: "thin" as const, color: { rgb: "000000" } }
+                }
+            };
+
+            // Style untuk data
+            const dataStyle = {
+                alignment: { vertical: "center" as const },
+                border: {
+                    top: { style: "thin" as const, color: { rgb: "DDDDDD" } },
+                    left: { style: "thin" as const, color: { rgb: "DDDDDD" } },
+                    bottom: { style: "thin" as const, color: { rgb: "DDDDDD" } },
+                    right: { style: "thin" as const, color: { rgb: "DDDDDD" } }
+                }
+            };
+
+            // Style khusus untuk kolom nomor (center aligned)
+            const numberStyle = {
+                alignment: { horizontal: "center" as const, vertical: "center" as const }
+            };
+
+            // ===== TERAPKAN STYLING =====
+
+            // Judul utama (Baris 1, colspan seluruh kolom)
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } } // A1 sampai kolom terakhir
+            ];
+
+            const titleCell = 'A1';
+            if (!ws[titleCell]) ws[titleCell] = { v: worksheetData[0][0], t: 's' };
+            ws[titleCell].s = titleStyle;
+
+            // Informasi tanggal (Baris 2)
+            const infoCell1 = 'A2';
+            if (!ws[infoCell1]) ws[infoCell1] = { v: worksheetData[1][0], t: 's' };
+            ws[infoCell1].s = infoStyle;
+
+            // Informasi filter (Baris 3)
+            const infoCell2 = 'A3';
+            if (!ws[infoCell2]) ws[infoCell2] = { v: worksheetData[2][0], t: 's' };
+            ws[infoCell2].s = infoStyle;
+
+            // Header tabel (Baris 5)
+            for (let col = 0; col < totalColumns; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col });
+                if (!ws[cellAddress]) continue;
+                ws[cellAddress].s = headerStyle;
+            }
+
+            // Data rows (mulai dari baris 6)
+            const dataRange = XLSX.utils.decode_range(ws['!ref'] || 'A1:Z1');
+            for (let row = 5; row <= dataRange.e.r; row++) {
+                for (let col = 0; col < totalColumns; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    if (!ws[cellAddress]) continue;
+
+                    // Apply base data style
+                    if (!ws[cellAddress].s) {
+                        ws[cellAddress].s = dataStyle;
+                    } else {
+                        ws[cellAddress].s = { ...ws[cellAddress].s, ...dataStyle };
+                    }
+
+                    // Center align untuk kolom nomor (kolom 0)
+                    if (col === 0) {
+                        ws[cellAddress].s = {
+                            ...ws[cellAddress].s,
+                            ...numberStyle
+                        };
+                    }
+                }
+            }
+
+            // ===== PENGATURAN KOLOM =====
+            ws['!cols'] = [
+                { width: 6 },   // No. Urut
+                { width: 8 },   // ID PDP
+                { width: 15 },  // No Simental
+                { width: 15 },  // No Piagam
+                { width: 25 },  // Nama Lengkap
+                { width: 12 },  // Jenis Kelamin
+                { width: 15 },  // Tempat Lahir
+                { width: 12 },  // Tanggal Lahir
+                { width: 30 },  // Alamat
+                { width: 20 },  // Kabupaten Domisili
+                { width: 20 },  // Provinsi Domisili
+                { width: 25 },  // Email
+                { width: 15 },  // Telepon
+                { width: 15 },  // Posisi
+                { width: 20 },  // Tingkat Penugasan
+                { width: 20 },  // Kabupaten Penugasan
+                { width: 20 },  // Provinsi Penugasan
+                { width: 10 },  // Tahun Tugas
+                { width: 15 }   // Status
+            ];
+
+            // Atur tinggi baris
+            ws['!rows'] = [
+                { hpt: 25 }, // Baris 1 - Judul (lebih tinggi)
+                { hpt: 20 }, // Baris 2 - Info
+                { hpt: 20 }, // Baris 3 - Filter
+                { hpt: 5 },  // Baris 4 - Spasi
+                { hpt: 25 }, // Baris 5 - Header
+                ...Array(allData.length).fill({ hpt: 20 }) // Data rows
+            ];
+
+            // Tambahkan worksheet ke workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'PDP BELUM REGISTRASI');
+
+            // Generate nama file
+            let fileName = 'PDP_Verified_Semua_Data';
+            if (selectedProvinsi) {
+                const provinsiName = provinsiList.find(p => p.id === selectedProvinsi)?.nama_provinsi || '';
+                fileName += `_${provinsiName.replace(/\s+/g, '_')}`;
+            }
+            if (selectedKabupaten) {
+                const kabupatenName = kabupatenList.find(k => k.id === selectedKabupaten)?.nama_kabupaten || '';
+                fileName += `_${kabupatenName.replace(/\s+/g, '_')}`;
+            }
+            if (searchQuery) {
+                fileName += `_search_${searchQuery.substring(0, 10)}`;
+            }
+            fileName += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            // Download file
+            XLSX.writeFile(wb, fileName);
+
+            Swal.fire({
+                icon: 'success',
+                text: `File Excel berhasil diunduh: ${fileName}\nTotal data: ${allData.length} records`,
+                confirmButtonColor: '#2563eb',
+                timer: 5000
+            });
+
+        } catch (error: any) {
+            console.error('Error downloading Excel:', error);
+            Swal.fire({
+                icon: 'error',
+                text: 'Gagal mengunduh file Excel: ' + (error.response?.data?.message || error.message),
+                confirmButtonColor: '#2563eb'
+            });
+        }
+    };
+
+    // Fungsi untuk mendapatkan informasi filter
+    const getFilterInfo = (): string => {
+        const filters = [];
+
+        if (selectedProvinsi) {
+            const provinsiName = provinsiList.find(p => p.id === selectedProvinsi)?.nama_provinsi;
+            filters.push(`Provinsi: ${provinsiName}`);
+        }
+
+        if (selectedKabupaten) {
+            const kabupatenName = kabupatenList.find(k => k.id === selectedKabupaten)?.nama_kabupaten;
+            filters.push(`Kabupaten: ${kabupatenName}`);
+        }
+
+        if (searchQuery) {
+            filters.push(`Pencarian: "${searchQuery}"`);
+        }
+
+        if (filters.length === 0) {
+            return 'Filter: Semua Data';
+        }
+
+        return `Filter: ${filters.join(', ')}`;
+    };
+
     return (
         <div className='dark:bg-slate-900 min-h-screen p-4'>
             {/* Header dan Search */}
@@ -393,9 +726,15 @@ function PdpBelumRegistrasi() {
                     <i className='fas fa-server text-accent text-3xl'></i>
                     <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>DATA PDP BELUM REGISTRASI</p>
                 </div>
-                <Link href='/adminpanel/pdp/create' className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-accent hover:bg-red-800'>
-                    <i className='fas fa-plus-circle mr-2'></i> Tambah PDP
-                </Link>
+                <div className='flex gap-2'>
+                    {/* Tombol Download Excel */}
+                    <button
+                        onClick={downloadAllExcel} // Ganti dari downloadExcel
+                        className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
+                    >
+                        <i className='fas fa-file-excel mr-2'></i> Download Semua Data
+                    </button>
+                </div>
             </div>
 
             {/* Filter Wilayah dan Search */}
