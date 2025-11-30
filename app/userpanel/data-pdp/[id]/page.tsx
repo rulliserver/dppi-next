@@ -1,17 +1,20 @@
 
 import type { Metadata } from 'next';
-import DataPdp from './DataPdp';
+
+import AdminLayout from '@/app/Layouts/AdminLayout';
+import PdpShow from './PdpShow';
 import UserLayout from '@/app/Layouts/UserLayout';
+
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'PDP Belum Diverifikasi - DPPI BPIP RI'
+        title: 'PDP Verified - DPPI BPIP RI'
     };
 }
 export default function Page() {
     return (
         <UserLayout>
-            <DataPdp />
+            <PdpShow />
         </UserLayout>
     );
 }

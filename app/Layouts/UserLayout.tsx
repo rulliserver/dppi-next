@@ -231,7 +231,13 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
     const handleBiodataMenu = createMenuHandler('biodata-menu', 'biodata-list', 'grup4-active');
     const regexPdp = /(pdp)/i;
-    const regexPdpProvinsi = /(data-pdp-provinsi)/i;
+    const regexDataPdp = /(data-pdp)/i;
+    const handlePdpMenu = createMenuHandler('data-pdp-menu', 'data-pdp-list', 'grup3-active');
+    const regexPdpBelumRegistrasi = /(belum-registrasi)/i;
+    const regexPdpBelumDiverifikasi = /(belum-diverifikasi)/i;
+    const regexPdpVerified = /(verified)/i;
+    const regexPdpSimental = /(simental)/i;
+    const regexPdpTidakAktif = /(tidak-aktif)/i;
     if (!user) {
         return (
             <main className='mt-18'>
@@ -443,17 +449,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                                                 </div>
                                             </a>
                                         </li>
-                                        <li className='mx-1 mr-3'>
-                                            <a href='/userpanel/data-pdp' className=''>
-                                                <div className={pathname === '/userpanel/data-pdp' ? 'bg-accent rounded-md px-2 text-white py-2 mx-1 w-full ' : 'text-primary px-1 py-2 mx-1'}>
-                                                    PDP
-                                                </div>
-                                            </a>
-                                        </li>
+
                                     </div>
                                 ) : (
                                     ''
                                 )}
+
                             </ul>
                         </div>
                     </div>
@@ -498,12 +499,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                                             pathname === '/userpanel/diklat' ||
                                             pathname === '/userpanel/penghargaan' ||
                                             pathname === '/userpanel/organisasi'
-                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group4:'
                                             : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
                                     }>
                                     <i className='mx-2 text-xl py-auto fas fa-user-cog text-accent'></i>
                                     <div className='grid grid-cols-12'>
-                                        <span className='col-span-11 py-1 text-left menu-list' id='menu-name2'>
+                                        <span className='col-span-11 py-1 text-left menu-list' id='menu-name4'>
                                             Biodata
                                         </span>
                                         <span className='my-auto'>
@@ -610,15 +611,98 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                                                 <p className='menu-list'>Profile Pelaksana </p>
                                             </Link>
                                         </li>
-                                        {/* pdp */}
-                                        <li className={regexPdp.test(window.location.href) ? 'active bg-violet-500 flex py-2 mx-2' : 'text-white flex py-2 mx-2'}>
-                                            <Link className='flex' href='/userpanel/data-pdp'>
-                                                <i className='pl-2 ml-2 mr-4 text-xl fas fa-user text-accent'></i>
-                                                <p className='menu-list'>Data PDP</p>
-                                            </Link>
-                                        </li>
+
 
                                     </ul>
+                                ) : (
+                                    <></>
+                                )}
+                                {user.role === 'Pelaksana' ? (
+                                    <div className={regexDataPdp.test(window.location.href) ? 'grup3 grup3-active' : 'grup3'} onClick={handlePdpMenu} id='data-pdp-menu'>
+                                        <button
+                                            className={
+                                                regexDataPdp.test(window.location.href)
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i className='mx-2 text-xl py-auto fas fa-users text-accent'></i>
+                                            <div className='grid grid-cols-12'>
+                                                <span className='col-span-11 py-1 mx-0 text-left menu-list' id='menu-name3'>
+                                                    Data PDP
+                                                </span>
+                                                <span className='my-auto'>
+                                                    <svg
+                                                        className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
+                                                        xmlns='http://www.w3.org/2000/svg'
+                                                        viewBox='0 0 20 20'>
+                                                        <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                        </button>
+                                        <div className={regexDataPdp.test(window.location.href) ? '' : 'hidden'} id='data-pdp-list'>
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/userpanel/data-pdp/belum-registrasi'>
+                                                    <i
+                                                        className={
+                                                            regexPdpBelumRegistrasi.test(window.location.href)
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }></i>
+                                                    <p className={regexPdpBelumRegistrasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                        PDP Belum Registrasi
+                                                    </p>
+                                                </a>
+                                            </div>
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/userpanel/data-pdp/belum-diverifikasi'>
+                                                    <i
+                                                        className={
+                                                            regexPdpBelumDiverifikasi.test(window.location.href)
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }></i>
+                                                    <p className={regexPdpBelumDiverifikasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                        PDP Belum Diverifikasi
+                                                    </p>
+                                                </a>
+                                            </div>
+
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/userpanel/data-pdp/verified'>
+                                                    <i
+                                                        className={
+                                                            regexPdpVerified.test(window.location.href)
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }></i>
+                                                    <p className={regexPdpVerified.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Verified </p>
+                                                </a>
+                                            </div>
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/userpanel/data-pdp/simental'>
+                                                    <i
+                                                        className={
+                                                            regexPdpSimental.test(window.location.href)
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }></i>
+                                                    <p className={regexPdpSimental.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Simental </p>
+                                                </a>
+                                            </div>
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/userpanel/data-pdp/tidak-aktif'>
+                                                    <i
+                                                        className={
+                                                            regexPdpTidakAktif.test(window.location.href)
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }></i>
+                                                    <p className={regexPdpTidakAktif.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Tidak Aktif</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ) : (
                                     <></>
                                 )}
