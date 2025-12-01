@@ -51,6 +51,7 @@ interface ExcelPdpData {
     'ID PDP': number;
     'Nama Lengkap': string;
     'Jabatan': string;
+    'Provinsi': string;
 }
 export default function PelaksanaProvinsi() {
     const { user } = useUser();
@@ -663,12 +664,8 @@ export default function PelaksanaProvinsi() {
 
         if (filterProvinsi) {
             const provinsiName = provinsi.find((p: any) => p.id == filterProvinsi)?.nama_provinsi;
-
-            console.log(provinsiName);
-
             filters.push(`Provinsi: ${provinsiName}`);
         }
-
 
         if (q) {
             filters.push(`Pencarian: "${q}"`);
@@ -680,6 +677,7 @@ export default function PelaksanaProvinsi() {
 
         return `Filter: ${filters.join(', ')}`;
     };
+
     return (
         <>
             <div className='py-4'>

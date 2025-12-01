@@ -15,7 +15,7 @@ import Pagination from '@/app/components/Pagination';
 import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
 import { useUser } from '@/app/components/UserContext';
-
+import * as XLSX from 'xlsx-js-style';
 type Pelaksana = {
     id: number;
     id_pdp?: number;
@@ -41,6 +41,14 @@ type ListResp = {
     to: number;
     query: string;
 };
+
+interface ExcelPdpData {
+    'ID PDP': number;
+    'Nama Lengkap': string;
+    'Jabatan': string;
+    'Provinsi': string;
+    'Kabupaten': string;
+}
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
     return centerCrop(
@@ -433,6 +441,316 @@ export default function PelaksanaKabupaten() {
     // pagination handler
     const onPageChange = (_url: string, p: number) => setPage(p);
 
+    const downloadAllExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Mengumpulkan Data',
+                text: 'Sedang mengambil semua data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const params = new URLSearchParams();
+
+            if (q) {
+                params.append('q', q);
+            }
+            if (filterProvinsi) {
+                params.append('id_provinsi', filterProvinsi.toString());
+            }
+
+            let response;
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                response = await axios.get(`${UrlApi}/adminpanel/pelaksana-kabupaten-all?${params.toString()}`, {
+                    withCredentials: true
+                });
+            } else {
+
+                response = await axios.get(`${UrlApi}/adminpanel/pelaksana-kabupaten-all?id_provinsi=${user?.id_provinsi}&&id_kabupaten=${user?.id_kabupaten}`, {
+                    withCredentials: true
+                });
+            }
+
+            let allData: Pelaksana[] = [];
+            allData = response.data;
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Format data untuk Excel
+            const excelData: ExcelPdpData[] = allData.map((item, index) => ({
+                'No.': index + 1,
+                'ID PDP': item.id,
+                'Nama Lengkap': item.nama_lengkap,
+                'Jabatan': item.jabatan || '-',
+                'Provinsi': item.nama_provinsi || '-',
+                'Kabupaten': item.nama_kabupaten || '-',
+            }));
+
+            // Buat workbook dan worksheet
+            const wb = XLSX.utils.book_new();
+
+            // Buat data dengan judul
+            const worksheetData = [
+                // Baris 1: Judul Utama
+                ['PELAKSANA KABUPATEN'],
+
+                // Baris 2: Informasi Filter
+                [`Data diambil pada: ${new Date().toLocaleString('id-ID')}`],
+                [getFilterInfo()],
+                [],
+
+
+
+                // Baris 5: Header Tabel
+                Object.keys(excelData[0])
+            ];
+
+            // Tambahkan data
+            excelData.forEach(row => {
+                worksheetData.push(Object.values(row));
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            // Hitung jumlah kolom
+            const totalColumns = Object.keys(excelData[0]).length;
+
+            // ===== STYLING =====
+            // Style untuk judul utama
+            const titleStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 16,
+                    bold: true,
+
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+
+            // Style untuk informasi
+            const infoStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 10,
+                    italic: true,
+                    color: { rgb: "666666" }
+                },
+                alignment: {
+                    horizontal: "left",
+                    vertical: "center"
+                }
+            };
+
+            // Style untuk header tabel
+            const headerStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 11,
+                    bold: true,
+                    color: { rgb: "FFFFFF" }
+                },
+                fill: {
+                    fgColor: { rgb: "C80004" }
+                },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center",
+                    wrapText: true
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+
+            // Style untuk data
+            const dataStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 10
+                },
+                alignment: {
+                    vertical: "center",
+                    wrapText: true
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "DDDDDD" } },
+                    left: { style: "thin", color: { rgb: "DDDDDD" } },
+                    bottom: { style: "thin", color: { rgb: "DDDDDD" } },
+                    right: { style: "thin", color: { rgb: "DDDDDD" } }
+                }
+            };
+
+            // Style khusus untuk kolom nomor
+            const numberStyle = {
+                ...dataStyle,
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+            };
+
+            // ===== TERAPKAN STYLING =====
+            // Judul utama (Baris 1, colspan seluruh kolom)
+            ws['!merges'] = ws['!merges'] || [];
+            ws['!merges'].push(
+                { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } }
+            );
+
+            // Apply styles ke semua cell
+            const applyStyleToCell = (cell: XLSX.CellObject | undefined, style: any) => {
+                if (cell) {
+                    cell.s = style;
+                }
+            };
+
+            // Judul utama
+            const titleCell = 'A1';
+            if (!ws[titleCell]) {
+                ws[titleCell] = { v: worksheetData[0][0], t: 's' };
+            }
+            applyStyleToCell(ws[titleCell], titleStyle);
+
+            // Informasi tanggal
+            const infoCell1 = 'A2';
+            if (!ws[infoCell1]) {
+                ws[infoCell1] = { v: worksheetData[1][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell1], infoStyle);
+
+            // Informasi filter
+            const infoCell2 = 'A3';
+            if (!ws[infoCell2]) {
+                ws[infoCell2] = { v: worksheetData[2][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell2], infoStyle);
+
+            // Header tabel (Baris 5)
+            for (let col = 0; col < totalColumns; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col });
+                if (ws[cellAddress]) {
+                    applyStyleToCell(ws[cellAddress], headerStyle);
+                }
+            }
+
+            // Data rows (mulai dari baris 6)
+            const dataRange = XLSX.utils.decode_range(ws['!ref'] || 'A1:Z1');
+            for (let row = 5; row <= dataRange.e.r; row++) {
+                for (let col = 0; col < totalColumns; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    if (!ws[cellAddress]) continue;
+
+                    // Apply base data style
+                    let style: any = { ...dataStyle };
+
+                    // Center align untuk kolom nomor (kolom 0)
+                    if (col === 0) {
+                        style = { ...style, ...numberStyle };
+                    }
+
+                    applyStyleToCell(ws[cellAddress], style);
+                }
+            }
+
+            // ===== PENGATURAN KOLOM =====
+            ws['!cols'] = [
+                { width: 6 },   // No. Urut
+                { width: 8 },   // ID PDP             
+                { width: 50 },  // Nama Lengkap      
+                { width: 75 },  // Jabatan  
+                { width: 45 },  // provinsi  
+                { width: 60 },  // Kabupaten
+            ];
+
+            // Atur tinggi baris
+            ws['!rows'] = [
+                { hpt: 25 }, // Baris 1 - Judul (lebih tinggi)
+                { hpt: 20 }, // Baris 2 - Info
+                { hpt: 20 }, // Baris 3 - Filter
+                { hpt: 5 },  // Baris 4 - Spasi
+                { hpt: 30 }, // Baris 5 - Header
+                ...Array(allData.length).fill({ hpt: 18 }) // Data rows
+            ];
+
+            // Tambahkan worksheet ke workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'PELAKSANA KABUPATEN');
+
+            // Generate nama file
+            let fileName = 'Pelaksana_Kabupaten';
+            fileName += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            // Download file
+            XLSX.writeFile(wb, fileName);
+
+            Swal.fire({
+                icon: 'success',
+                text: `File Excel berhasil diunduh: ${fileName}\nTotal data: ${allData.length} records`,
+                confirmButtonColor: '#2563eb',
+                timer: 5000
+            });
+
+        } catch (error: any) {
+            console.error('Error downloading Excel:', error);
+            Swal.fire({
+                icon: 'error',
+                text: 'Gagal mengunduh file Excel: ' + (error.response?.data?.message || error.message),
+                confirmButtonColor: '#2563eb'
+            });
+        }
+    };
+    // Fungsi untuk mendapatkan informasi filter
+    const getFilterInfo = (): string => {
+        const filters = [];
+
+        if (filterProvinsi) {
+            const provinsiName = provinsi.find((p: any) => p.id == filterProvinsi)?.nama_provinsi;
+            filters.push(`Provinsi: ${provinsiName}`);
+        }
+        if (filterKabupaten) {
+            const kabupatenName = kabupaten.find((p: any) => p.id == filterKabupaten)?.nama_kabupaten;
+            filters.push(`Provinsi: ${kabupatenName}`);
+        }
+
+        if (q) {
+            filters.push(`Pencarian: "${q}"`);
+        }
+
+        if (filters.length === 0) {
+            return 'Filter: Semua Data';
+        }
+
+        return `Filter: ${filters.join(', ')}`;
+    };
     return (
         <>
             <div className='py-4'>
