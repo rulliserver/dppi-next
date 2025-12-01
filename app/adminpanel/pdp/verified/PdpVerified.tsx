@@ -1020,14 +1020,14 @@ function PdpVerified() {
                                                 >
                                                     Lihat
                                                 </a>
-                                                {user?.role === 'Superadmin' && (
+                                             
                                                     <button
                                                         className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
                                                         onClick={() => clickModalStatus(item)}
                                                     >
                                                         Update Status
                                                     </button>
-                                                )}
+                                               
                                                 <a
                                                     href={`/adminpanel/pdp/${item.id}/edit`}
                                                     className='bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded text-black text-center text-xs'

@@ -1021,6 +1021,19 @@ function PdpVerified() {
                                                     Lihat
                                                 </a>
 
+                                                <button
+                                                    className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
+                                                    onClick={() => clickModalStatus(item)}
+                                                >
+                                                    Update Status
+                                                </button>
+
+                                                <a
+                                                    href={`/userpanel/data-pdp/${item.id}/edit`}
+                                                    className='bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded text-black text-center text-xs'
+                                                >
+                                                    Edit
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -1086,7 +1099,7 @@ function PdpVerified() {
                                         <option value=''>-- Pilih Status --</option>
                                         <option value='Belum Diverifikasi'>Belum Diverifikasi</option>
                                         <option value='Ditolak'>Ditolak</option>
-                                        {/* <option value='Verified'>Verified</option> */}
+                                        <option value='Verified'>Verified</option>
                                     </select>
                                 </div>
 

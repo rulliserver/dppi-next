@@ -1024,7 +1024,7 @@ function PdpBelumDiverifikasi() {
                                         <td className='border p-2'>
                                             <div className='flex flex-col gap-1'>
                                                 <a
-                                                    href={`/adminpanel/pdp/${item.id}`}
+                                                    href={`/userpanel/data-pdp/${item.id}`}
                                                     className='bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded text-white text-center text-xs'
                                                 >
                                                     Lihat
@@ -1038,7 +1038,7 @@ function PdpBelumDiverifikasi() {
                                                     </button>
                                                 )}
                                                 <a
-                                                    href={`/adminpanel/pdp/${item.id}/edit`}
+                                                    href={`/userpanel/data-pdp/${item.id}/edit`}
                                                     className='bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded text-black text-center text-xs'
                                                 >
                                                     Edit
@@ -1171,7 +1171,7 @@ function PdpBelumDiverifikasi() {
                     </div>
                 </div>
             )}
-            
+
             {/* delete Modal */}
             <div id='deleteModal' className='justify-center fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full'>
                 <div className='fixed z-30 w-full justify-center max-w-[500px] mx-auto md:top-12 lg:top-40 top-14'>

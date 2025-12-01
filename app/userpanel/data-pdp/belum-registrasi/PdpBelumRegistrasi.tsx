@@ -1000,25 +1000,11 @@ function PdpBelumRegistrasi() {
                                         <td className='border p-2'>
                                             <div className='flex flex-col gap-1'>
                                                 <a
-                                                    href={`/adminpanel/pdp/${item.id}`}
+                                                    href={`/userpanel/data-pdp/${item.id}`}
                                                     className='bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded text-white text-center text-xs'
                                                 >
                                                     Lihat
-                                                </a>
-                                                {item.status !== 'Verified' && (
-                                                    <button
-                                                        className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
-                                                        onClick={() => clickModalStatus(item)}
-                                                    >
-                                                        Update Status
-                                                    </button>
-                                                )}
-                                                <a
-                                                    href={`/adminpanel/pdp/${item.id}/edit`}
-                                                    className='bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded text-black text-center text-xs'
-                                                >
-                                                    Edit
-                                                </a>
+                                                </a>                                                                                     
 
                                             </div>
                                         </td>
