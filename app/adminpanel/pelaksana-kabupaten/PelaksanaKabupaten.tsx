@@ -460,6 +460,9 @@ export default function PelaksanaKabupaten() {
             if (filterProvinsi) {
                 params.append('id_provinsi', filterProvinsi.toString());
             }
+            if (filterKabupaten) {
+                params.append('id_kabupaten', filterKabupaten.toString());
+            }
 
             let response;
             if (user?.role === "Administrator" || user?.role === "Superadmin") {
@@ -738,7 +741,7 @@ export default function PelaksanaKabupaten() {
         }
         if (filterKabupaten) {
             const kabupatenName = kabupaten.find((p: any) => p.id == filterKabupaten)?.nama_kabupaten;
-            filters.push(`Provinsi: ${kabupatenName}`);
+            filters.push(` ${kabupatenName}`);
         }
 
         if (q) {
@@ -777,57 +780,68 @@ export default function PelaksanaKabupaten() {
                     </div>
                 </div>
             </div>
-
-            {/* Filter Section */}
-            <div className='mb-4 mr-2 lg:p-4 bg-white rounded-md shadow-lg dark:bg-default'>
-                <div className='flex flex-col lg:flex-row gap-4'>
-                    <div className='flex-1'>
-                        <InputLabel htmlFor='filter_provinsi'>Filter Berdasarkan Provinsi:</InputLabel>
-                        <select
-                            name='filter_provinsi'
-                            id='filter_provinsi'
-                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
-                            value={filterProvinsi}
-                            onChange={onFilterProvinsi}
-                        >
-                            <option value=''>Semua Provinsi</option>
-                            {provinsi.map((item: any) => (
-                                <option value={item.id} key={item.id}>
-                                    {item.nama_provinsi}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className='flex-1'>
-                        <InputLabel htmlFor='filter_kabupaten'>Filter Berdasarkan Kabupaten:</InputLabel>
-                        <select
-                            name='filter_kabupaten'
-                            id='filter_kabupaten'
-                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
-                            value={filterKabupaten}
-                            onChange={onFilterKabupaten}
-                            disabled={!filterProvinsi} // Disable jika provinsi belum dipilih
-                        >
-                            <option value=''>Semua Kabupaten</option>
-                            {filteredKabupatenForFilter.map((item: any) => (
-                                <option value={item.id} key={item.id}>
-                                    {item.nama_kabupaten}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className='flex gap-2'>
-                        <button
-                            onClick={resetFilter}
-                            className='px-4 py-2 bg-yellow-500 hover:bg-yellow-600 mb-5 lg:mb-0 text-white rounded-md text-sm'
-                        >
-                            Reset Filter
-                        </button>
-                    </div>
-                </div>
+            <div className='col-span-1  gap-2 mb-5'>
+                {/* Tombol Download Excel */}
+                <button
+                    onClick={downloadAllExcel} // Ganti dari downloadExcel
+                    className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
+                >
+                    <i className='fas fa-file-excel mr-2'></i> Download Semua Data
+                </button>
             </div>
+            {user?.role === "Superadmin" || user?.role === "Administrator" ?
 
-            {loading && <div className='px-0 mx-auto mt-6 lg:px-4 text-slate-900 dark:text-slate-50'>Loading...</div>}
+                < div className='mb-4 mr-2 lg:p-4 bg-white rounded-md shadow-lg dark:bg-default'>
+                    <div className='flex flex-col lg:flex-row gap-4'>
+                        <div className='flex-1'>
+                            <InputLabel htmlFor='filter_provinsi'>Filter Berdasarkan Provinsi:</InputLabel>
+                            <select
+                                name='filter_provinsi'
+                                id='filter_provinsi'
+                                className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
+                                value={filterProvinsi}
+                                onChange={onFilterProvinsi}
+                            >
+                                <option value=''>Semua Provinsi</option>
+                                {provinsi.map((item: any) => (
+                                    <option value={item.id} key={item.id}>
+                                        {item.nama_provinsi}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className='flex-1'>
+                            <InputLabel htmlFor='filter_kabupaten'>Filter Berdasarkan Kabupaten:</InputLabel>
+                            <select
+                                name='filter_kabupaten'
+                                id='filter_kabupaten'
+                                className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
+                                value={filterKabupaten}
+                                onChange={onFilterKabupaten}
+                                disabled={!filterProvinsi} // Disable jika provinsi belum dipilih
+                            >
+                                <option value=''>Semua Kabupaten</option>
+                                {filteredKabupatenForFilter.map((item: any) => (
+                                    <option value={item.id} key={item.id}>
+                                        {item.nama_kabupaten}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className='flex gap-2'>
+                            <button
+                                onClick={resetFilter}
+                                className='px-4 py-2 bg-yellow-500 hover:bg-yellow-600 mb-5 lg:mb-0 text-white rounded-md text-sm'
+                            >
+                                Reset Filter
+                            </button>
+                        </div>
+                    </div>
+                </div >
+                : <></>}
+
+            {loading && <div className='px-0 mx-auto mt-6 lg:px-4 text-slate-900 dark:text-slate-50'>Loading...</div>
+            }
 
             <div className='relative p-0 overflow-hidden rounded-md w-full'>
                 <div className='px-0 mx-auto mt-2 bg-white rounded-md shadow-lg dark:bg-default'>
