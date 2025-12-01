@@ -368,7 +368,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         { href: '/adminpanel/pdp/belum-registrasi', label: 'PDP Belum Registrasi' },
                                         { href: '/adminpanel/pdp/belum-diverifikasi', label: 'PDP Belum Diverifikasi' },
                                         { href: '/adminpanel/pdp/verified', label: 'PDP Verified' },
-                                        { href: '/adminpanel/pdp/Simental', label: 'PDP Simental' },
+                                        { href: '/adminpanel/pdp/simental', label: 'PDP Simental' },
                                         { href: '/adminpanel/pdp/tidak-aktif', label: 'PDP Tidak Aktif' },
 
                                     ].map((item) => (

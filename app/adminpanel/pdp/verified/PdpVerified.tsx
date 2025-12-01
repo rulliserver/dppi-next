@@ -474,7 +474,7 @@ function PdpVerified() {
                 allData = response.data;
             } else {
                 // Endpoint biasa mengembalikan object pagination
-                allData = response.data.data;
+                allData = response.data;
             }
 
             if (allData.length === 0) {

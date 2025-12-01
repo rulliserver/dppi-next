@@ -14,6 +14,7 @@ import { UrlApi } from '@/app/components/apiUrl';
 import Pagination from '@/app/components/Pagination';
 import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
+import * as XLSX from 'xlsx-js-style';
 
 type Pelaksana = {
     id: number;
@@ -36,7 +37,11 @@ type ListResp = {
     to: number;
     query: string;
 };
-
+interface ExcelPdpData {
+    'ID PDP': number;
+    'Nama Lengkap': string;
+    'Jabatan': string;
+}
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
     return centerCrop(
         makeAspectCrop({ unit: '%', width: 90 }, aspect, mediaWidth, mediaHeight),
@@ -309,32 +314,362 @@ export default function PelaksanaPusat() {
     // pagination handler
     const onPageChange = (_url: string, p: number) => setPage(p);
 
+    const downloadAllExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Mengumpulkan Data',
+                text: 'Sedang mengambil semua data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const params = new URLSearchParams();
+
+            let response;
+            response = await axios.get(`${UrlApi}/adminpanel/pelaksana-pusat?page=${1}&per_page=${10}&q=${encodeURIComponent('')}`, {
+                withCredentials: true
+            });
+
+
+            let allData: Pelaksana[] = [];
+            allData = response.data.data;
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Format data untuk Excel
+            const excelData: ExcelPdpData[] = allData.map((item, index) => ({
+                'No.': index + 1,
+                'ID PDP': item.id,
+                'Nama Lengkap': item.nama_lengkap,
+                'Jabatan': item.jabatan || '-'
+            }));
+
+            // Buat workbook dan worksheet
+            const wb = XLSX.utils.book_new();
+
+            // Buat data dengan judul
+            const worksheetData = [
+                // Baris 1: Judul Utama
+                ['PELAKSANA PUSAT'],
+
+                // Baris 2: Informasi Filter
+                [`Data diambil pada: ${new Date().toLocaleString('id-ID')}`],
+                [],
+                [],
+
+
+
+                // Baris 5: Header Tabel
+                Object.keys(excelData[0])
+            ];
+
+            // Tambahkan data
+            excelData.forEach(row => {
+                worksheetData.push(Object.values(row));
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            // Hitung jumlah kolom
+            const totalColumns = Object.keys(excelData[0]).length;
+
+            // ===== STYLING =====
+            // Style untuk judul utama
+            const titleStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 16,
+                    bold: true,
+
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+
+            // Style untuk informasi
+            const infoStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 10,
+                    italic: true,
+                    color: { rgb: "666666" }
+                },
+                alignment: {
+                    horizontal: "left",
+                    vertical: "center"
+                }
+            };
+
+            // Style untuk header tabel
+            const headerStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 11,
+                    bold: true,
+                    color: { rgb: "FFFFFF" }
+                },
+                fill: {
+                    fgColor: { rgb: "C80004" }
+                },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center",
+                    wrapText: true
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+
+            // Style untuk data
+            const dataStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 10
+                },
+                alignment: {
+                    vertical: "center",
+                    wrapText: true
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "DDDDDD" } },
+                    left: { style: "thin", color: { rgb: "DDDDDD" } },
+                    bottom: { style: "thin", color: { rgb: "DDDDDD" } },
+                    right: { style: "thin", color: { rgb: "DDDDDD" } }
+                }
+            };
+
+            // Style khusus untuk kolom nomor
+            const numberStyle = {
+                ...dataStyle,
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+            };
+
+            // ===== TERAPKAN STYLING =====
+            // Judul utama (Baris 1, colspan seluruh kolom)
+            ws['!merges'] = ws['!merges'] || [];
+            ws['!merges'].push(
+                { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } }
+            );
+
+            // Apply styles ke semua cell
+            const applyStyleToCell = (cell: XLSX.CellObject | undefined, style: any) => {
+                if (cell) {
+                    cell.s = style;
+                }
+            };
+
+            // Judul utama
+            const titleCell = 'A1';
+            if (!ws[titleCell]) {
+                ws[titleCell] = { v: worksheetData[0][0], t: 's' };
+            }
+            applyStyleToCell(ws[titleCell], titleStyle);
+
+            // Informasi tanggal
+            const infoCell1 = 'A2';
+            if (!ws[infoCell1]) {
+                ws[infoCell1] = { v: worksheetData[1][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell1], infoStyle);
+
+            // Informasi filter
+            const infoCell2 = 'A3';
+            if (!ws[infoCell2]) {
+                ws[infoCell2] = { v: worksheetData[2][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell2], infoStyle);
+
+            // Header tabel (Baris 5)
+            for (let col = 0; col < totalColumns; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col });
+                if (ws[cellAddress]) {
+                    applyStyleToCell(ws[cellAddress], headerStyle);
+                }
+            }
+
+            // Data rows (mulai dari baris 6)
+            const dataRange = XLSX.utils.decode_range(ws['!ref'] || 'A1:Z1');
+            for (let row = 5; row <= dataRange.e.r; row++) {
+                for (let col = 0; col < totalColumns; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    if (!ws[cellAddress]) continue;
+
+                    // Apply base data style
+                    let style: any = { ...dataStyle };
+
+                    // Center align untuk kolom nomor (kolom 0)
+                    if (col === 0) {
+                        style = { ...style, ...numberStyle };
+                    }
+
+                    applyStyleToCell(ws[cellAddress], style);
+                }
+            }
+
+            // ===== PENGATURAN KOLOM =====
+            ws['!cols'] = [
+                { width: 6 },   // No. Urut
+                { width: 8 },   // ID PDP             
+                { width: 50 },  // Nama Lengkap      
+                { width: 75 },  // Jabatan  
+            ];
+
+            // Atur tinggi baris
+            ws['!rows'] = [
+                { hpt: 25 }, // Baris 1 - Judul (lebih tinggi)
+                { hpt: 20 }, // Baris 2 - Info
+                { hpt: 20 }, // Baris 3 - Filter
+                { hpt: 5 },  // Baris 4 - Spasi
+                { hpt: 30 }, // Baris 5 - Header
+                ...Array(allData.length).fill({ hpt: 18 }) // Data rows
+            ];
+
+            // Tambahkan worksheet ke workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'PELAKSANA PUSAT');
+
+            // Generate nama file
+            let fileName = 'Pelaksana_Pusat';
+            fileName += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            // Download file
+            XLSX.writeFile(wb, fileName);
+
+            Swal.fire({
+                icon: 'success',
+                text: `File Excel berhasil diunduh: ${fileName}\nTotal data: ${allData.length} records`,
+                confirmButtonColor: '#2563eb',
+                timer: 5000
+            });
+
+        } catch (error: any) {
+            console.error('Error downloading Excel:', error);
+            Swal.fire({
+                icon: 'error',
+                text: 'Gagal mengunduh file Excel: ' + (error.response?.data?.message || error.message),
+                confirmButtonColor: '#2563eb'
+            });
+        }
+    };
+
+
+
     return (
         <>
-            <div className='py-4'>
+            {/* Header dan Search */}
+            <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6'>
+                <div className='flex items-center mb-4 lg:mb-0'>
+                    <i className='text-accent fa fa-user-tie text-5xl pr-5'></i>
+                    <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>PELAKSANA PUSAT</p>
+                </div>
+                <button className='text-center bg-teal-700 hover:bg-teal-800 px-3 py-1 rounded-lg text-white' onClick={openCreate}>
+                    Tambah Data Pelaksana
+                </button>
+
+            </div>
+            {/* Filter Wilayah dan Search */}
+            <div className='col-span-1  gap-2 mb-5'>
+                {/* Tombol Download Excel */}
+                <button
+                    onClick={downloadAllExcel} // Ganti dari downloadExcel
+                    className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
+                >
+                    <i className='fas fa-file-excel mr-2'></i> Download Semua Data
+                </button>
+            </div>
+            <div className='bg-white grid grid-cols-1 p-4 flex-row dark:bg-gray-800 pb-4 rounded-lg shadow-lg mx-1 mb-6'>
+                <div className='md:col-span-2'>
+                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                        Pencarian
+                    </label>
+                    <form onSubmit={onSearch} className='flex gap-2'>
+                        <input
+                            type="text"
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder='Cari nama/jabatan...'
+                            className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
+                        />
+                        <button
+                            type='submit'
+                            className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
+                        >
+                            <i className='fas fa-search'></i>
+                        </button>
+                    </form>
+                </div>
+
+
+
+            </div>
+
+            {/* <div className='py-4'>
                 <div className='text-gray-9000 flex flex-row justify-between'>
                     <div className='flex flex-row'>
-                        <i className='text-accent fa fa-user-tie text-5xl pr-5'></i>
+                        <i className='text-accent fa fa-user-tie text-xl pr-5'></i>
                         <p className='text-2xl py-2 font-semibold text-accent'>PELAKSANA PUSAT</p>
                     </div>
-                    <div className='flex flex-row gap-2'>
-                        <form onSubmit={onSearch} className='flex gap-2'>
-                            <input
-                                value={q}
-                                onChange={(e) => setQ(e.target.value)}
-                                className='border px-2 rounded-md text-sm'
-                                placeholder='Cari nama/jabatan...'
-                            />
-                            <button className='text-center bg-gray-200 hover:bg-gray-300 px-3 rounded-lg' type='submit'>
-                                Cari
-                            </button>
-                        </form>
-                        <button className='text-center bg-green-700 hover:bg-green-800 px-2 rounded-lg text-white' onClick={openCreate}>
-                            Tambah Data Pelaksana
-                        </button>
-                    </div>
+                    <button className='text-center bg-green-700 hover:bg-green-800 px-2 rounded-lg text-white' onClick={openCreate}>
+                        Tambah Data Pelaksana
+                    </button>
+
                 </div>
             </div>
+            <div className='w-full mt-4'>
+                <form onSubmit={onSearch} className='w-full flex gap-2'>
+                    <input
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                        className='border px-2 py-2 rounded-md text-sm'
+                        placeholder='Cari nama/jabatan...'
+                    />
+                    <button className='text-center bg-gray-200 hover:bg-gray-300 px-3 rounded-lg' type='submit'>
+                        Cari
+                    </button>
+                </form>
+                <div className='w-full flex gap-2'>
+    
+                    <button
+                        onClick={downloadAllExcel} 
+                        className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
+                    >
+                        <i className='fas fa-file-excel mr-2'></i> Download Semua Data
+                    </button>
+                </div>
+            </div> */}
 
             {loading && <div className='px-0 mx-auto mt-6 lg:px-4 text-slate-900 dark:text-slate-50'>Loading...</div>}
 
