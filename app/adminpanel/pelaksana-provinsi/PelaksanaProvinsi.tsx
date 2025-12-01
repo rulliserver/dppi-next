@@ -15,7 +15,7 @@ import Pagination from '@/app/components/Pagination';
 import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
 import { useUser } from '@/app/components/UserContext';
-
+import * as XLSX from 'xlsx-js-style';
 type Pelaksana = {
     id: number;
     id_pdp?: number;
@@ -47,7 +47,11 @@ function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: numbe
         mediaHeight
     );
 }
-
+interface ExcelPdpData {
+    'ID PDP': number;
+    'Nama Lengkap': string;
+    'Jabatan': string;
+}
 export default function PelaksanaProvinsi() {
     const { user } = useUser();
     // list state    
@@ -58,6 +62,7 @@ export default function PelaksanaProvinsi() {
     const [perPage, setPerPage] = useState<number>(10);
     const [q, setQ] = useState<string>('');
     const [filterProvinsi, setFilterProvinsi] = useState<string>(''); // State untuk filter provinsi
+
     const [loading, setLoading] = useState<boolean>(false);
     // jabatan
     const [jabatan, setJabatan] = useState<{ nama_jabatan: string }[]>([]);
@@ -367,7 +372,314 @@ export default function PelaksanaProvinsi() {
 
     // pagination handler
     const onPageChange = (_url: string, p: number) => setPage(p);
+    const downloadAllExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Mengumpulkan Data',
+                text: 'Sedang mengambil semua data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
+            const params = new URLSearchParams();
+
+            if (q) {
+                params.append('q', q);
+            }
+            if (filterProvinsi) {
+                params.append('id_provinsi', filterProvinsi.toString());
+            }
+
+            let response;
+            if (user?.role === "Administrator" || user?.role === "Superadmin") {
+                response = await axios.get(`${UrlApi}/adminpanel/pelaksana-provinsi-all?${params.toString()}`, {
+                    withCredentials: true
+                });
+            } else {
+
+                response = await axios.get(`${UrlApi}/adminpanel/pelaksana-provinsi-all?id_provinsi=${user?.id_provinsi}`, {
+                    withCredentials: true
+                });
+            }
+
+            let allData: Pelaksana[] = [];
+            allData = response.data;
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            if (allData.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Tidak ada data untuk diunduh',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Format data untuk Excel
+            const excelData: ExcelPdpData[] = allData.map((item, index) => ({
+                'No.': index + 1,
+                'ID PDP': item.id,
+                'Nama Lengkap': item.nama_lengkap,
+                'Jabatan': item.jabatan || '-',
+                'Provinsi': item.nama_provinsi || '-',
+            }));
+
+            // Buat workbook dan worksheet
+            const wb = XLSX.utils.book_new();
+
+            // Buat data dengan judul
+            const worksheetData = [
+                // Baris 1: Judul Utama
+                ['PELAKSANA PROVINSI'],
+
+                // Baris 2: Informasi Filter
+                [`Data diambil pada: ${new Date().toLocaleString('id-ID')}`],
+                [getFilterInfo()],
+                [],
+
+
+
+                // Baris 5: Header Tabel
+                Object.keys(excelData[0])
+            ];
+
+            // Tambahkan data
+            excelData.forEach(row => {
+                worksheetData.push(Object.values(row));
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            // Hitung jumlah kolom
+            const totalColumns = Object.keys(excelData[0]).length;
+
+            // ===== STYLING =====
+            // Style untuk judul utama
+            const titleStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 16,
+                    bold: true,
+
+                },
+
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+
+            // Style untuk informasi
+            const infoStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 10,
+                    italic: true,
+                    color: { rgb: "666666" }
+                },
+                alignment: {
+                    horizontal: "left",
+                    vertical: "center"
+                }
+            };
+
+            // Style untuk header tabel
+            const headerStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 11,
+                    bold: true,
+                    color: { rgb: "FFFFFF" }
+                },
+                fill: {
+                    fgColor: { rgb: "C80004" }
+                },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center",
+                    wrapText: true
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+
+            // Style untuk data
+            const dataStyle = {
+                font: {
+                    name: 'Arial',
+                    sz: 10
+                },
+                alignment: {
+                    vertical: "center",
+                    wrapText: true
+                },
+                border: {
+                    top: { style: "thin", color: { rgb: "DDDDDD" } },
+                    left: { style: "thin", color: { rgb: "DDDDDD" } },
+                    bottom: { style: "thin", color: { rgb: "DDDDDD" } },
+                    right: { style: "thin", color: { rgb: "DDDDDD" } }
+                }
+            };
+
+            // Style khusus untuk kolom nomor
+            const numberStyle = {
+                ...dataStyle,
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+            };
+
+            // ===== TERAPKAN STYLING =====
+            // Judul utama (Baris 1, colspan seluruh kolom)
+            ws['!merges'] = ws['!merges'] || [];
+            ws['!merges'].push(
+                { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } }
+            );
+
+            // Apply styles ke semua cell
+            const applyStyleToCell = (cell: XLSX.CellObject | undefined, style: any) => {
+                if (cell) {
+                    cell.s = style;
+                }
+            };
+
+            // Judul utama
+            const titleCell = 'A1';
+            if (!ws[titleCell]) {
+                ws[titleCell] = { v: worksheetData[0][0], t: 's' };
+            }
+            applyStyleToCell(ws[titleCell], titleStyle);
+
+            // Informasi tanggal
+            const infoCell1 = 'A2';
+            if (!ws[infoCell1]) {
+                ws[infoCell1] = { v: worksheetData[1][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell1], infoStyle);
+
+            // Informasi filter
+            const infoCell2 = 'A3';
+            if (!ws[infoCell2]) {
+                ws[infoCell2] = { v: worksheetData[2][0], t: 's' };
+            }
+            applyStyleToCell(ws[infoCell2], infoStyle);
+
+            // Header tabel (Baris 5)
+            for (let col = 0; col < totalColumns; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col });
+                if (ws[cellAddress]) {
+                    applyStyleToCell(ws[cellAddress], headerStyle);
+                }
+            }
+
+            // Data rows (mulai dari baris 6)
+            const dataRange = XLSX.utils.decode_range(ws['!ref'] || 'A1:Z1');
+            for (let row = 5; row <= dataRange.e.r; row++) {
+                for (let col = 0; col < totalColumns; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    if (!ws[cellAddress]) continue;
+
+                    // Apply base data style
+                    let style: any = { ...dataStyle };
+
+                    // Center align untuk kolom nomor (kolom 0)
+                    if (col === 0) {
+                        style = { ...style, ...numberStyle };
+                    }
+
+                    applyStyleToCell(ws[cellAddress], style);
+                }
+            }
+
+            // ===== PENGATURAN KOLOM =====
+            ws['!cols'] = [
+                { width: 6 },   // No. Urut
+                { width: 8 },   // ID PDP             
+                { width: 50 },  // Nama Lengkap      
+                { width: 75 },  // Jabatan  
+                { width: 50 },  // provinsi  
+            ];
+
+            // Atur tinggi baris
+            ws['!rows'] = [
+                { hpt: 25 }, // Baris 1 - Judul (lebih tinggi)
+                { hpt: 20 }, // Baris 2 - Info
+                { hpt: 20 }, // Baris 3 - Filter
+                { hpt: 5 },  // Baris 4 - Spasi
+                { hpt: 30 }, // Baris 5 - Header
+                ...Array(allData.length).fill({ hpt: 18 }) // Data rows
+            ];
+
+            // Tambahkan worksheet ke workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'PELAKSANA PROVINSI');
+
+            // Generate nama file
+            let fileName = 'Pelaksana_Provinsi';
+            fileName += `_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            // Download file
+            XLSX.writeFile(wb, fileName);
+
+            Swal.fire({
+                icon: 'success',
+                text: `File Excel berhasil diunduh: ${fileName}\nTotal data: ${allData.length} records`,
+                confirmButtonColor: '#2563eb',
+                timer: 5000
+            });
+
+        } catch (error: any) {
+            console.error('Error downloading Excel:', error);
+            Swal.fire({
+                icon: 'error',
+                text: 'Gagal mengunduh file Excel: ' + (error.response?.data?.message || error.message),
+                confirmButtonColor: '#2563eb'
+            });
+        }
+    };
+    // Fungsi untuk mendapatkan informasi filter
+    const getFilterInfo = (): string => {
+        const filters = [];
+
+        if (filterProvinsi) {
+            const provinsiName = provinsi.find((p: any) => p.id == filterProvinsi)?.nama_provinsi;
+
+            console.log(provinsiName);
+
+            filters.push(`Provinsi: ${provinsiName}`);
+        }
+
+
+        if (q) {
+            filters.push(`Pencarian: "${q}"`);
+        }
+
+        if (filters.length === 0) {
+            return 'Filter: Semua Data';
+        }
+
+        return `Filter: ${filters.join(', ')}`;
+    };
     return (
         <>
             <div className='py-4'>
@@ -396,37 +708,51 @@ export default function PelaksanaProvinsi() {
             </div>
 
             {/* Filter Section */}
-            <div className='mb-4 mr-2 lg:p-4 bg-white rounded-md shadow-lg dark:bg-default'>
-                <div className='flex flex-col lg:flex-row gap-4'>
-                    <div className='flex-1'>
-                        <InputLabel htmlFor='filter_provinsi'>Filter Berdasarkan Provinsi:</InputLabel>
-                        <select
-                            name='filter_provinsi'
-                            id='filter_provinsi'
-                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
-                            value={filterProvinsi}
-                            onChange={onFilterProvinsi}
-                        >
-                            <option value=''>Semua Provinsi</option>
-                            {provinsi.map((item: any) => (
-                                <option value={item.id} key={item.id}>
-                                    {item.nama_provinsi}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className='flex gap-2 items-end'>
-                        <button
-                            onClick={resetFilter}
-                            className='px-4 py-2 mb-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-sm'
-                        >
-                            Reset Filter
-                        </button>
-                    </div>
-                </div>
+            <div className='col-span-1  gap-2 mb-5'>
+                {/* Tombol Download Excel */}
+                <button
+                    onClick={downloadAllExcel} // Ganti dari downloadExcel
+                    className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
+                >
+                    <i className='fas fa-file-excel mr-2'></i> Download Semua Data
+                </button>
             </div>
+            {user?.role === "Superadmin" || user?.role === "Administrator" ?
+                < div className='mb-4 mr-2 lg:p-4 bg-white rounded-md shadow-lg dark:bg-default'>
+                    <div className='flex flex-row gap-4'>
+                        <div className='flex-1'>
+                            <InputLabel htmlFor='filter_provinsi'>Filter Berdasarkan Provinsi:</InputLabel>
+                            <select
+                                name='filter_provinsi'
+                                id='filter_provinsi'
+                                className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 w-full mt-1 p-2 border'
+                                value={filterProvinsi}
+                                onChange={onFilterProvinsi}
+                            >
+                                <option value=''>Semua Provinsi</option>
+                                {provinsi.map((item: any) => (
+                                    <option value={item.id} key={item.id}>
+                                        {item.nama_provinsi}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className='flex gap-2 mt-5 items-end'>
+                            <button
+                                onClick={resetFilter}
+                                className='px-4 py-2 mb-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-sm'
+                            >
+                                Reset Filter
+                            </button>
+                        </div>
+                    </div>
+                </div >
+                : <></>
+            }
 
-            {loading && <div className='px-0 mx-auto mt-6 lg:px-4 text-slate-900 dark:text-slate-50'>Loading...</div>}
+            {
+                loading && <div className='px-0 mx-auto mt-6 lg:px-4 text-slate-900 dark:text-slate-50'>Loading...</div>
+            }
 
             <div className='relative p-0 overflow-hidden rounded-md w-full'>
                 <div className='px-0 mx-auto mt-2 bg-white rounded-md shadow-lg dark:bg-default'>
