@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { UrlApi } from '../../components/apiUrl';
@@ -56,71 +55,69 @@ function LoginForm() {
         checkAuth();
     }, [checkAuth]);
 
-    const submit = async (e: React.FormEvent) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDataUser({ ...dataUser, [e.target.name]: e.target.value });
+    };
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrorMessage(null);
 
         if (!executeRecaptcha) {
-            setErrorMessage('reCAPTCHA belum siap. Muat ulang halaman, ya.');
+            setErrorMessage('Sistem keamanan belum siap, silakan refresh halaman.');
             return;
         }
 
         try {
             setProcessing(true);
+            const recaptchaToken = await executeRecaptcha('login');
 
-            // DAPATKAN TOKEN reCAPTCHA v3
-            const recaptcha_token = await executeRecaptcha('login');
-            if (!recaptcha_token) {
-                setProcessing(false);
-                setErrorMessage('Gagal mengambil token reCAPTCHA.');
-                return;
-            }
-
-
-            const loginResponse = await fetch(`${UrlApi}/login`, {
+            const res = await fetch(`${UrlApi}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
                     email: dataUser.email,
                     password: dataUser.password,
-                    recaptchaToken: recaptcha_token,
+                    recaptchaToken,
                 }),
             });
 
-            if (!loginResponse.ok) {
-                const errText = await loginResponse.text();
-                throw new Error(errText || 'Login gagal.');
+            if (!res.ok) throw new Error('Email atau password salah');
+
+            const json = await res.json();
+
+            if (json.access_token) {
+                localStorage.setItem('access_token', json.access_token);
             }
 
-            const loginData: LoginResponse = await loginResponse.json();
+            // Ambil detail user setelah login
+            const me = await fetch(`${UrlApi}/user`, {
+                headers: {
+                    Authorization: `Bearer ${json.access_token}`,
+                },
+                credentials: 'include'
+            });
 
-            // Simpan access_token jika ada
-            const token =
-                (loginData as any).access_token ??
-                (typeof loginData === 'object' && 'access_token' in loginData ? (loginData as any).access_token : null);
+            const user = await me.json();
+            setUser(user);
 
-            if (token) {
-                localStorage.setItem('access_token', token);
-            }
+            const role = user.role || 'User';
+            window.location.href =
+                role.includes('Admin') ? '/adminpanel' : '/userpanel';
 
-            // Ambil user sesudah login (pakai token baru)
-            await checkAuth();
         } catch (err: any) {
-            setErrorMessage(err?.message || 'Terjadi kesalahan saat login');
+            setErrorMessage(err.message || 'Login gagal, coba lagi.');
         } finally {
             setProcessing(false);
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setDataUser({ ...dataUser, [e.target.name]: e.target.value });
-    };
+
 
     return (
         <div>
             {errorMessage && <InputError message={errorMessage} />}
-            <form onSubmit={submit}>
+            <form onSubmit={handleSubmit}>
                 <div>
                     <label htmlFor='email' className='block font-medium text-sm text-gray-700 dark:text-gray-200'>
                         Email

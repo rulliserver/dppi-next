@@ -213,7 +213,7 @@ export default function User() {
         nama_provinsi: '',
         nama_kabupaten: ''
     });
-    console.log(editData);
+
 
     const [editConfirmPasswordError, setEditConfirmPasswordError] = useState('');
     const handleEditChange = (e: any) => {

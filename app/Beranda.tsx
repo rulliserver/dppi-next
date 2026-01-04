@@ -9,7 +9,6 @@ import SlideBerita from "./components/SlideBerita";
 import Peta from "./components/Peta";
 import Image from "next/image";
 
-
 export default function Beranda() {
     const [video, setVideo]: any = useState();
     const [berita, setBerita]: any = useState();
@@ -124,7 +123,7 @@ export default function Beranda() {
 
     return (
         <div>
-            <div className='w-full max-h-[600px] 2xl:max-h-[750px] flex justify-center'>
+            <div className='w-full max-h-150 2xl:max-h-187.5 flex justify-center'>
                 {video ?
                     <video src={BaseUrl + video.file_video.replace('/uploads', 'uploads')} className='object-cover' loop autoPlay={true} />
                     :
@@ -188,10 +187,10 @@ export default function Beranda() {
                             </div>
                         </div>
                         <div className='relative w-full px-4 grid md:grid-cols-2 gap-4'>
-                            <Link href='/register' className='bg-[#c40010] text-white mx-auto hover:bg-red-700 text-center mt-2 px-8 rounded-2xl py-4 w-full lg:w-[300px]'>
+                            <Link href='/register' className='bg-[#c40010] text-white mx-auto hover:bg-red-700 text-center mt-2 px-8 rounded-2xl py-4 w-full lg:w-75'>
                                 Registrasi
                             </Link>
-                            <a href='/auth/login' className='bg-[#c40010] text-white hover:bg-red-700 mx-auto text-center mt-2 px-8 rounded-2xl py-4 w-full lg:w-[300px]'>
+                            <a href='/auth/login' className='bg-[#c40010] text-white hover:bg-red-700 mx-auto text-center mt-2 px-8 rounded-2xl py-4 w-full lg:w-75'>
                                 Masuk
                             </a>
                         </div>

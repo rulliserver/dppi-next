@@ -303,7 +303,7 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
 
             <footer className='mb-auto text-white '>
                 <div className='z-10 items-center w-full border-b-4 md:block border-secondary bg-red-700 header'>
-                    <div className='block py-2 max-w-[1270px] md:grid md:grid-cols-3 md:gap-16 mx-auto'>
+                    <div className='block py-2 max-w-317.5 md:grid md:grid-cols-3 md:gap-16 mx-auto'>
                         <div className='col-span-1 my-auto'>
                             <a className='flex px-2' href='/'>
                                 <img src='/assets/images/logo-bpip.png' alt='Logo BPIP' className='gov-image' />
