@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { UrlApi } from '../components/apiUrl';
 import { v4 as uuidv4 } from 'uuid';
+import SimpleVisitorStats from '../components/SimpleVisitorStats';
 export default function GuestLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const pathname = usePathname()
     const [isScrolled, setIsScrolled] = useState(false);
@@ -61,54 +62,91 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
     const slideoverContainerClass = isMenuOpen ? '' : 'invisible';
     const slideoverBGClass = isMenuOpen ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none';
     const slideoverTransformClass = isMenuOpen ? 'translate-x-0' : 'translate-x-full';
+    const [sessionId, setSessionId] = useState<string>('');
+    const [hasTracked, setHasTracked] = useState(false);
 
     useEffect(() => {
-        const trackVisit = async () => {
-            // Get or create session
-            let sessionId = localStorage.getItem('visitor_session_id');
-            if (!sessionId) {
-                sessionId = uuidv4();
-                localStorage.setItem('visitor_session_id', sessionId);
-                localStorage.setItem('visitor_first_visit', new Date().toISOString());
+        // Initialize session
+        const initSession = () => {
+            // Cek semua storage
+
+            const localStorageId = localStorage.getItem('visitor_session_id');
+            const sessionStorageId = sessionStorage.getItem('visitor_session_id');
+
+            let finalSessionId = localStorageId;
+
+            if (!finalSessionId) {
+                finalSessionId = uuidv4();
+                // Set semua storage
+
+                localStorage.setItem('visitor_session_id', finalSessionId);
+                sessionStorage.setItem('visitor_session_id', finalSessionId);
+            } else {
+                // Sync across all storages
+
+                if (!localStorageId) localStorage.setItem('visitor_session_id', finalSessionId);
+                if (!sessionStorageId) sessionStorage.setItem('visitor_session_id', finalSessionId);
             }
 
-            // Update last visit
-            localStorage.setItem('visitor_last_visit', new Date().toISOString());
+            setSessionId(finalSessionId);
+            return finalSessionId;
+        };
 
-            // Prepare tracking data
-            const trackingData = {
-                session_id: sessionId,
-                page_url: `${window.location.origin}${pathname}`,
-                pathname: pathname,
-                referrer: document.referrer || '',
+        const currentSessionId = initSession();
+
+        // Debounce logic
+        const lastTrackKey = `last_track_${currentSessionId}`;
+        const lastTrackTime = localStorage.getItem(lastTrackKey);
+        const now = Date.now();
+
+        // Minimal 1000 detik antara tracks untuk session yang sama
+        if (lastTrackTime && (now - parseInt(lastTrackTime) < 1000000)) {
+            console.log('⏸️  Skipping track (debounce)');
+            return;
+        }
+
+        // Cek jika sudah track hari ini
+        const todayKey = `tracked_today_${currentSessionId}`;
+        const today = new Date().toDateString();
+        const trackedToday = localStorage.getItem(todayKey);
+
+        if (trackedToday === today && hasTracked) {
+            console.log('📅 Already tracked today');
+            return;
+        }
+
+        const trackVisit = async () => {
+            const visitorData = {
+                session_id: currentSessionId,
+                page_url: window.location.href,
+                referrer: document.referrer || undefined,
                 screen_resolution: `${window.screen.width}x${window.screen.height}`,
                 language: navigator.language,
-                user_agent: navigator.userAgent,
+                is_new_session: !trackedToday,
                 timestamp: new Date().toISOString(),
             };
 
             try {
-                await fetch(`${UrlApi}/track`, {
+                const response = await fetch(`${UrlApi}/track`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(trackingData),
+                    body: JSON.stringify(visitorData),
                 });
 
-                console.log(`📊 Tracked: ${pathname}`);
+                if (response.ok) {
+                    console.log('✅ Tracked successfully');
+                    setHasTracked(true);
+                    localStorage.setItem(lastTrackKey, Date.now().toString());
+                    localStorage.setItem(todayKey, today);
+                }
             } catch (error) {
-                console.error('Tracking failed:', error);
-
-                // Save to localStorage for retry later
-                const failedTracks = JSON.parse(
-                    localStorage.getItem('failed_tracks') || '[]'
-                );
-                failedTracks.push(trackingData);
-                localStorage.setItem('failed_tracks', JSON.stringify(failedTracks.slice(-10)));
+                console.error('Failed to track:', error);
             }
         };
 
         trackVisit();
-    }, [pathname]);
+    }, []); // Empty dependency array
+
 
     return (
         <div className='bg-gray-50 dark:bg-gray-100'>
@@ -400,7 +438,13 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                     <></>
                                 )}
                             </div>
+                            <div className="mt-8">
+
+                                <SimpleVisitorStats />
+                            </div>
                         </div>
+
+
                     </div>
                     <div className='flex justify-center mx-auto mb-4 text-xs text-center '>
                         <p>DPPI BPIP RI ©2025 All Rights Reserved </p>
