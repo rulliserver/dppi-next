@@ -60,7 +60,7 @@ const RatingStats: React.FC = () => {
                     <p className="text-gray-600">Dari {stats.total_ratings.toLocaleString()} pengunjung</p>
                 </div>
                 <div className="text-center">
-                    <div className="text-4xl font-bold text-blue-600">
+                    <div className="text-4xl font-bold text-red-600">
                         {stats?.average_rating ? Number(stats.average_rating).toFixed(1) : '0.0'}
                     </div>
                     <div className="flex justify-center mt-1">
@@ -83,12 +83,12 @@ const RatingStats: React.FC = () => {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-gray-200 ">
+            <div className="border-b border-gray-200 mb-6">
                 <nav className="-mb-px flex space-x-8">
                     <button
                         onClick={() => setActiveTab('overview')}
                         className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'overview'
-                            ? 'border-blue-500 text-blue-600'
+                            ? 'border-red-500 text-red-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
@@ -97,7 +97,7 @@ const RatingStats: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('reviews')}
                         className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'reviews'
-                            ? 'border-blue-500 text-blue-600'
+                            ? 'border-red-500 text-red-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
@@ -122,17 +122,17 @@ const RatingStats: React.FC = () => {
 
                                 return (
                                     <div key={stars} className="flex items-center">
-                                        <div className="w-16 text-sm text-gray-600">
+                                        <div className="w-25 text-sm text-gray-600">
                                             <div className="flex">
                                                 {[...Array(stars)].map((_, i) => (
-                                                    <span key={i} className="text-yellow-500">★</span>
+                                                    <span key={i} className="text-yellow-500">   <img src="/assets/images/ico-stars.svg" alt="bintang kosong" className='w-5' /></span>
                                                 ))}
                                             </div>
                                         </div>
                                         <div className="flex-1 ml-4">
                                             <div className="w-full bg-gray-200 rounded-full h-3">
                                                 <div
-                                                    className="bg-blue-500 h-3 rounded-full"
+                                                    className="bg-red-500 h-3 rounded-full"
                                                     style={{ width: `${percentage}%` }}
                                                 ></div>
                                             </div>
@@ -149,7 +149,7 @@ const RatingStats: React.FC = () => {
                         </div>
                     </div>
 
-                  
+
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -182,7 +182,7 @@ const RatingStats: React.FC = () => {
                                                                 : 'text-gray-300'
                                                                 }`}
                                                         >
-                                                            ★
+                                                            <img src="/assets/images/ico-stars.svg" alt="bintang kosong" />
                                                         </span>
                                                     ))}
                                                 </div>
