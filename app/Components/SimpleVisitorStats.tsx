@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { UrlApi } from './apiUrl';
 
 interface SimpleStats {
     today: number;
@@ -18,7 +19,7 @@ const SimpleVisitorStats: React.FC = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/stats/summary2');
+                const response = await fetch(`${UrlApi}/stats/summary2`);
                 const data = await response.json();
                 setStats({
                     today: data.today,

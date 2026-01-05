@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
+import { UrlApi } from './apiUrl';
 
 interface RatingFormProps {
     sessionId: string;
@@ -9,7 +10,6 @@ interface RatingFormProps {
 
 const RatingForm: React.FC<RatingFormProps> = ({
     sessionId,
-    pageUrl,
     onSuccess
 }) => {
     const [rating, setRating] = useState<number>(0);
@@ -52,7 +52,7 @@ const RatingForm: React.FC<RatingFormProps> = ({
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/ratings', {
+            const response = await fetch(`${UrlApi}/ratings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -62,8 +62,7 @@ const RatingForm: React.FC<RatingFormProps> = ({
                     email: email.trim() || null,
                     name: name.trim() || null,
                     rating,
-                    suggestion: suggestion.trim(),
-                    page_url: pageUrl,
+                    suggestion: suggestion.trim(),             
                 }),
             });
 
@@ -145,8 +144,8 @@ const RatingForm: React.FC<RatingFormProps> = ({
                                 className="text-4xl focus:outline-none transition-transform hover:scale-110"
                             >
                                 <span className={`${star <= (hoverRating || rating)
-                                        ? 'text-yellow-500'
-                                        : 'text-gray-300'
+                                    ? 'text-yellow-500'
+                                    : 'text-gray-300'
                                     }`}>
                                     ★
                                 </span>
@@ -234,8 +233,8 @@ const RatingForm: React.FC<RatingFormProps> = ({
                     type="submit"
                     disabled={isSubmitting || rating === 0 || suggestion.length < 10}
                     className={`w-full py-3 px-4 rounded-lg font-medium transition ${isSubmitting || rating === 0 || suggestion.length < 10
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
                 >
                     {isSubmitting ? (

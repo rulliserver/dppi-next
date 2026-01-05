@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { UrlApi } from './apiUrl';
 
 interface RatingStatsData {
     average_rating: number;
@@ -14,7 +15,6 @@ interface RatingStatsData {
         rating: number;
         suggestion: string;
         created_at: string;
-        page_url: string;
     }>;
     total_suggestions: number;
 }
@@ -30,7 +30,7 @@ const RatingStats: React.FC = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/ratings/stats');
+            const response = await fetch(`${UrlApi}ratings/stats`);
             const data = await response.json();
             setStats(data);
         } catch (error) {
@@ -68,8 +68,8 @@ const RatingStats: React.FC = () => {
                             <span
                                 key={i}
                                 className={`text-xl ${i < Math.floor(stats.average_rating)
-                                        ? 'text-yellow-500'
-                                        : 'text-gray-300'
+                                    ? 'text-yellow-500'
+                                    : 'text-gray-300'
                                     }`}
                             >
                                 ★
@@ -88,8 +88,8 @@ const RatingStats: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('overview')}
                         className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'overview'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         📊 Overview
@@ -97,8 +97,8 @@ const RatingStats: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('reviews')}
                         className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'reviews'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         👥 Ulasan Terbaru
@@ -192,8 +192,8 @@ const RatingStats: React.FC = () => {
                                                         <span
                                                             key={i}
                                                             className={`${i < review.rating
-                                                                    ? 'text-yellow-500'
-                                                                    : 'text-gray-300'
+                                                                ? 'text-yellow-500'
+                                                                : 'text-gray-300'
                                                                 }`}
                                                         >
                                                             ★
@@ -212,9 +212,7 @@ const RatingStats: React.FC = () => {
                                     <p className="text-gray-700 mt-2 line-clamp-3">
                                         {review.suggestion}
                                     </p>
-                                    <div className="text-xs text-gray-500 mt-2">
-                                        Halaman: {new URL(review.page_url).pathname}
-                                    </div>
+
                                 </div>
                             ))}
                         </div>
