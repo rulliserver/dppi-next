@@ -341,8 +341,11 @@ export default function Dashboard() {
             if (replyForm.bcc) fd.append('bcc', replyForm.bcc);
             fd.append('subject', replyForm.subject);
             fd.append('message', replyForm.message);
-
-            if (replyForm.attachment) fd.append('attachment', replyForm.attachment);
+         
+            if (replyForm.attachment) {
+                fd.append('attachment', replyForm.attachment, replyForm.attachment.name);
+   
+            }
 
             const res = await fetch(`${UrlApi}/contact/reply`, {
                 method: 'POST',
@@ -441,7 +444,7 @@ export default function Dashboard() {
 
             {/* view Modal */}
             <div id='viewModal' aria-hidden='true' className='fixed top-0 left-0 right-0 z-50 hidden p-4 md:inset-0 h-modal md:h-full'>
-                <div className='relative w-full h-full max-w-3xl max-h-[500px] mx-auto top-20 md:h-auto overflow-x-hidden rounded-lg dark:border-red-500 dark:border-2 shadow-md shadow-black overflow-y-auto'>
+                <div className='relative w-full h-full max-w-3xl max-h-125 mx-auto top-20 md:h-auto overflow-x-hidden rounded-lg dark:border-red-500 dark:border-2 shadow-md shadow-black overflow-y-auto'>
                     <div className='relative bg-gray-200 dark:bg-default'>
                         <div className='flex items-start justify-between p-4 border-b-2 border-white rounded-t dark:border-gray-700'>
                             <div className='flex font-semibold text-gray-900 dark:text-white '>

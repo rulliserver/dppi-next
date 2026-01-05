@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { UrlApi } from '../components/apiUrl';
+import { v4 as uuidv4 } from 'uuid';
 export default function GuestLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const pathname = usePathname()
     const [isScrolled, setIsScrolled] = useState(false);
@@ -61,6 +62,53 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
     const slideoverBGClass = isMenuOpen ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none';
     const slideoverTransformClass = isMenuOpen ? 'translate-x-0' : 'translate-x-full';
 
+    useEffect(() => {
+        const trackVisit = async () => {
+            // Get or create session
+            let sessionId = localStorage.getItem('visitor_session_id');
+            if (!sessionId) {
+                sessionId = uuidv4();
+                localStorage.setItem('visitor_session_id', sessionId);
+                localStorage.setItem('visitor_first_visit', new Date().toISOString());
+            }
+
+            // Update last visit
+            localStorage.setItem('visitor_last_visit', new Date().toISOString());
+
+            // Prepare tracking data
+            const trackingData = {
+                session_id: sessionId,
+                page_url: `${window.location.origin}${pathname}`,
+                pathname: pathname,
+                referrer: document.referrer || '',
+                screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                language: navigator.language,
+                user_agent: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+            };
+
+            try {
+                await fetch(`${UrlApi}/track`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(trackingData),
+                });
+
+                console.log(`📊 Tracked: ${pathname}`);
+            } catch (error) {
+                console.error('Tracking failed:', error);
+
+                // Save to localStorage for retry later
+                const failedTracks = JSON.parse(
+                    localStorage.getItem('failed_tracks') || '[]'
+                );
+                failedTracks.push(trackingData);
+                localStorage.setItem('failed_tracks', JSON.stringify(failedTracks.slice(-10)));
+            }
+        };
+
+        trackVisit();
+    }, [pathname]);
 
     return (
         <div className='bg-gray-50 dark:bg-gray-100'>
