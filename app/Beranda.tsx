@@ -8,7 +8,9 @@ import { BaseUrl } from "./components/baseUrl";
 import SlideBerita from "./components/SlideBerita";
 import Peta from "./components/Peta";
 import Image from "next/image";
-
+import RatingForm from './components/RatingForm';
+import RatingStats from './components/RatingStats';
+import RatingDisplay from "./components/RatingDisplay";
 export default function Beranda() {
     const [video, setVideo]: any = useState();
     const [berita, setBerita]: any = useState();
@@ -19,6 +21,20 @@ export default function Beranda() {
     const [dataPDPKab, setDataPDPKab] = useState();
     const [dataProv, setDataProv] = useState();
     const [dataKab, setDataKab] = useState();
+    const [sessionId, setSessionId] = useState<string>('');
+
+    useEffect(() => {
+        // Ambil sessionId dari localStorage
+        const savedSessionId = localStorage.getItem('visitor_session_id');
+        if (savedSessionId) {
+            setSessionId(savedSessionId);
+        }
+    }, []);
+
+    const handleRatingSuccess = () => {
+        // Refresh stats setelah submit berhasil
+        window.location.reload();
+    };
 
 
     const getVideo = () => {
@@ -281,6 +297,38 @@ export default function Beranda() {
                                 </div>
                             );
                         })}
+                    </div>
+                </div>
+                <div className="bg-gray-50 py-8 px-4">
+                    <div className="max-w-6xl mx-auto">
+                        {/* Header */}
+                        <div className="text-center mb-12">
+                            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                                💬 <span className="text-red-700"> Feedback</span> & Rating
+                            </h1>
+                            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                                Pendapat Anda sangat berharga bagi kami. Berikan rating dan saran
+                                untuk membantu kami meningkatkan pengalaman pengguna.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Left Column - Rating Form */}
+                            <div className="lg:col-span-2">
+                                <RatingForm
+                                    sessionId={sessionId}
+                                    onSuccess={handleRatingSuccess}
+                                />                          
+                            </div>
+
+                            {/* Right Column - Stats */}
+                            <div>
+                                <RatingStats />
+
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
             </div>

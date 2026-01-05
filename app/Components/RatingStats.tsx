@@ -30,7 +30,7 @@ const RatingStats: React.FC = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await fetch(`${UrlApi}ratings/stats`);
+            const response = await fetch(`${UrlApi}/ratings/stats`);
             const data = await response.json();
             setStats(data);
         } catch (error) {
@@ -61,7 +61,7 @@ const RatingStats: React.FC = () => {
                 </div>
                 <div className="text-center">
                     <div className="text-4xl font-bold text-blue-600">
-                        {stats.average_rating.toFixed(1)}
+                        {stats?.average_rating ? Number(stats.average_rating).toFixed(1) : '0.0'}
                     </div>
                     <div className="flex justify-center mt-1">
                         {[...Array(5)].map((_, i) => (
@@ -72,7 +72,7 @@ const RatingStats: React.FC = () => {
                                     : 'text-gray-300'
                                     }`}
                             >
-                                ★
+                                <img src="/assets/images/ico-stars.svg" alt="bintang kosong" />
                             </span>
                         ))}
                     </div>
@@ -83,7 +83,7 @@ const RatingStats: React.FC = () => {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-gray-200 mb-6">
+            <div className="border-b border-gray-200 ">
                 <nav className="-mb-px flex space-x-8">
                     <button
                         onClick={() => setActiveTab('overview')}
@@ -112,7 +112,7 @@ const RatingStats: React.FC = () => {
                     {/* Rating Distribution */}
                     <div>
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                            Distribusi Rating
+                            Rating
                         </h3>
                         <div className="space-y-3">
                             {[5, 4, 3, 2, 1].map((stars) => {
@@ -140,7 +140,7 @@ const RatingStats: React.FC = () => {
                                         <div className="w-20 text-right">
                                             <span className="text-sm font-medium">{count}</span>
                                             <span className="text-xs text-gray-500 ml-1">
-                                                ({percentage.toFixed(1)}%)
+                                                ({percentage}%)
                                             </span>
                                         </div>
                                     </div>
@@ -149,21 +149,7 @@ const RatingStats: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                            <div className="text-2xl font-bold text-blue-700">
-                                {stats.total_ratings}
-                            </div>
-                            <div className="text-sm text-blue-600">Total Rating</div>
-                        </div>
-                        <div className="bg-green-50 p-4 rounded-lg">
-                            <div className="text-2xl font-bold text-green-700">
-                                {stats.total_suggestions}
-                            </div>
-                            <div className="text-sm text-green-600">Total Saran</div>
-                        </div>
-                    </div>
+                  
                 </div>
             ) : (
                 <div className="space-y-4">

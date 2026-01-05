@@ -145,7 +145,7 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
         };
 
         trackVisit();
-    }, []); // Empty dependency array
+    }, []); 
 
 
     return (

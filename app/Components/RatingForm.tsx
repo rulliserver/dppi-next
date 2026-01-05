@@ -4,7 +4,7 @@ import { UrlApi } from './apiUrl';
 
 interface RatingFormProps {
     sessionId: string;
-    pageUrl: string;
+
     onSuccess?: () => void;
 }
 
@@ -62,7 +62,7 @@ const RatingForm: React.FC<RatingFormProps> = ({
                     email: email.trim() || null,
                     name: name.trim() || null,
                     rating,
-                    suggestion: suggestion.trim(),             
+                    suggestion: suggestion.trim(),
                 }),
             });
 
@@ -107,11 +107,10 @@ const RatingForm: React.FC<RatingFormProps> = ({
             <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
                 <div className="text-green-600 text-5xl mb-4">✨</div>
                 <h3 className="text-lg font-semibold text-green-800 mb-2">
-                    Terima Kasih!
+                    Terima kasih telah meluangkan waktu untuk memberikan feedback.
+
                 </h3>
-                <p className="text-green-700">
-                    Anda sudah memberikan rating hari ini. Silakan kembali besok untuk memberikan rating lagi.
-                </p>
+                <p className='text-gray-600 text-sm'>Setiap masukan sangat berarti bagi perkembangan kami.</p>
             </div>
         );
     }
