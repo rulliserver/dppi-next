@@ -86,7 +86,7 @@ const RatingsAdmin: React.FC = () => {
                 <table className='w-full border-collapse text-sm'>
                     <thead className='bg-gray-100 dark:bg-gray-700'>
                         <tr>
-                            <th className="py-3 px-4 border">ID</th>
+                            <th className="py-3 px-4 border">#</th>
                             <th className="py-3 px-4 border">Nama</th>
                             <th className="py-3 px-4 border">Email</th>
                             <th className="py-3 px-4 border">Rating</th>
@@ -97,9 +97,9 @@ const RatingsAdmin: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {ratings?.map((rating) => (
+                        {ratings?.map((rating, index) => (
                             <tr key={rating.id} className="hover:bg-gray-50">
-                                <td className="py-3 px-4 border">{rating.id}</td>
+                                <td className="py-3 px-4 border">{index + 1}</td>
                                 <td className="py-3 px-4 border">{rating.name || 'Anonymous'}</td>
                                 <td className="py-3 px-4 border">{rating.email || 'Anonymous'}</td>
                                 <td className="py-3 px-4 border">
@@ -110,7 +110,7 @@ const RatingsAdmin: React.FC = () => {
                                                 className={`${i < rating.rating ? 'text-yellow-500' : 'text-gray-300'
                                                     }`}
                                             >
-                                                ★
+                                                <img src="/assets/images/ico-stars.svg" alt="bintang kosong" />
                                             </span>
                                         ))}
                                     </div>

@@ -417,20 +417,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 <p className='ml-2 menu-separator'>Input Data</p>
                             </div>
                             {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                <div>
+                                    <a
+                                        href='/adminpanel/rating'
+                                        className={
+                                            pathname === '/adminpanel/rating'
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i className={pathname === '/adminpanel/rating' ? 'mx-2 text-xl py-auto fas fa-star text-purple-600' : 'mx-2 text-xl py-auto fas fa-star text-accent'}></i>
 
-                                <a
-                                    href='/adminpanel/video'
-                                    className={
-                                        pathname === '/adminpanel/video'
-                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                    }>
-                                    <i className={pathname === '/adminpanel/video' ? 'mx-2 text-xl py-auto fas fa-video text-purple-600' : 'mx-2 text-xl py-auto fas fa-video text-accent'}></i>
+                                        <p className='mx-1 menu-list' id='menu-name0'>
+                                            Rating
+                                        </p>
+                                    </a>
+                                    <a
+                                        href='/adminpanel/video'
+                                        className={
+                                            pathname === '/adminpanel/video'
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i className={pathname === '/adminpanel/video' ? 'mx-2 text-xl py-auto fas fa-video text-purple-600' : 'mx-2 text-xl py-auto fas fa-video text-accent'}></i>
 
-                                    <p className='mx-1 menu-list' id='menu-name0'>
-                                        Video
-                                    </p>
-                                </a>
+                                        <p className='mx-1 menu-list' id='menu-name0'>
+                                            Video
+                                        </p>
+                                    </a>
+                                </div>
                             ) : ''}
                             {/* pdp */}
                             <div className={regexPdp.test(window.location.href) ? 'grup3 grup3-active' : 'grup3'} onClick={handlePdpMenu} id='pdp-menu'>

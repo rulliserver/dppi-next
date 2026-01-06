@@ -8,6 +8,7 @@ import { UrlApi } from '../components/apiUrl';
 import { BaseUrl } from '../components/baseUrl';
 import { exportContactsXlsx } from '../utils/export-contacts-xlsx';
 import { useUser } from '../components/UserContext';
+import { AdvancedStats } from '../components/AdvancedStats';
 export default function Dashboard() {
     const { user } = useUser()
     //fetching Contact
@@ -341,10 +342,10 @@ export default function Dashboard() {
             if (replyForm.bcc) fd.append('bcc', replyForm.bcc);
             fd.append('subject', replyForm.subject);
             fd.append('message', replyForm.message);
-         
+
             if (replyForm.attachment) {
                 fd.append('attachment', replyForm.attachment, replyForm.attachment.name);
-   
+
             }
 
             const res = await fetch(`${UrlApi}/contact/reply`, {
@@ -441,7 +442,9 @@ export default function Dashboard() {
                     </div>
                 ) : ""}
             </div>
-
+            <div className='my-2  rounded-xl p-4 bg-gray-100'>
+                <AdvancedStats />
+            </div>
             {/* view Modal */}
             <div id='viewModal' aria-hidden='true' className='fixed top-0 left-0 right-0 z-50 hidden p-4 md:inset-0 h-modal md:h-full'>
                 <div className='relative w-full h-full max-w-3xl max-h-125 mx-auto top-20 md:h-auto overflow-x-hidden rounded-lg dark:border-red-500 dark:border-2 shadow-md shadow-black overflow-y-auto'>
