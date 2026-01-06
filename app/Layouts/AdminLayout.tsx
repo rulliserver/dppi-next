@@ -346,19 +346,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         </a>
                                     </li>
                                     {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                        <div className="">
+                                            <li>
+                                                <a
+                                                    href='/adminpanel/rating'
+                                                    className={`block px-4 py-2 ${pathname === '/adminpanel/rating'
+                                                        ? 'bg-violet-500 text-white rounded-md'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    Rating
+                                                </a>
+                                            </li>
 
-
-                                        <li>
-                                            <a
-                                                href='/adminpanel/video'
-                                                className={`block px-4 py-2 ${pathname === '/adminpanel/video'
-                                                    ? 'bg-violet-500 text-white rounded-md'
-                                                    : 'text-gray-700 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                Video
-                                            </a>
-                                        </li>
+                                            <li>
+                                                <a
+                                                    href='/adminpanel/video'
+                                                    className={`block px-4 py-2 ${pathname === '/adminpanel/video'
+                                                        ? 'bg-violet-500 text-white rounded-md'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    Video
+                                                </a>
+                                            </li>
+                                        </div>
                                     ) : ''}
                                     <li className='px-3 mt-4 text-gray-500 text-sm'>--- Data PDP</li>
 
