@@ -425,7 +425,7 @@ export default function Kontak() {
         <div>
             <GoogleReCaptchaProvider reCaptchaKey='6LeemygqAAAAAJP7iYrptxnFS1gAmP9iwjx_Lydx'>
                 <div className='border-b-4 bg-primary border-secondary md:header'>
-                    <div className='mx-auto max-w-[1275px] px-2'>
+                    <div className='mx-auto max-w-318.75 px-2'>
                         <ul className='flex'>
                             <div className='py-2 mx-auto text-slate-50'>
                                 <span className='text-2xl font-bold'>KONTAK</span>
@@ -434,7 +434,7 @@ export default function Kontak() {
                     </div>
                 </div>
 
-                <div className='block md:flex md:flex-row justify-center mx-auto max-w-[1275px] px-2'>
+                <div className='block md:flex md:flex-row justify-center mx-auto max-w-318.75 px-2'>
                     <div className='w-full my-10 bg-red-700 rounded-md'>
                         <ContactForm />
                     </div>
@@ -443,7 +443,7 @@ export default function Kontak() {
                             <iframe
                                 src='https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15866.86365746208!2d106.825246!3d-6.1687825!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f54e65a00fe1%3A0xb5f498c61601e3d6!2sBPIP%20RI!5e0!3m2!1sid!2sid!4v1683789460368!5m2!1sid!2sid'
                                 loading='lazy'
-                                className='w-[400px] h-[400px] md:w-[500px] md:h-[400px] xl:w-[800px] xl:h-[600px]'
+                                className='w-100 h-100 md:w-125 md:h-100 xl:w-200 xl:h-150'
                                 referrerPolicy='no-referrer-when-downgrade'
                                 title='Peta Lokasi'
                             />
