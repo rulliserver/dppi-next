@@ -27,7 +27,7 @@ export default function PelaksanaKabupatenId() {
     return (
         <div>
             <div className='mb-8 border-t-4 border-b-4 bg-primary border-secondary md:header'>
-                <div className='mx-auto max-w-[1275px] px-2'>
+                <div className='mx-auto max-w-318.75 px-2'>
                     <ul className='flex'>
                         <div className='py-2 mx-auto text-slate-50'>
                             <span>Pelaksana DPPI Kabupaten</span>
@@ -35,7 +35,7 @@ export default function PelaksanaKabupatenId() {
                     </ul>
                 </div>
             </div>
-            <div className='px-2 max-w-[1275px] mb-8 mx-auto'>
+            <div className='px-2 max-w-318.75 mb-8 mx-auto'>
                 <p className='text-center font-semibold dark:text-white mb-4'>PILIH KABUPATEN</p>
                 <div className='grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2'>
                     {kabupaten && kabupaten.map((item: any) =>
