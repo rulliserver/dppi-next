@@ -1,112 +1,140 @@
 import React, { useEffect, useState } from 'react';
 import { UrlApi } from './apiUrl';
 
-interface AdvancedStats {
-    hourly_visits: Array<{ hour: number; count: number }>;
-    top_pages: Array<{ page_url: string; count: number }>;
-    avg_time_on_page: number;
-    bounce_rate: number;
-    returning_visitors: number;
-    traffic_sources: Array<{ source: string; count: number; percentage: number }>;
+interface VisitorStats {
+    total_visitors: number;
+    unique_visitors: number;
+    page_views: number;
+    browsers: Array<{ browser: string; count: number; percentage: number }>;
+    os_stats: Array<{ os: string; count: number; percentage: number }>;
+    daily_visits: Array<{ date: string; visitors: number; page_views: number }>;
 }
 
-export const AdvancedStats: React.FC = () => {
-    const [stats, setStats] = useState<AdvancedStats | null>(null);
+const AdvancedStats: React.FC = () => {
+    const [stats, setStats] = useState<VisitorStats | null>(null);
     const [loading, setLoading] = useState(true);
-    const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        fetchAdvancedStats();
-    }, [timeRange]);
+        fetchStats();
 
-    const fetchAdvancedStats = async () => {
+        // Refresh stats setiap 30 detik
+        const interval = setInterval(fetchStats, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const fetchStats = async () => {
         try {
-            const response = await fetch(
-                `${UrlApi}/stats/advanced?range=${timeRange}`
-            );
-            const data = await response.json();
+            const response = await fetch(`${UrlApi}/stats`);
+            if (!response.ok) throw new Error('Failed to fetch stats');
+
+            const data: VisitorStats = await response.json();
             setStats(data);
-        } catch (error) {
-            console.error('Failed to fetch advanced stats:', error);
+            setError('');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+            console.error('Error fetching stats:', err);
         } finally {
             setLoading(false);
         }
     };
 
     if (loading) {
-        return <div className="text-center py-8">Memuat statistik pengunjung...</div>;
+        return (
+            <div className="flex items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+        );
     }
 
-    if (!stats) {
-        return <div className="text-center py-8">Statistik pengunjung tidak ditemukan</div>;
+    if (error) {
+        return (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-700">Error: {error}</p>
+                <button
+                    onClick={fetchStats}
+                    className="mt-2 text-sm text-red-600 hover:text-red-800"
+                >
+                    Retry
+                </button>
+            </div>
+        );
     }
+
+    if (!stats) return null;
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">Analisa Statistik Pengunjung</h2>
-                <div className="flex space-x-2">
-                    {['24h', '7d', '30d'].map((range) => (
-                        <button
-                            key={range}
-                            onClick={() => setTimeRange(range as any)}
-                            className={`px-4 py-2 rounded-lg ${timeRange === range
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                }`}
-                        >
-                            {range}
-                        </button>
-                    ))}
-                </div>
-            </div>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Visitor Statistics</h2>
 
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-700">Avg. Time on Page</h3>
-                    <p className="text-3xl font-bold text-blue-600">
-                        {Math.round(stats.avg_time_on_page)}s
-                    </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="text-sm text-blue-600 font-medium">Total Visitors</div>
+                    <div className="text-3xl font-bold text-blue-700">{stats.total_visitors.toLocaleString()}</div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-700">Persentase Pengunjung Kembali</h3>
-                    <p className="text-3xl font-bold text-red-600">
-                        {stats.bounce_rate.toFixed(1)}%
-                    </p>
+
+                <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="text-sm text-green-600 font-medium">Unique Visitors</div>
+                    <div className="text-3xl font-bold text-green-700">{stats.unique_visitors.toLocaleString()}</div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-700">Jumlah Pengunjung Kembali</h3>
-                    <p className="text-3xl font-bold text-green-600">
-                        {stats.returning_visitors}
-                    </p>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-700">Halaman Unik</h3>
-                    <p className="text-3xl font-bold text-purple-600">
-                        {stats.top_pages.length}
-                    </p>
+
+                <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="text-sm text-purple-600 font-medium">Page Views</div>
+                    <div className="text-3xl font-bold text-purple-700">{stats.page_views.toLocaleString()}</div>
                 </div>
             </div>
 
-            {/* Hourly Traffic */}
-            <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-semibold mb-4">Pola traffic per jam</h3>
-                <div className="flex items-end h-48 space-x-1">
-                    {stats.hourly_visits.map((hour) => (
-                        <div key={hour.hour} className="flex-1 flex flex-col items-center">
-                            <div
-                                className="w-full bg-blue-500 rounded-t"
-                                style={{ height: `${(hour.count / Math.max(...stats.hourly_visits.map(h => h.count))) * 100}%` }}
-                            ></div>
-                            <div className="text-xs mt-2">{hour.hour}:00</div>
-                            <div className="text-xs text-gray-500">{hour.count}</div>
+            {/* Browser Stats */}
+            <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-700 mb-3">🌐 Browser Usage</h3>
+                <div className="space-y-2">
+                    {stats.browsers.map((browser, index) => (
+                        <div key={index} className="flex items-center">
+                            <div className="w-32 text-sm text-gray-600">{browser.browser}</div>
+                            <div className="flex-1">
+                                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-blue-500 rounded-full"
+                                        style={{ width: `${browser.percentage}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                            <div className="w-16 text-right text-sm font-medium">
+                                {browser.percentage.toFixed(1)}%
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* Top Pages */}
+            {/* Recent Daily Visits */}
+            <div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-3">📅 Recent Activity</h3>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="border-b">
+                                <th className="text-left py-2 text-gray-600">Date</th>
+                                <th className="text-left py-2 text-gray-600">Visitors</th>
+                                <th className="text-left py-2 text-gray-600">Page Views</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {stats.daily_visits.slice(0, 7).map((day, index) => (
+                                <tr key={index} className="border-b hover:bg-gray-50">
+                                    <td className="py-2">{new Date(day.date).toLocaleDateString()}</td>
+                                    <td className="py-2 font-medium">{day.visitors}</td>
+                                    <td className="py-2">{day.page_views}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 };
+
+export default AdvancedStats;

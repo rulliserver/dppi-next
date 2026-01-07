@@ -8,7 +8,8 @@ import { UrlApi } from '../components/apiUrl';
 import { BaseUrl } from '../components/baseUrl';
 import { exportContactsXlsx } from '../utils/export-contacts-xlsx';
 import { useUser } from '../components/UserContext';
-import { AdvancedStats } from '../components/AdvancedStats';
+import AdvancedStats from '../components/AdvancedStats';
+
 export default function Dashboard() {
     const { user } = useUser()
     //fetching Contact

@@ -341,8 +341,8 @@ export default function ListKabKota() {
             <div className="mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Dashboard Admin - Pendaftaran DPPI</h1>
-                    <p className="text-gray-600 mt-2">Kelola data pendaftaran Duta Pancasila Paskibraka Indonesia</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Pendaftaran Pengangkatan DPPI Tingkat Kab/Kota</h1>
+                    <p className="text-gray-600 mt-2">Kelola data pendaftaran pengangkatan pertama kali Duta Pancasila Paskibraka Indonesia Tingkat Kab/Kota</p>
                 </div>
 
                 {/* Stats Cards */}

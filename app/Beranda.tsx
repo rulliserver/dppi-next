@@ -222,7 +222,7 @@ export default function Beranda() {
                 {/* Data PDP Peta Indonesia */}
                 <Peta DataPdpProv={dataPDPProv} DataPdpKab={dataPDPKab} kab={dataKab} prov={dataProv} />
                 <div className="md:flex md:flex-row justify-between gap-4 my-12">
-                    <button className="bg-gray-200 rounded-xl" onClick={() => { window.location.href = '/pengangkatan-dppi' }}>
+                    <button className="bg-gray-200 rounded-xl mt-4" onClick={() => { window.location.href = '/pengangkatan-dppi' }}>
                         <i className="fas fa-file-alt my-4 text-9xl text-red-700"></i>
                         <p className="text-center text-red-700 font-bold text-xl">FORM PENDAFTARAN TINGKAT KABUPATEN/KOTA
                         </p>
@@ -230,7 +230,7 @@ export default function Beranda() {
                         </p>
                         <div className="text-white bg-accent rounded-b-xl p-2 mt-3">ISI FORM</div>
                     </button>
-                    <button className="bg-gray-200 rounded-xl" onClick={() => { window.location.href = '/pengangkatan-dppi-provinsi' }}>
+                    <button className="bg-gray-200 rounded-xl mt-4" onClick={() => { window.location.href = '/pengangkatan-dppi-provinsi' }}>
                         <i className="fas fa-file-alt my-4 text-9xl text-red-700"></i>
                         <p className="text-center text-red-700 font-bold text-xl">FORM PENDAFTARAN TINGKAT PROVINSI
                         </p>
