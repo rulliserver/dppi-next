@@ -11,9 +11,10 @@
     "dependencies": {
         "@ckeditor/ckeditor5-build-decoupled-document": "^39.0.2",
         "@headlessui/react": "^2.2.9",
+        "@heroicons/react": "^2.2.0",
         "@react-pdf/renderer": "^4.3.1",
         "@tanstack/react-table": "^8.21.3",
-        "axios": "^1.13.0",
+        "axios": "^1.13.2",
         "datatables.net-dt": "^2.3.4",
         "draft-js": "^0.11.7",
         "file-saver": "^2.0.5",
@@ -36,7 +37,7 @@
         "react-zoom-pan-pinch": "^3.7.0",
         "sanitize-html": "^2.17.0",
         "sharp": "^0.34.4",
-        "sweetalert2": "^11.26.3",
+        "sweetalert2": "^11.26.17",
         "swiper": "^12.0.3",
         "uuid": "^13.0.0",
         "xlsx-js-style": "^1.2.0"
