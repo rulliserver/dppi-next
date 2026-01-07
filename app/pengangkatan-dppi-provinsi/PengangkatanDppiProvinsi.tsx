@@ -140,16 +140,16 @@ export default function PengangkatanDppiProvinsi() {
                 ketua: strukturData.ketua,
                 wakil_ketua: strukturData.wakilKetua,
                 sekretaris: strukturData.sekretaris,
-                kepala_bidang_dukungan: strukturData.kepalaDivisiDukungan,
-                kepala_bidang_kompetensi: strukturData.kepalaDivisiKompetensi,
-                kepala_bidang_aktualisasi: strukturData.kepalaDivisiAktualisasi,
-                kepala_bidang_kominfo: strukturData.kepalaDivisiKominfo,
+                kepala_divisi_dukungan: strukturData.kepalaDivisiDukungan,
+                kepala_divisi_kompetensi: strukturData.kepalaDivisiKompetensi,
+                kepala_divisi_aktualisasi: strukturData.kepalaDivisiAktualisasi,
+                kepala_divisi_kominfo: strukturData.kepalaDivisiKominfo,
             };
 
             console.log("Mengirim data pendaftaran:", pendaftaranData);
 
             // 2. Kirim data pendaftaran ke backend
-            const response = await axios.post(`${UrlApi}/pendaftaran-dppi`, pendaftaranData, {
+            const response = await axios.post(`${UrlApi}/pendaftaran-dppi-provinsi`, pendaftaranData, {
                 headers: {
                     'Content-Type': 'application/json',
                     // Tambahkan token auth jika diperlukan
@@ -189,7 +189,7 @@ export default function PengangkatanDppiProvinsi() {
                         console.log(`Uploading ${backendFieldName}...`);
 
                         return await axios.post(
-                            `${UrlApi}/pendaftaran-dppi/${pendaftaranId}/upload/${backendFieldName}`,
+                            `${UrlApi}/pendaftaran-dppi-provinsi/${pendaftaranId}/upload/${backendFieldName}`,
                             uploadData,
                             {
                                 headers: {
@@ -602,7 +602,7 @@ export default function PengangkatanDppiProvinsi() {
 
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Bidang Dukungan Pembentukan Paskibraka dan Purnapaskibraka Duta Pancasila
+                                    Kepala Divisi Dukungan Pembentukan Paskibraka dan Purnapaskibraka Duta Pancasila
                                 </label>
                                 <input
                                     type="text"
@@ -615,7 +615,7 @@ export default function PengangkatanDppiProvinsi() {
 
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Bidang Peningkatan Kompetensi
+                                    Kepala Divisi Peningkatan Kompetensi
                                 </label>
                                 <input
                                     type="text"
@@ -628,7 +628,7 @@ export default function PengangkatanDppiProvinsi() {
 
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Bidang Aktualisasi Nilai-Nilai Pancasila
+                                    Kepala Divisi Aktualisasi Nilai-Nilai Pancasila
                                 </label>
                                 <input
                                     type="text"
@@ -641,7 +641,7 @@ export default function PengangkatanDppiProvinsi() {
 
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Bidang Komunikasi, Teknologi dan Informasi
+                                    Kepala Divisi Komunikasi, Teknologi dan Informasi
                                 </label>
                                 <input
                                     type="text"

@@ -185,6 +185,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
 
     const handlePelaksanaMenu = createMenuHandler('pelaksana-menu', 'pelaksana-list', 'grup2-active');
+    const handlePendaftaranMenu = createMenuHandler('pendaftaran-menu', 'pendaftaran-list', 'grup4-active');
     const handlePdpMenu = createMenuHandler('pdp-menu', 'pdp-list', 'grup3-active');
     const regexPdp = /(pdp)/i;
     const regexPdpBelumRegistrasi = /(belum-registrasi)/i;
@@ -372,9 +373,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                             </li>
                                         </div>
                                     ) : ''}
+
                                     <li className='px-3 mt-4 text-gray-500 text-sm'>--- Data PDP</li>
-
-
                                     {[
 
                                         { href: '/adminpanel/pdp/belum-registrasi', label: 'PDP Belum Registrasi' },
@@ -397,7 +397,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         </li>
                                     ))}
 
+                                    {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                        <div className="">
+                                            <li className='px-3 mt-4 text-gray-500 text-sm'>--- Pendaftaran DPPI</li>
+                                            <li>
+                                                <a
+                                                    href='/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'
+                                                    className={`block px-4 py-2 ${pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'
+                                                        ? 'bg-violet-500 text-white rounded-md'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    Data Pendaftaran DPPI Tingkat Kab/Kota
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    href='/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'
+                                                    className={`block px-4 py-2 ${pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'
+                                                        ? 'bg-violet-500 text-white rounded-md'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    Data Pendaftaran DPPI Tingkat Provinsi
+                                                </a>
+                                            </li>
 
+                                        </div>
+                                    ) : ""}
                                 </ul>
                             </nav>
                         </div>
@@ -546,24 +573,94 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             </div>
 
                             {user.role === "Administrator" || user.role === "Superadmin" ? (
-                                <a
-                                    href='/adminpanel/berita'
-                                    className={
-                                        regexBerita.test(window.location.href)
-                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                    }>
-                                    <i
+                                <div className="">
+                                    <div
+                                        className={
+                                            pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' || pathname === 'list-pendaftaran-pengangkatan-dppi-provinsi'
+                                                ? 'grup4 grup4-active'
+                                                : 'grup4'
+                                        }
+                                        onClick={handlePendaftaranMenu}
+                                        id='pendaftaran-menu'>
+                                        <button
+                                            className={
+                                                pathname === 'list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i className='mx-2 text-xl py-auto fas fa-file-alt text-accent'></i>
+                                            <div className='grid grid-cols-12'>
+                                                <span className='col-span-11 py-1 mx-1 text-left menu-list' id='menu-name4'>
+                                                    Pengangkatan DPPI
+                                                </span>
+                                                <span className='my-auto'>
+                                                    <svg
+                                                        className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
+                                                        xmlns='http://www.w3.org/2000/svg'
+                                                        viewBox='0 0 20 20'>
+                                                        <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                        </button>
+                                        <div
+                                            className={
+                                                pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' ? '' : 'hidden'
+                                            }
+                                            id='pendaftaran-list'>
+                                            {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                                <div className='flex py-2 mx-2'>
+                                                    <a className='flex' href='/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'>
+                                                        <i
+                                                            className={
+                                                                pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'
+                                                                    ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                    : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                            }></i>
+                                                        <p className={pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Tingkat Kab/Kota</p>
+                                                    </a>
+                                                </div>
+                                            ) : ''}
+                                            {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                                // Tampilkan Pelaksana Provinsi
+                                                <div className='flex py-2 mx-2'>
+                                                    <a className='flex' href='/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'>
+                                                        <i
+                                                            className={
+                                                                pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'
+                                                                    ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                    : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                            }
+                                                        />
+                                                        <p className={pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                            Tingkat Provinsi
+                                                        </p>
+                                                    </a>
+                                                </div>
+                                            ) : ""}
+
+                                        </div>
+                                    </div>
+
+                                    <a
+                                        href='/adminpanel/berita'
                                         className={
                                             regexBerita.test(window.location.href)
-                                                ? 'mx-2 text-xl py-auto fas fa-newspaper text-purple-600'
-                                                : 'mx-2 text-xl py-auto fas fa-newspaper text-accent'
-                                        }></i>
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i
+                                            className={
+                                                regexBerita.test(window.location.href)
+                                                    ? 'mx-2 text-xl py-auto fas fa-newspaper text-purple-600'
+                                                    : 'mx-2 text-xl py-auto fas fa-newspaper text-accent'
+                                            }></i>
 
-                                    <p className='mx-0 menu-list' id='menu-name1'>
-                                        Data Berita
-                                    </p>
-                                </a>
+                                        <p className='mx-0 menu-list' id='menu-name1'>
+                                            Data Berita
+                                        </p>
+                                    </a>
+                                </div>
                             ) : ''}
 
                             {/* pelaksana */}
