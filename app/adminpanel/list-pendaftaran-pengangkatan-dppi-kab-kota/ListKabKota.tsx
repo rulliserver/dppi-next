@@ -206,7 +206,7 @@ export default function ListKabKota() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Gagal menghapus data',
+                    text: 'Tidak dapat menghapus data yang sudah berubah status',
                 });
             }
         }
