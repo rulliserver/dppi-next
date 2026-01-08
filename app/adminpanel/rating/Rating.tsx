@@ -1,5 +1,6 @@
 'use client'
 import { UrlApi } from '@/app/components/apiUrl';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -27,19 +28,20 @@ const RatingsAdmin: React.FC = () => {
 
     const fetchRatings = async () => {
         try {
-            const response = await fetch(
-                `${UrlApi}/ratings?page=${page}&limit=20&approved_only=false`
-            );
-            const data = await response.json();
-            setRatings(data.ratings);
-            // setTotalPages(data.pagination.total_pages);
+
+            const response = await axios.get(`${UrlApi}/ratings?page=${page}&limit=20&approved_only=false`, {
+                withCredentials: true,
+                headers: { Accept: 'application/json' },
+            });
+
+            setRatings(response.data.ratings);
+            setTotalPages(response.data.pagination.total_pages);
         } catch (error) {
             console.error('Error fetching ratings:', error);
         } finally {
             setLoading(false);
         }
     };
-
     const handleApprove = async (id: number) => {
         try {
             const response = await fetch(`${UrlApi}/ratings/${id}/approve`, {
