@@ -262,8 +262,8 @@ export default function ListKabKota() {
 
             const dateStr = new Date().toISOString().split('T')[0];
             const filename = simple
-                ? `pendaftaran-dppi-simple-${dateStr}.xlsx`
-                : `pendaftaran-dppi-lengkap-${dateStr}.xlsx`;
+                ? `pendaftaran-dppi-${dateStr}.xlsx`
+                : `pendaftaran-dppi-${dateStr}.xlsx`;
 
             link.setAttribute('download', filename);
             document.body.appendChild(link);
