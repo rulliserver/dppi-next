@@ -344,8 +344,8 @@ export default function ListKabKota() {
             <div className="mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Pendaftaran Pengangkatan DPPI Tingkat Kab/Kota</h1>
-                    <p className="text-gray-600 mt-2">Kelola data pendaftaran pengangkatan pertama kali Duta Pancasila Paskibraka Indonesia Tingkat Kab/Kota</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Pendaftaran Pengangkatan DPPI Tingkat Provinsi</h1>
+                    <p className="text-gray-600 mt-2">Kelola data pendaftaran pengangkatan pertama kali Duta Pancasila Paskibraka Indonesia Tingkat Provinsi</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -389,7 +389,7 @@ export default function ListKabKota() {
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Kabupaten/Kota</p>
+                                <p className="text-sm font-medium text-gray-600">Provinsi</p>
                                 <p className="text-3xl font-bold text-purple-600 mt-2">{stats.total_kabupaten}</p>
                             </div>
                             <div className="p-3 bg-purple-100 rounded-full">
@@ -484,7 +484,7 @@ export default function ListKabKota() {
                                                 #
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Kabupaten/Kota
+                                                Provinsi
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 PIC
@@ -669,7 +669,7 @@ export default function ListKabKota() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Informasi Kabupaten */}
                                 <div>
-                                    <h4 className="text-sm font-medium text-gray-500 mb-2">Kabupaten/Kota</h4>
+                                    <h4 className="text-sm font-medium text-gray-500 mb-2">Provinsi</h4>
                                     <p className="text-lg font-semibold text-gray-900">{selectedPendaftaran.nama_kabupaten}</p>
                                     <p className="text-gray-600">{selectedPendaftaran.nama_provinsi}</p>
                                 </div>
