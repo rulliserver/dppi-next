@@ -272,7 +272,7 @@ export default function PengangkatanDppiProvinsi() {
 
         } finally {
             setIsSubmitting(false);
-            window.location.reload();
+
         }
     };
 

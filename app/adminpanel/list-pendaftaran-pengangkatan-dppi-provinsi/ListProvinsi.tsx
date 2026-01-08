@@ -20,7 +20,7 @@ import {
 interface PendaftaranDppi {
     id: number;
     id_kabupaten: number;
-    nama_kabupaten: string;
+    nama_provinsi: string;
     nama_pic: string;
     jabatan_pic: string;
     nip_pic: string;
@@ -28,7 +28,6 @@ interface PendaftaranDppi {
     email_pic: string;
     status: string;
     created_at: string;
-    nama_provinsi: string;
     path_surat_sekda: string | null;
     path_daftar_riwayat_hidup: string | null;
     path_portofolio: string | null;
@@ -515,7 +514,7 @@ export default function ListKabKota() {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div>
-                                                            <div className="text-sm font-medium text-gray-900">{item.nama_kabupaten}</div>
+                                                            <div className="text-sm font-medium text-gray-900">{item.nama_provinsi}</div>
                                                             <div className="text-sm text-gray-500">{item.nama_provinsi}</div>
                                                         </div>
                                                     </td>
@@ -670,7 +669,7 @@ export default function ListKabKota() {
                                 {/* Informasi Kabupaten */}
                                 <div>
                                     <h4 className="text-sm font-medium text-gray-500 mb-2">Provinsi</h4>
-                                    <p className="text-lg font-semibold text-gray-900">{selectedPendaftaran.nama_kabupaten}</p>
+                                    <p className="text-lg font-semibold text-gray-900">{selectedPendaftaran.nama_provinsi}</p>
                                     <p className="text-gray-600">{selectedPendaftaran.nama_provinsi}</p>
                                 </div>
 
@@ -729,7 +728,7 @@ export default function ListKabKota() {
                                                         onClick={() => handleDownloadDocument(
                                                             selectedPendaftaran.id,
                                                             doc.type,
-                                                            `${doc.type}_${selectedPendaftaran.nama_kabupaten}.pdf`
+                                                            `${doc.type}_${selectedPendaftaran.nama_provinsi}.pdf`
                                                         )}
                                                         className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
                                                     >
