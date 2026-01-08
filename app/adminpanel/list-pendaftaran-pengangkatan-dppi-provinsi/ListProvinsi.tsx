@@ -19,8 +19,8 @@ import {
 
 interface PendaftaranDppi {
     id: number;
-    id_provinsi: number;
-    nama_provinsi: string;
+    id_kabupaten: number;
+    nama_kabupaten: string;
     nama_pic: string;
     jabatan_pic: string;
     nip_pic: string;
@@ -28,6 +28,7 @@ interface PendaftaranDppi {
     email_pic: string;
     status: string;
     created_at: string;
+    nama_provinsi: string;
     path_surat_sekda: string | null;
     path_daftar_riwayat_hidup: string | null;
     path_portofolio: string | null;
@@ -41,10 +42,10 @@ interface DashboardStats {
     approved: number;
     rejected: number;
     completed: number;
-    total_provinsi: number;
+    total_kabupaten: number;
 }
 
-export default function ListProvinsi() {
+export default function ListKabKota() {
     const [pendaftaranList, setPendaftaranList] = useState<PendaftaranDppi[]>([]);
     const [filteredList, setFilteredList] = useState<PendaftaranDppi[]>([]);
     const [stats, setStats] = useState<DashboardStats>({
@@ -54,7 +55,7 @@ export default function ListProvinsi() {
         approved: 0,
         rejected: 0,
         completed: 0,
-        total_provinsi: 0
+        total_kabupaten: 0
     });
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -70,6 +71,7 @@ export default function ListProvinsi() {
         try {
             setLoading(true);
             const response = await axios.get(`${UrlApi}/pendaftaran-dppi-provinsi`, {
+                withCredentials: true,
                 params: {
                     page: currentPage,
                     per_page: itemsPerPage,
@@ -100,7 +102,7 @@ export default function ListProvinsi() {
 
     const fetchStats = async () => {
         try {
-            const response = await axios.get(`${UrlApi}/pendaftaran-dppi-provinsi/stats`);
+            const response = await axios.get(`${UrlApi}/pendaftaran-dppi-provinsi/stats`, { withCredentials: true });
             if (response.data) {
                 setStats(response.data);
             }
@@ -117,7 +119,7 @@ export default function ListProvinsi() {
             approved: data.filter(item => item.status === 'approved').length,
             rejected: data.filter(item => item.status === 'rejected').length,
             completed: data.filter(item => item.status === 'completed').length,
-            total_provinsi: new Set(data.map(item => item.id_provinsi)).size
+            total_kabupaten: new Set(data.map(item => item.id_kabupaten)).size
         };
         setStats(stats);
     };
@@ -156,7 +158,7 @@ export default function ListProvinsi() {
             try {
                 await axios.put(`${UrlApi}/pendaftaran-dppi-provinsi/${id}/status`, {
                     status: newStatus
-                });
+                }, { withCredentials: true });
 
                 Swal.fire({
                     icon: 'success',
@@ -190,7 +192,7 @@ export default function ListProvinsi() {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`${UrlApi}/pendaftaran-dppi-provinsi/${id}`);
+                await axios.delete(`${UrlApi}/pendaftaran-dppi-provinsi/${id}`, { withCredentials: true });
 
                 Swal.fire({
                     icon: 'success',
@@ -205,7 +207,7 @@ export default function ListProvinsi() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Gagal menghapus data',
+                    text: 'Tidak dapat menghapus data yang sudah berubah status',
                 });
             }
         }
@@ -216,6 +218,7 @@ export default function ListProvinsi() {
             const response = await axios.get(
                 `${UrlApi}/pendaftaran-dppi-provinsi/${id}/download/${documentType}`,
                 {
+                    withCredentials: true,
                     responseType: 'blob'
                 }
             );
@@ -247,6 +250,7 @@ export default function ListProvinsi() {
     const handleDownloadExcel = async (simple: boolean = false) => {
         try {
             const response = await axios.get(`${UrlApi}/pendaftaran-dppi-provinsi/download`, {
+                withCredentials: true,
                 responseType: 'blob',
                 params: {
                     simple: simple
@@ -259,8 +263,8 @@ export default function ListProvinsi() {
 
             const dateStr = new Date().toISOString().split('T')[0];
             const filename = simple
-                ? `pendaftaran-dppi-provinsi-simple-${dateStr}.xlsx`
-                : `pendaftaran-dppi-provinsi-lengkap-${dateStr}.xlsx`;
+                ? `pendaftaran-dppi-simple-${dateStr}.xlsx`
+                : `pendaftaran-dppi-lengkap-${dateStr}.xlsx`;
 
             link.setAttribute('download', filename);
             document.body.appendChild(link);
@@ -340,8 +344,8 @@ export default function ListProvinsi() {
             <div className="mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Pendaftaran Pengangkatan DPPI Tingkat Provinsi</h1>
-                    <p className="text-gray-600 mt-2">Kelola data pendaftaran pengangkatan pertama kali Duta Pancasila Paskibraka Indonesia Tingkat Provinsi</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Pendaftaran Pengangkatan DPPI Tingkat Kab/Kota</h1>
+                    <p className="text-gray-600 mt-2">Kelola data pendaftaran pengangkatan pertama kali Duta Pancasila Paskibraka Indonesia Tingkat Kab/Kota</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -385,8 +389,8 @@ export default function ListProvinsi() {
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Provinsi</p>
-                                <p className="text-3xl font-bold text-purple-600 mt-2">{stats.total_provinsi}</p>
+                                <p className="text-sm font-medium text-gray-600">Kabupaten/Kota</p>
+                                <p className="text-3xl font-bold text-purple-600 mt-2">{stats.total_kabupaten}</p>
                             </div>
                             <div className="p-3 bg-purple-100 rounded-full">
                                 <DocumentIcon className="w-8 h-8 text-purple-600" />
@@ -444,7 +448,7 @@ export default function ListProvinsi() {
 
                             <input
                                 type="text"
-                                placeholder="Cari berdasarkan nama provinsi, PIC, atau NIP..."
+                                placeholder="Cari berdasarkan nama kabupaten, PIC, atau NIP..."
                                 value={searchTerm}
                                 onChange={handleSearch}
                                 className="pl-20 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
@@ -477,10 +481,10 @@ export default function ListProvinsi() {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                ID
+                                                #
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Provinsi
+                                                Kabupaten/Kota
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 PIC
@@ -504,14 +508,14 @@ export default function ListProvinsi() {
                                                 </td>
                                             </tr>
                                         ) : (
-                                            filteredList.map((item) => (
+                                            filteredList.map((item, index) => (
                                                 <tr key={item.id} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        #{item.id}
+                                                        {index + 1 + (currentPage - 1) * itemsPerPage}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div>
-                                                            <div className="text-sm font-medium text-gray-900">{item.nama_provinsi}</div>
+                                                            <div className="text-sm font-medium text-gray-900">{item.nama_kabupaten}</div>
                                                             <div className="text-sm text-gray-500">{item.nama_provinsi}</div>
                                                         </div>
                                                     </td>
@@ -663,10 +667,10 @@ export default function ListProvinsi() {
 
                         <div className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Informasi provinsi */}
+                                {/* Informasi Kabupaten */}
                                 <div>
-                                    <h4 className="text-sm font-medium text-gray-500 mb-2">Provinsi</h4>
-                                    <p className="text-lg font-semibold text-gray-900">{selectedPendaftaran.nama_provinsi}</p>
+                                    <h4 className="text-sm font-medium text-gray-500 mb-2">Kabupaten/Kota</h4>
+                                    <p className="text-lg font-semibold text-gray-900">{selectedPendaftaran.nama_kabupaten}</p>
                                     <p className="text-gray-600">{selectedPendaftaran.nama_provinsi}</p>
                                 </div>
 
@@ -725,7 +729,7 @@ export default function ListProvinsi() {
                                                         onClick={() => handleDownloadDocument(
                                                             selectedPendaftaran.id,
                                                             doc.type,
-                                                            `${doc.type}_${selectedPendaftaran.nama_provinsi}.pdf`
+                                                            `${doc.type}_${selectedPendaftaran.nama_kabupaten}.pdf`
                                                         )}
                                                         className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
                                                     >
@@ -746,10 +750,7 @@ export default function ListProvinsi() {
                                             <p className="text-sm text-gray-500">Tanggal Pendaftaran</p>
                                             <p className="font-medium">{formatDate(selectedPendaftaran.created_at)}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">ID Pendaftaran</p>
-                                            <p className="font-medium">#{selectedPendaftaran.id}</p>
-                                        </div>
+
                                     </div>
                                 </div>
                             </div>
