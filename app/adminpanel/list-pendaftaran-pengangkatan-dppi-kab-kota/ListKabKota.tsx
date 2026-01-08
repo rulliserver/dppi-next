@@ -157,9 +157,8 @@ export default function ListKabKota() {
         if (result.isConfirmed) {
             try {
                 await axios.put(`${UrlApi}/pendaftaran-dppi/${id}/status`, {
-                    withCredentials: true,
                     status: newStatus
-                });
+                }, { withCredentials: true });
 
                 Swal.fire({
                     icon: 'success',
