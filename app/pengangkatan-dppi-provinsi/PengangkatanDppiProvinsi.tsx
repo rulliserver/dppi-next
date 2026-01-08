@@ -23,14 +23,29 @@ export default function PengangkatanDppiProvinsi() {
     });
 
     const [strukturData, setStrukturData] = useState({
-        ketua: "",
-        wakilKetua: "",
-        sekretaris: "",
-        kepalaDivisiDukungan: "",
-        kepalaDivisiKompetensi: "",
-        kepalaDivisiAktualisasi: "",
-        kepalaDivisiKominfo: ""
+        // Ketua (2 orang)
+        ketua_1: "",
+        ketua_2: "",
+
+        // Wakil Ketua (2 orang)
+        wakil_ketua_1: "",
+        wakil_ketua_2: "",
+
+        // Sekretaris (2 orang)
+        sekretaris_1: "",
+        sekretaris_2: "",
+
+        // Kepala Divisi (masing-masing 2 orang)
+        kepala_divisi_dukungan_1: "",
+        kepala_divisi_dukungan_2: "",
+        kepala_divisi_kompetensi_1: "",
+        kepala_divisi_kompetensi_2: "",
+        kepala_divisi_aktualisasi_1: "",
+        kepala_divisi_aktualisasi_2: "",
+        kepala_divisi_kominfo_1: "",
+        kepala_divisi_kominfo_2: "",
     });
+
 
     // Dokumen states
     const [dokumen, setDokumen] = useState({
@@ -137,19 +152,26 @@ export default function PengangkatanDppiProvinsi() {
                 nip_pic: picData.nip,
                 no_telp_pic: picData.noTelp,
                 email_pic: picData.email,
-                ketua: strukturData.ketua,
-                wakil_ketua: strukturData.wakilKetua,
-                sekretaris: strukturData.sekretaris,
-                kepala_divisi_dukungan: strukturData.kepalaDivisiDukungan,
-                kepala_divisi_kompetensi: strukturData.kepalaDivisiKompetensi,
-                kepala_divisi_aktualisasi: strukturData.kepalaDivisiAktualisasi,
-                kepala_divisi_kominfo: strukturData.kepalaDivisiKominfo,
+                ketua_1: strukturData.ketua_1,
+                ketua_2: strukturData.ketua_2,
+                wakil_ketua_1: strukturData.wakil_ketua_1,
+                wakil_ketua_2: strukturData.wakil_ketua_2,
+                sekretaris_1: strukturData.sekretaris_1,
+                sekretaris_2: strukturData.sekretaris_2,
+                kepala_divisi_dukungan_1: strukturData.kepala_divisi_dukungan_1,
+                kepala_divisi_dukungan_2: strukturData.kepala_divisi_dukungan_2,
+                kepala_divisi_kompetensi_1: strukturData.kepala_divisi_kompetensi_1,
+                kepala_divisi_kompetensi_2: strukturData.kepala_divisi_kompetensi_2,
+                kepala_divisi_aktualisasi_1: strukturData.kepala_divisi_aktualisasi_1,
+                kepala_divisi_aktualisasi_2: strukturData.kepala_divisi_aktualisasi_2,
+                kepala_divisi_kominfo_1: strukturData.kepala_divisi_kominfo_1,
+                kepala_divisi_kominfo_2: strukturData.kepala_divisi_kominfo_2,
             };
 
             console.log("Mengirim data pendaftaran:", pendaftaranData);
 
             // 2. Kirim data pendaftaran ke backend
-            const response = await axios.post(`${UrlApi}/pendaftaran-dppi-provinsi`, pendaftaranData, {
+            const response = await axios.post(`${UrlApi}/pendaftaran-dppi`, pendaftaranData, {
                 headers: {
                     'Content-Type': 'application/json',
                     // Tambahkan token auth jika diperlukan
@@ -189,7 +211,7 @@ export default function PengangkatanDppiProvinsi() {
                         console.log(`Uploading ${backendFieldName}...`);
 
                         return await axios.post(
-                            `${UrlApi}/pendaftaran-dppi-provinsi/${pendaftaranId}/upload/${backendFieldName}`,
+                            `${UrlApi}/pendaftaran-dppi/${pendaftaranId}/upload/${backendFieldName}`,
                             uploadData,
                             {
                                 headers: {
@@ -281,13 +303,20 @@ export default function PengangkatanDppiProvinsi() {
             email: ""
         });
         setStrukturData({
-            ketua: "",
-            wakilKetua: "",
-            sekretaris: "",
-            kepalaDivisiDukungan: "",
-            kepalaDivisiKompetensi: "",
-            kepalaDivisiAktualisasi: "",
-            kepalaDivisiKominfo: ""
+            ketua_1: "",
+            ketua_2: "",
+            wakil_ketua_1: "",
+            wakil_ketua_2: "",
+            sekretaris_1: "",
+            sekretaris_2: "",
+            kepala_divisi_dukungan_1: "",
+            kepala_divisi_dukungan_2: "",
+            kepala_divisi_kompetensi_1: "",
+            kepala_divisi_kompetensi_2: "",
+            kepala_divisi_aktualisasi_1: "",
+            kepala_divisi_aktualisasi_2: "",
+            kepala_divisi_kominfo_1: "",
+            kepala_divisi_kominfo_2: "",
         });
         setDokumen({
             suratSekda: null,
@@ -371,7 +400,7 @@ export default function PengangkatanDppiProvinsi() {
                 <div className='mx-auto max-w-318.75 px-2'>
                     <ul className='flex'>
                         <div className='py-2 mx-auto text-slate-50 text-center'>
-                            <span className="text-lg font-semibold">Form Kelengkapan Dokumen Pengangkatan Pertama Kali Pelaksana Duta Pancasila Paskibraka Indonesia Tingkat Provinsi</span>
+                            <span className="text-lg font-semibold">Form Kelengkapan Dokumen Pengangkatan Pertama Kali Pelaksana Duta Pancasila Paskibraka Indonesia Tingkat Provinsi 2026</span>
                         </div>
                     </ul>
                 </div>
@@ -555,101 +584,234 @@ export default function PengangkatanDppiProvinsi() {
                     </div>
                 )}
 
-                {/* Step 3: Struktur Organisasi */}
                 {currentStep === 3 && (
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h3 className="text-lg font-semibold mb-6">Nama Calon Peserta</h3>
+                        <div className="space-y-6">
+                            {/* Ketua */}
+                            <div className="border-b pb-4">
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Ketua
-                                </label>
-                                <input
-                                    type="text"
-                                    name="ketua"
-                                    value={strukturData.ketua}
-                                    onChange={handleStrukturChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Ketua
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="ketua_1"
+                                            value={strukturData.ketua_1}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Ketua
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="ketua_2"
+                                            value={strukturData.ketua_2}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Wakil Ketua
-                                </label>
-                                <input
-                                    type="text"
-                                    name="wakilKetua"
-                                    value={strukturData.wakilKetua}
-                                    onChange={handleStrukturChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
+                            {/* Wakil Ketua */}
+                            <div className="border-b pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Wakil Ketua
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="wakil_ketua_1"
+                                            value={strukturData.wakil_ketua_1}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Wakil Ketua
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="wakil_ketua_2"
+                                            value={strukturData.wakil_ketua_2}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Sekretaris
-                                </label>
-                                <input
-                                    type="text"
-                                    name="sekretaris"
-                                    value={strukturData.sekretaris}
-                                    onChange={handleStrukturChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
+                            {/* Sekretaris */}
+                            <div className="border-b pb-4">
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Sekretaris
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="sekretaris_1"
+                                            value={strukturData.sekretaris_1}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Sekretaris
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="sekretaris_2"
+                                            value={strukturData.sekretaris_2}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Divisi Dukungan Pembentukan Paskibraka dan Purnapaskibraka Duta Pancasila
-                                </label>
-                                <input
-                                    type="text"
-                                    name="kepalaDivisiDukungan"
-                                    value={strukturData.kepalaDivisiDukungan}
-                                    onChange={handleStrukturChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
+                            {/* Kepala Divisi Dukungan */}
+                            <div className="border-b pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_dukungan_1"
+                                            value={strukturData.kepala_divisi_dukungan_1}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_dukungan_2"
+                                            value={strukturData.kepala_divisi_dukungan_2}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Divisi Peningkatan Kompetensi
-                                </label>
-                                <input
-                                    type="text"
-                                    name="kepalaDivisiKompetensi"
-                                    value={strukturData.kepalaDivisiKompetensi}
-                                    onChange={handleStrukturChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
+                            {/* Kepala Divisi Kompetensi */}
+                            <div className="border-b pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Peningkatan Kompetensi
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_kompetensi_1"
+                                            value={strukturData.kepala_divisi_kompetensi_1}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Peningkatan Kompetensi
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_kompetensi_2"
+                                            value={strukturData.kepala_divisi_kompetensi_2}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Divisi Aktualisasi Nilai-Nilai Pancasila
-                                </label>
-                                <input
-                                    type="text"
-                                    name="kepalaDivisiAktualisasi"
-                                    value={strukturData.kepalaDivisiAktualisasi}
-                                    onChange={handleStrukturChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
+                            {/* Kepala Divisi Aktualisasi */}
+                            <div className="border-b pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_aktualisasi_1"
+                                            value={strukturData.kepala_divisi_aktualisasi_1}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_aktualisasi_2"
+                                            value={strukturData.kepala_divisi_aktualisasi_2}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700 font-medium mb-2">
-                                    Kepala Divisi Komunikasi, Teknologi dan Informasi
-                                </label>
-                                <input
-                                    type="text"
-                                    name="kepalaDivisiKominfo"
-                                    value={strukturData.kepalaDivisiKominfo}
-                                    onChange={handleStrukturChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
+                            {/* Kepala Divisi Kominfo */}
+                            <div className="border-b pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Komunikasi, Teknologi dan Informasi
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_kominfo_1"
+                                            value={strukturData.kepala_divisi_kominfo_1}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-700 font-medium mb-2">
+                                            Kepala Divisi Komunikasi, Teknologi dan Informasi
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="kepala_divisi_kominfo_2"
+                                            value={strukturData.kepala_divisi_kominfo_2}
+                                            onChange={handleStrukturChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

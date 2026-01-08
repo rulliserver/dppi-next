@@ -36,15 +36,15 @@ export default function PengangkatanDppi() {
         sekretaris_1: "",
         sekretaris_2: "",
 
-        // Kepala Bidang (masing-masing 2 orang)
-        kepala_bidang_dukungan_1: "",
-        kepala_bidang_dukungan_2: "",
-        kepala_bidang_kompetensi_1: "",
-        kepala_bidang_kompetensi_2: "",
-        kepala_bidang_aktualisasi_1: "",
-        kepala_bidang_aktualisasi_2: "",
-        kepala_bidang_kominfo_1: "",
-        kepala_bidang_kominfo_2: "",
+        // Kepala Divisi (masing-masing 2 orang)
+        kepala_divisi_dukungan_1: "",
+        kepala_divisi_dukungan_2: "",
+        kepala_divisi_kompetensi_1: "",
+        kepala_divisi_kompetensi_2: "",
+        kepala_divisi_aktualisasi_1: "",
+        kepala_divisi_aktualisasi_2: "",
+        kepala_divisi_kominfo_1: "",
+        kepala_divisi_kominfo_2: "",
     });
 
 
@@ -159,24 +159,23 @@ export default function PengangkatanDppi() {
                 wakil_ketua_2: strukturData.wakil_ketua_2,
                 sekretaris_1: strukturData.sekretaris_1,
                 sekretaris_2: strukturData.sekretaris_2,
-                kepala_bidang_dukungan_1: strukturData.kepala_bidang_dukungan_1,
-                kepala_bidang_dukungan_2: strukturData.kepala_bidang_dukungan_2,
-                kepala_bidang_kompetensi_1: strukturData.kepala_bidang_kompetensi_1,
-                kepala_bidang_kompetensi_2: strukturData.kepala_bidang_kompetensi_2,
-                kepala_bidang_aktualisasi_1: strukturData.kepala_bidang_aktualisasi_1,
-                kepala_bidang_aktualisasi_2: strukturData.kepala_bidang_aktualisasi_2,
-                kepala_bidang_kominfo_1: strukturData.kepala_bidang_kominfo_1,
-                kepala_bidang_kominfo_2: strukturData.kepala_bidang_kominfo_2,
+                kepala_divisi_dukungan_1: strukturData.kepala_divisi_dukungan_1,
+                kepala_divisi_dukungan_2: strukturData.kepala_divisi_dukungan_2,
+                kepala_divisi_kompetensi_1: strukturData.kepala_divisi_kompetensi_1,
+                kepala_divisi_kompetensi_2: strukturData.kepala_divisi_kompetensi_2,
+                kepala_divisi_aktualisasi_1: strukturData.kepala_divisi_aktualisasi_1,
+                kepala_divisi_aktualisasi_2: strukturData.kepala_divisi_aktualisasi_2,
+                kepala_divisi_kominfo_1: strukturData.kepala_divisi_kominfo_1,
+                kepala_divisi_kominfo_2: strukturData.kepala_divisi_kominfo_2,
             };
 
             console.log("Mengirim data pendaftaran:", pendaftaranData);
 
             // 2. Kirim data pendaftaran ke backend
-            const response = await axios.post(`${UrlApi}/pendaftaran-dppi`, pendaftaranData, {
+            const response = await axios.post(`${UrlApi}/pendaftaran-dppi-provinsi`, pendaftaranData, {
                 headers: {
                     'Content-Type': 'application/json',
-                    // Tambahkan token auth jika diperlukan
-                    // 'Authorization': `Bearer ${token}`
+
                 }
             });
 
@@ -212,7 +211,7 @@ export default function PengangkatanDppi() {
                         console.log(`Uploading ${backendFieldName}...`);
 
                         return await axios.post(
-                            `${UrlApi}/pendaftaran-dppi/${pendaftaranId}/upload/${backendFieldName}`,
+                            `${UrlApi}/pendaftaran-dppi-provinsi/${pendaftaranId}/upload/${backendFieldName}`,
                             uploadData,
                             {
                                 headers: {
@@ -273,7 +272,7 @@ export default function PengangkatanDppi() {
 
         } finally {
             setIsSubmitting(false);
-            window.location.reload();
+
         }
     };
 
@@ -310,14 +309,14 @@ export default function PengangkatanDppi() {
             wakil_ketua_2: "",
             sekretaris_1: "",
             sekretaris_2: "",
-            kepala_bidang_dukungan_1: "",
-            kepala_bidang_dukungan_2: "",
-            kepala_bidang_kompetensi_1: "",
-            kepala_bidang_kompetensi_2: "",
-            kepala_bidang_aktualisasi_1: "",
-            kepala_bidang_aktualisasi_2: "",
-            kepala_bidang_kominfo_1: "",
-            kepala_bidang_kominfo_2: "",
+            kepala_divisi_dukungan_1: "",
+            kepala_divisi_dukungan_2: "",
+            kepala_divisi_kompetensi_1: "",
+            kepala_divisi_kompetensi_2: "",
+            kepala_divisi_aktualisasi_1: "",
+            kepala_divisi_aktualisasi_2: "",
+            kepala_divisi_kominfo_1: "",
+            kepala_divisi_kominfo_2: "",
         });
         setDokumen({
             suratSekda: null,
@@ -687,17 +686,17 @@ export default function PengangkatanDppi() {
                                 </div>
                             </div>
 
-                            {/* Kepala Bidang Dukungan */}
+                            {/* Kepala Divisi Dukungan */}
                             <div className="border-b pb-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_dukungan_1"
-                                            value={strukturData.kepala_bidang_dukungan_1}
+                                            name="kepala_divisi_dukungan_1"
+                                            value={strukturData.kepala_divisi_dukungan_1}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
@@ -705,12 +704,12 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_dukungan_2"
-                                            value={strukturData.kepala_bidang_dukungan_2}
+                                            name="kepala_divisi_dukungan_2"
+                                            value={strukturData.kepala_divisi_dukungan_2}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
@@ -719,17 +718,17 @@ export default function PengangkatanDppi() {
                                 </div>
                             </div>
 
-                            {/* Kepala Bidang Kompetensi */}
+                            {/* Kepala Divisi Kompetensi */}
                             <div className="border-b pb-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Peningkatan Kompetensi
+                                            Kepala Divisi Peningkatan Kompetensi
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_kompetensi_1"
-                                            value={strukturData.kepala_bidang_kompetensi_1}
+                                            name="kepala_divisi_kompetensi_1"
+                                            value={strukturData.kepala_divisi_kompetensi_1}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
@@ -737,12 +736,12 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Peningkatan Kompetensi
+                                            Kepala Divisi Peningkatan Kompetensi
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_kompetensi_2"
-                                            value={strukturData.kepala_bidang_kompetensi_2}
+                                            name="kepala_divisi_kompetensi_2"
+                                            value={strukturData.kepala_divisi_kompetensi_2}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
@@ -751,17 +750,17 @@ export default function PengangkatanDppi() {
                                 </div>
                             </div>
 
-                            {/* Kepala Bidang Aktualisasi */}
+                            {/* Kepala Divisi Aktualisasi */}
                             <div className="border-b pb-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Aktualisasi Nilai-nilai Pancasila
+                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_aktualisasi_1"
-                                            value={strukturData.kepala_bidang_aktualisasi_1}
+                                            name="kepala_divisi_aktualisasi_1"
+                                            value={strukturData.kepala_divisi_aktualisasi_1}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
@@ -769,12 +768,12 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Aktualisasi Nilai-nilai Pancasila
+                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_aktualisasi_2"
-                                            value={strukturData.kepala_bidang_aktualisasi_2}
+                                            name="kepala_divisi_aktualisasi_2"
+                                            value={strukturData.kepala_divisi_aktualisasi_2}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
@@ -783,17 +782,17 @@ export default function PengangkatanDppi() {
                                 </div>
                             </div>
 
-                            {/* Kepala Bidang Kominfo */}
+                            {/* Kepala Divisi Kominfo */}
                             <div className="border-b pb-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Komunikasi, Teknologi dan Informasi
+                                            Kepala Divisi Komunikasi, Teknologi dan Informasi
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_kominfo_1"
-                                            value={strukturData.kepala_bidang_kominfo_1}
+                                            name="kepala_divisi_kominfo_1"
+                                            value={strukturData.kepala_divisi_kominfo_1}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
@@ -801,12 +800,12 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Komunikasi, Teknologi dan Informasi
+                                            Kepala Divisi Komunikasi, Teknologi dan Informasi
                                         </label>
                                         <input
                                             type="text"
-                                            name="kepala_bidang_kominfo_2"
-                                            value={strukturData.kepala_bidang_kominfo_2}
+                                            name="kepala_divisi_kominfo_2"
+                                            value={strukturData.kepala_divisi_kominfo_2}
                                             onChange={handleStrukturChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                                             required
