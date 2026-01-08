@@ -71,6 +71,7 @@ export default function ListKabKota() {
         try {
             setLoading(true);
             const response = await axios.get(`${UrlApi}/pendaftaran-dppi`, {
+                withCredentials: true,
                 params: {
                     page: currentPage,
                     per_page: itemsPerPage,
@@ -101,7 +102,7 @@ export default function ListKabKota() {
 
     const fetchStats = async () => {
         try {
-            const response = await axios.get(`${UrlApi}/pendaftaran-dppi/stats`);
+            const response = await axios.get(`${UrlApi}/pendaftaran-dppi/stats`, { withCredentials: true });
             if (response.data) {
                 setStats(response.data);
             }
@@ -156,6 +157,7 @@ export default function ListKabKota() {
         if (result.isConfirmed) {
             try {
                 await axios.put(`${UrlApi}/pendaftaran-dppi/${id}/status`, {
+                    withCredentials: true,
                     status: newStatus
                 });
 
@@ -191,7 +193,7 @@ export default function ListKabKota() {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`${UrlApi}/pendaftaran-dppi/${id}`);
+                await axios.delete(`${UrlApi}/pendaftaran-dppi/${id}`, { withCredentials: true });
 
                 Swal.fire({
                     icon: 'success',
@@ -217,6 +219,7 @@ export default function ListKabKota() {
             const response = await axios.get(
                 `${UrlApi}/pendaftaran-dppi/${id}/download/${documentType}`,
                 {
+                    withCredentials: true,
                     responseType: 'blob'
                 }
             );
@@ -248,6 +251,7 @@ export default function ListKabKota() {
     const handleDownloadExcel = async (simple: boolean = false) => {
         try {
             const response = await axios.get(`${UrlApi}/pendaftaran-dppi/download`, {
+                withCredentials: true,
                 responseType: 'blob',
                 params: {
                     simple: simple
@@ -478,7 +482,7 @@ export default function ListKabKota() {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                ID
+                                                #
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Kabupaten/Kota
@@ -505,10 +509,10 @@ export default function ListKabKota() {
                                                 </td>
                                             </tr>
                                         ) : (
-                                            filteredList.map((item) => (
+                                            filteredList.map((item, index) => (
                                                 <tr key={item.id} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        #{item.id}
+                                                        {index + 1 + (currentPage - 1) * itemsPerPage}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div>
@@ -747,10 +751,7 @@ export default function ListKabKota() {
                                             <p className="text-sm text-gray-500">Tanggal Pendaftaran</p>
                                             <p className="font-medium">{formatDate(selectedPendaftaran.created_at)}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500">ID Pendaftaran</p>
-                                            <p className="font-medium">#{selectedPendaftaran.id}</p>
-                                        </div>
+
                                     </div>
                                 </div>
                             </div>
