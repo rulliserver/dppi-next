@@ -171,7 +171,7 @@ export default function PengangkatanDppiProvinsi() {
             console.log("Mengirim data pendaftaran:", pendaftaranData);
 
             // 2. Kirim data pendaftaran ke backend
-            const response = await axios.post(`${UrlApi}/pendaftaran-dppi`, pendaftaranData, {
+            const response = await axios.post(`${UrlApi}/pendaftaran-dppi-provinsi`, pendaftaranData, {
                 headers: {
                     'Content-Type': 'application/json',
                     // Tambahkan token auth jika diperlukan
@@ -211,7 +211,7 @@ export default function PengangkatanDppiProvinsi() {
                         console.log(`Uploading ${backendFieldName}...`);
 
                         return await axios.post(
-                            `${UrlApi}/pendaftaran-dppi/${pendaftaranId}/upload/${backendFieldName}`,
+                            `${UrlApi}/pendaftaran-dppi-provinsi/${pendaftaranId}/upload/${backendFieldName}`,
                             uploadData,
                             {
                                 headers: {
