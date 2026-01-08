@@ -588,15 +588,14 @@ export default function PengangkatanDppi() {
                 {currentStep === 3 && (
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h3 className="text-lg font-semibold mb-6">Nama Calon Peserta</h3>
-
                         <div className="space-y-6">
                             {/* Ketua */}
                             <div className="border-b pb-4">
-                                <h4 className="font-medium text-gray-800 mb-4">Ketua</h4>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Ketua 1
+                                            Ketua
                                         </label>
                                         <input
                                             type="text"
@@ -609,7 +608,7 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Ketua 2
+                                            Ketua
                                         </label>
                                         <input
                                             type="text"
@@ -624,11 +623,10 @@ export default function PengangkatanDppi() {
 
                             {/* Wakil Ketua */}
                             <div className="border-b pb-4">
-                                <h4 className="font-medium text-gray-800 mb-4">Wakil Ketua</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Wakil Ketua 1
+                                            Wakil Ketua
                                         </label>
                                         <input
                                             type="text"
@@ -641,7 +639,7 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Wakil Ketua 2
+                                            Wakil Ketua
                                         </label>
                                         <input
                                             type="text"
@@ -656,11 +654,11 @@ export default function PengangkatanDppi() {
 
                             {/* Sekretaris */}
                             <div className="border-b pb-4">
-                                <h4 className="font-medium text-gray-800 mb-4">Sekretaris</h4>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Sekretaris 1
+                                            Sekretaris
                                         </label>
                                         <input
                                             type="text"
@@ -673,7 +671,7 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Sekretaris 2
+                                            Sekretaris
                                         </label>
                                         <input
                                             type="text"
@@ -688,13 +686,10 @@ export default function PengangkatanDppi() {
 
                             {/* Kepala Bidang Dukungan */}
                             <div className="border-b pb-4">
-                                <h4 className="font-medium text-gray-800 mb-4">
-                                    Kepala Bidang Dukungan Pembentukan Paskibraka dan Purnapaskibraka Duta Pancasila
-                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Dukungan 1
+                                            Kepala Bidang Dukungan
                                         </label>
                                         <input
                                             type="text"
@@ -707,7 +702,7 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Dukungan 2
+                                            Kepala Bidang Dukungan
                                         </label>
                                         <input
                                             type="text"
@@ -722,13 +717,10 @@ export default function PengangkatanDppi() {
 
                             {/* Kepala Bidang Kompetensi */}
                             <div className="border-b pb-4">
-                                <h4 className="font-medium text-gray-800 mb-4">
-                                    Kepala Bidang Peningkatan Kompetensi
-                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Kompetensi 1
+                                            Kepala Bidang Kompetensi
                                         </label>
                                         <input
                                             type="text"
@@ -741,7 +733,7 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Kompetensi 2
+                                            Kepala Bidang Kompetensi
                                         </label>
                                         <input
                                             type="text"
@@ -756,13 +748,10 @@ export default function PengangkatanDppi() {
 
                             {/* Kepala Bidang Aktualisasi */}
                             <div className="border-b pb-4">
-                                <h4 className="font-medium text-gray-800 mb-4">
-                                    Kepala Bidang Aktualisasi Nilai-Nilai Pancasila
-                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Aktualisasi 1
+                                            Kepala Bidang Aktualisasi
                                         </label>
                                         <input
                                             type="text"
@@ -775,7 +764,7 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Aktualisasi 2
+                                            Kepala Bidang Aktualisasi
                                         </label>
                                         <input
                                             type="text"
@@ -790,13 +779,10 @@ export default function PengangkatanDppi() {
 
                             {/* Kepala Bidang Kominfo */}
                             <div className="border-b pb-4">
-                                <h4 className="font-medium text-gray-800 mb-4">
-                                    Kepala Bidang Komunikasi, Teknologi dan Informasi
-                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Kominfo 1
+                                            Kepala Bidang Kominfo
                                         </label>
                                         <input
                                             type="text"
@@ -809,7 +795,7 @@ export default function PengangkatanDppi() {
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Bidang Kominfo 2
+                                            Kepala Bidang Kominfo
                                         </label>
                                         <input
                                             type="text"
