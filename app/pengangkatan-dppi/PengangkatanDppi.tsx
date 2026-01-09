@@ -401,7 +401,7 @@ export default function PengangkatanDppi() {
                 <div className='mx-auto max-w-318.75 px-2'>
                     <ul className='flex'>
                         <div className='py-2 mx-auto text-slate-50 text-center'>
-                            <span className="text-lg font-semibold">Form Kelengkapan Dokumen Pengangkatan Pertama Kali Pelaksana Duta Pancasila Paskibraka Indonesia Tingkat Kabupaten/Kota 2026</span>
+                            <span className="text-lg font-semibold">Form Kelengkapan Dokumen Pengangkatan Pertama Kali Pelaksana Duta Pancasila Paskibraka Indonesia Tingkat Kabupaten/Kota TA {new Date().getFullYear()}</span>
                         </div>
                     </ul>
                 </div>
@@ -412,7 +412,7 @@ export default function PengangkatanDppi() {
                 <p className="md:text-lg lg:text-xl mb-4 font-medium">
                     {currentStep === 1 && "Pilih Kota/Kabupaten – Step 1 of 5"}
                     {currentStep === 2 && "Data PIC – Step 2 of 5"}
-                    {currentStep === 3 && "Nama Galon Peserta – Step 3 of 5"}
+                    {currentStep === 3 && "Nama Calon Peserta – Step 3 of 5"}
                     {currentStep === 4 && "Unggah Dokumen – Step 4 of 5"}
                     {currentStep === 5 && "Tinjau Ulang – Step 5 of 5"}
                 </p>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
+import Swal from 'sweetalert2';
 
 export default function PengangkatanDppiProvinsi() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -46,7 +47,6 @@ export default function PengangkatanDppiProvinsi() {
         kepala_divisi_kominfo_2: "",
     });
 
-
     // Dokumen states
     const [dokumen, setDokumen] = useState({
         suratSekda: null as File | null,
@@ -58,9 +58,10 @@ export default function PengangkatanDppiProvinsi() {
     });
 
     const [agree, setAgree] = useState(false);
-    // Tambah state ini bersama state lainnya
     const [selectedProvinsiId, setSelectedProvinsiId] = useState<number | null>(null);
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [strukturErrors, setStrukturErrors] = useState<Record<string, string>>({});
+    const [picErrors, setPicErrors] = useState<Record<string, string>>({});
 
     // Fetch provinsi data
     useEffect(() => {
@@ -99,10 +100,211 @@ export default function PengangkatanDppiProvinsi() {
             })
             .catch((error) => {
                 console.error('Error fetching provinsi:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Gagal memuat data provinsi',
+                });
             });
     };
 
+    // Helper functions
+    const isValidEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const isValidPhone = (phone: string): boolean => {
+        const digitsOnly = phone.replace(/\D/g, '');
+        return digitsOnly.length >= 10;
+    };
+    const isValidNip = (nip: string): boolean => {
+        const digitsOnly = nip.replace(/\D/g, '');
+        return digitsOnly.length == 16;
+    };
+
+    // Validasi PIC data
+    const validatePicData = (): { isValid: boolean; errors: Record<string, string> } => {
+        const errors: Record<string, string> = {};
+
+        if (!picData.nama.trim()) errors.nama = 'Nama PIC wajib diisi';
+        if (!picData.jabatan.trim()) errors.jabatan = 'Jabatan wajib diisi';
+        if (!picData.nip.trim()) errors.nip = 'NIP wajib diisi';
+        if (!picData.noTelp.trim()) errors.noTelp = 'No Telepon wajib diisi';
+        if (!picData.email.trim()) errors.email = 'Email wajib diisi';
+
+        if (picData.email.trim() && !isValidEmail(picData.email)) {
+            errors.email = 'Format email tidak valid';
+        }
+
+        if (picData.nip.trim() && !isValidNip(picData.nip)) {
+            errors.nip = 'Format NIP tidak valid (harus 16 digit)';
+        }
+
+        if (picData.noTelp.trim() && !isValidPhone(picData.noTelp)) {
+            errors.noTelp = 'Format nomor telepon tidak valid (minimal 10 digit)';
+        }
+
+        return { isValid: Object.keys(errors).length === 0, errors };
+    };
+
+    // Validasi struktur data
+    const validateStrukturData = (): { isValid: boolean; errors: Record<string, string> } => {
+        const errors: Record<string, string> = {};
+        const fieldLabels: Record<string, string> = {
+            'ketua_1': 'Ketua 1',
+            'ketua_2': 'Ketua 2',
+            'wakil_ketua_1': 'Wakil Ketua 1',
+            'wakil_ketua_2': 'Wakil Ketua 2',
+            'sekretaris_1': 'Sekretaris 1',
+            'sekretaris_2': 'Sekretaris 2',
+            'kepala_divisi_dukungan_1': 'Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila 1',
+            'kepala_divisi_dukungan_2': 'Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila 2',
+            'kepala_divisi_kompetensi_1': 'Kepala Divisi Peningkatan Kompetensi 1',
+            'kepala_divisi_kompetensi_2': 'Kepala Divisi Peningkatan Kompetensi 2',
+            'kepala_divisi_aktualisasi_1': 'Kepala Divisi Aktualisasi Nilai-nilai Pancasila 1',
+            'kepala_divisi_aktualisasi_2': 'Kepala Divisi Aktualisasi Nilai-nilai Pancasila 2',
+            'kepala_divisi_kominfo_1': 'Kepala Divisi Komunikasi, Teknologi dan Informasi 1',
+            'kepala_divisi_kominfo_2': 'Kepala Divisi Komunikasi, Teknologi dan Informasi 2',
+        };
+
+        Object.keys(strukturData).forEach(field => {
+            if (!strukturData[field as keyof typeof strukturData].trim()) {
+                errors[field] = `${fieldLabels[field] || field} wajib diisi`;
+            }
+        });
+
+        return { isValid: Object.keys(errors).length === 0, errors };
+    };
+
+    // Real-time validation
+    const checkStrukturField = (fieldName: string, value: string) => {
+        const newErrors = { ...strukturErrors };
+
+        if (!value.trim()) {
+            const fieldLabels: Record<string, string> = {
+                'ketua_1': 'Ketua 1',
+                'ketua_2': 'Ketua 2',
+                'wakil_ketua_1': 'Wakil Ketua 1',
+                'wakil_ketua_2': 'Wakil Ketua 2',
+                'sekretaris_1': 'Sekretaris 1',
+                'sekretaris_2': 'Sekretaris 2',
+                'kepala_divisi_dukungan_1': 'Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila 1',
+                'kepala_divisi_dukungan_2': 'Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila 2',
+                'kepala_divisi_kompetensi_1': 'Kepala Divisi Peningkatan Kompetensi 1',
+                'kepala_divisi_kompetensi_2': 'Kepala Divisi Peningkatan Kompetensi 2',
+                'kepala_divisi_aktualisasi_1': 'Kepala Divisi Aktualisasi Nilai-nilai Pancasila 1',
+                'kepala_divisi_aktualisasi_2': 'Kepala Divisi Aktualisasi Nilai-nilai Pancasila 2',
+                'kepala_divisi_kominfo_1': 'Kepala Divisi Komunikasi, Teknologi dan Informasi 1',
+                'kepala_divisi_kominfo_2': 'Kepala Divisi Komunikasi, Teknologi dan Informasi 2',
+            };
+            newErrors[fieldName] = `${fieldLabels[fieldName] || fieldName} wajib diisi`;
+        } else {
+            delete newErrors[fieldName];
+        }
+
+        setStrukturErrors(newErrors);
+    };
+
+    const checkPicField = (fieldName: string, value: string) => {
+        const newErrors = { ...picErrors };
+
+        if (!value.trim()) {
+            const fieldLabels: Record<string, string> = {
+                'nama': 'Nama PIC',
+                'jabatan': 'Jabatan',
+                'nip': 'NIP',
+                'noTelp': 'No Telepon',
+                'email': 'Email',
+            };
+            newErrors[fieldName] = `${fieldLabels[fieldName] || fieldName} wajib diisi`;
+        } else if (fieldName === 'email' && value.trim() && !isValidEmail(value)) {
+            newErrors[fieldName] = 'Format email tidak valid';
+        } else if (fieldName === 'noTelp' && value.trim() && !isValidPhone(value)) {
+            newErrors[fieldName] = 'Format nomor telepon tidak valid (minimal 10 digit)';
+        } else {
+            delete newErrors[fieldName];
+        }
+
+        setPicErrors(newErrors);
+    };
+
     const handleNext = () => {
+        // Validasi Step 1
+        if (currentStep === 1) {
+            if (!selectedProvinsi) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Provinsi',
+                    text: 'Harap pilih provinsi terlebih dahulu',
+                    confirmButtonText: 'Baik',
+                    confirmButtonColor: '#3085d6',
+                });
+                return;
+            }
+        }
+
+        // Validasi Step 2
+        if (currentStep === 2) {
+            const validation = validatePicData();
+            if (!validation.isValid) {
+                const errorMessages = Object.values(validation.errors).join('<br>');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Data PIC Belum Lengkap',
+                    html: `Harap lengkapi data berikut:<br><br>${errorMessages}`,
+                    confirmButtonText: 'Baik, Saya akan melengkapi',
+                    confirmButtonColor: '#3085d6',
+                });
+                setPicErrors(validation.errors);
+                return;
+            }
+        }
+
+        // Validasi Step 3
+        if (currentStep === 3) {
+            const validation = validateStrukturData();
+            if (!validation.isValid) {
+                const errorMessages = Object.values(validation.errors).join('<br>');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Data Calon Peserta Belum Lengkap',
+                    html: `Harap lengkapi data berikut:<br><br>${errorMessages}`,
+                    confirmButtonText: 'Baik, Saya akan melengkapi',
+                    confirmButtonColor: '#3085d6',
+                });
+                setStrukturErrors(validation.errors);
+                return;
+            }
+        }
+
+        // Validasi Step 4
+        if (currentStep === 4) {
+            const requiredDocuments = ['suratSekda', 'daftarRiwayatHidup', 'portofolio', 'kartuKeluarga'];
+            const missingDocuments = requiredDocuments.filter(doc => !dokumen[doc as keyof typeof dokumen]);
+
+            if (missingDocuments.length > 0) {
+                const docLabels: Record<string, string> = {
+                    'suratSekda': 'Surat Sekretaris Daerah',
+                    'daftarRiwayatHidup': 'Daftar Riwayat Hidup',
+                    'portofolio': 'Portofolio',
+                    'kartuKeluarga': 'Kartu Keluarga',
+                };
+
+                const missingLabels = missingDocuments.map(doc => docLabels[doc] || doc);
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Dokumen Belum Lengkap',
+                    html: `Dokumen wajib berikut belum diunggah:<br><br>${missingLabels.join('<br>')}`,
+                    confirmButtonText: 'Baik, Saya akan mengunggah',
+                    confirmButtonColor: '#3085d6',
+                });
+                return;
+            }
+        }
+
+        // Lanjut ke step berikutnya
         if (currentStep < 5) {
             setCurrentStep(currentStep + 1);
         }
@@ -116,32 +318,110 @@ export default function PengangkatanDppiProvinsi() {
 
     const handleSubmit = async () => {
         if (!agree) {
-            alert("Anda harus menyetujui persyaratan terlebih dahulu!");
+            Swal.fire({
+                icon: 'warning',
+                title: 'Persetujuan Diperlukan',
+                text: 'Anda harus menyetujui persyaratan terlebih dahulu!',
+                confirmButtonText: 'Baik',
+                confirmButtonColor: '#3085d6',
+            });
             return;
         }
 
-        // Validasi required fields
+        // Validasi akhir sebelum submit
         if (!selectedProvinsi || !selectedProvinsiId) {
-            alert("Harap pilih Provinsi terlebih dahulu!");
+            Swal.fire({
+                icon: 'warning',
+                title: 'Provinsi Belum Dipilih',
+                text: 'Harap pilih provinsi terlebih dahulu!',
+                confirmButtonText: 'Baik',
+                confirmButtonColor: '#3085d6',
+            });
+            setCurrentStep(1);
             return;
         }
 
-        if (!picData.nama || !picData.jabatan || !picData.nip || !picData.noTelp || !picData.email) {
-            alert("Harap lengkapi semua data PIC yang wajib diisi!");
+        const picValidation = validatePicData();
+        if (!picValidation.isValid) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Data PIC Belum Lengkap',
+                html: `Harap lengkapi data PIC terlebih dahulu!`,
+                confirmButtonText: 'Baik',
+                confirmButtonColor: '#3085d6',
+            });
+            setCurrentStep(2);
             return;
         }
 
-        // Validasi dokumen wajib
+        const strukturValidation = validateStrukturData();
+        if (!strukturValidation.isValid) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Data Calon Peserta Belum Lengkap',
+                html: `Harap lengkapi data calon peserta terlebih dahulu!`,
+                confirmButtonText: 'Baik',
+                confirmButtonColor: '#3085d6',
+            });
+            setCurrentStep(3);
+            return;
+        }
+
+        // Validasi dokumen
         const requiredDocuments = ['suratSekda', 'daftarRiwayatHidup', 'portofolio', 'kartuKeluarga'];
         const missingDocuments = requiredDocuments.filter(doc => !dokumen[doc as keyof typeof dokumen]);
 
         if (missingDocuments.length > 0) {
-            alert(`Dokumen wajib berikut belum diunggah: ${missingDocuments.join(', ')}`);
+            Swal.fire({
+                icon: 'warning',
+                title: 'Dokumen Belum Lengkap',
+                text: 'Harap unggah semua dokumen wajib terlebih dahulu!',
+                confirmButtonText: 'Baik',
+                confirmButtonColor: '#3085d6',
+            });
+            setCurrentStep(4);
+            return;
+        }
+
+        // Konfirmasi submit
+        const result = await Swal.fire({
+            title: 'Kirim Pendaftaran?',
+            html: `
+                <div class="text-left">
+                    <p>Apakah Anda yakin ingin mengirim pendaftaran?</p>
+                    <ul class="list-disc pl-5 mt-2">
+                        <li>Provinsi: <strong>${selectedProvinsi}</strong></li>
+                        <li>PIC: <strong>${picData.nama}</strong></li>
+                        <li>Jumlah dokumen: <strong>${Object.values(dokumen).filter(d => d).length}</strong></li>
+                    </ul>
+                    <p class="mt-3 text-sm text-gray-600">Data tidak dapat diubah setelah dikirim.</p>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Kirim Sekarang',
+            cancelButtonText: 'Periksa Kembali',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            reverseButtons: true
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
 
         try {
             setIsSubmitting(true);
+
+            // Show loading
+            Swal.fire({
+                title: 'Mengirim Data...',
+                html: 'Sedang memproses pendaftaran, harap tunggu.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
             // 1. Buat data pendaftaran dasar
             const pendaftaranData = {
@@ -168,14 +448,10 @@ export default function PengangkatanDppiProvinsi() {
                 kepala_divisi_kominfo_2: strukturData.kepala_divisi_kominfo_2,
             };
 
-            console.log("Mengirim data pendaftaran:", pendaftaranData);
-
             // 2. Kirim data pendaftaran ke backend
             const response = await axios.post(`${UrlApi}/pendaftaran-dppi-provinsi`, pendaftaranData, {
                 headers: {
                     'Content-Type': 'application/json',
-                    // Tambahkan token auth jika diperlukan
-                    // 'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -183,62 +459,67 @@ export default function PengangkatanDppiProvinsi() {
                 const pendaftaranId = response.data.id;
 
                 // 3. Upload dokumen satu per satu
-                const uploadPromises = Object.entries(dokumen).map(async ([key, file]) => {
-                    if (!file) return null;
+                const uploadPromises = Object.entries(dokumen)
+                    .filter(([_, file]) => file !== null)
+                    .map(async ([key, file]) => {
+                        try {
+                            const base64Content = await convertFileToBase64(file!);
 
-                    try {
-                        // Convert file to base64
-                        const base64Content = await convertFileToBase64(file);
+                            const fieldMapping: Record<string, string> = {
+                                suratSekda: 'surat_sekda',
+                                daftarRiwayatHidup: 'daftar_riwayat_hidup',
+                                portofolio: 'portofolio',
+                                kartuKeluarga: 'kartu_keluarga',
+                                sertifikatPDP: 'sertifikat_pdp',
+                                sertifikatDiktatPIP: 'sertifikat_diktat_pip'
+                            };
 
-                        // Map field name dari frontend ke backend
-                        const fieldMapping: Record<string, string> = {
-                            suratSekda: 'surat_sekda',
-                            daftarRiwayatHidup: 'daftar_riwayat_hidup',
-                            portofolio: 'portofolio',
-                            kartuKeluarga: 'kartu_keluarga',
-                            sertifikatPDP: 'sertifikat_pdp',
-                            sertifikatDiktatPIP: 'sertifikat_diktat_pip'
-                        };
+                            const backendFieldName = fieldMapping[key] || key;
 
-                        const backendFieldName = fieldMapping[key] || key;
+                            const uploadData = {
+                                field_name: backendFieldName,
+                                file_name: file!.name,
+                                base64_content: base64Content
+                            };
 
-                        const uploadData = {
-                            field_name: backendFieldName,
-                            file_name: file.name,
-                            base64_content: base64Content
-                        };
-
-                        console.log(`Uploading ${backendFieldName}...`);
-
-                        return await axios.post(
-                            `${UrlApi}/pendaftaran-dppi-provinsi/${pendaftaranId}/upload/${backendFieldName}`,
-                            uploadData,
-                            {
-                                headers: {
-                                    'Content-Type': 'application/json'
+                            return await axios.post(
+                                `${UrlApi}/pendaftaran-dppi-provinsi/${pendaftaranId}/upload/${backendFieldName}`,
+                                uploadData,
+                                {
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
                                 }
-                            }
-                        );
-                    } catch (uploadError) {
-                        console.error(`Error uploading ${key}:`, uploadError);
-                        return null;
-                    }
-                });
+                            );
+                        } catch (uploadError) {
+                            console.error(`Error uploading ${key}:`, uploadError);
+                            return null;
+                        }
+                    });
 
                 // Tunggu semua upload selesai
                 const uploadResults = await Promise.all(uploadPromises);
                 const successfulUploads = uploadResults.filter(result => result !== null);
 
-                console.log(`${successfulUploads.length} dokumen berhasil diupload`);
+                // Success notification
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pendaftaran Berhasil!',
+                    html: `
+                        <div class="text-left">
+                            <p>✅ Pendaftaran berhasil disubmit!</p>
+                            <ul class="list-disc pl-5 mt-2">
+                                <li>Provinsi: <strong>${selectedProvinsi}</strong></li>
+                                <li>Dokumen berhasil diunggah: <strong>${successfulUploads.length}</strong></li>
+                            </ul>                           
+                        </div>
+                    `,
+                    confirmButtonText: 'Selesai',
+                    confirmButtonColor: '#3085d6',
+                });
 
-                // 4. Beri feedback ke user
-                alert(`✅ Pendaftaran berhasil disubmit!\nID Pendaftaran: ${pendaftaranId}\n${successfulUploads.length} dokumen berhasil diupload.`);
-
-                // 5. Reset form atau redirect
+                // Reset form
                 resetForm();
-
-                // Atau redirect ke halaman sukses
-                // window.location.href = `/success?id=${pendaftaranId}`;
 
             } else {
                 throw new Error("Invalid response from server");
@@ -250,7 +531,6 @@ export default function PengangkatanDppiProvinsi() {
             let errorMessage = "Gagal mengirim pendaftaran. Silakan coba lagi.";
 
             if (error.response) {
-                // Server responded with error status
                 if (error.response.status === 400) {
                     errorMessage = "Data tidak valid. Harap periksa kembali.";
                 } else if (error.response.status === 401) {
@@ -268,11 +548,16 @@ export default function PengangkatanDppiProvinsi() {
                 errorMessage = "Tidak ada respon dari server. Periksa koneksi internet Anda.";
             }
 
-            alert(`❌ ${errorMessage}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Mengirim',
+                text: errorMessage,
+                confirmButtonText: 'Baik',
+                confirmButtonColor: '#d33',
+            });
 
         } finally {
             setIsSubmitting(false);
-
         }
     };
 
@@ -282,7 +567,6 @@ export default function PengangkatanDppiProvinsi() {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => {
-                // Hapus prefix "data:application/pdf;base64,"
                 const base64String = (reader.result as string).split(',')[1];
                 resolve(base64String);
             };
@@ -328,10 +612,9 @@ export default function PengangkatanDppiProvinsi() {
         });
         setAgree(false);
         setCurrentStep(1);
+        setStrukturErrors({});
+        setPicErrors({});
     };
-
-    // Tambahkan state untuk loading
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handlePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -339,6 +622,9 @@ export default function PengangkatanDppiProvinsi() {
             ...prev,
             [name]: value
         }));
+
+        // Validasi real-time
+        checkPicField(name, value);
     };
 
     const handleStrukturChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,6 +633,9 @@ export default function PengangkatanDppiProvinsi() {
             ...prev,
             [name]: value
         }));
+
+        // Validasi real-time
+        checkStrukturField(name, value);
     };
 
     const handleFileChange = (fieldName: keyof typeof dokumen) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -354,13 +643,25 @@ export default function PengangkatanDppiProvinsi() {
         if (file) {
             // Check file type
             if (!file.type.includes('pdf')) {
-                alert("Hanya file PDF yang diperbolehkan!");
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Format File Tidak Valid',
+                    text: 'Hanya file PDF yang diperbolehkan!',
+                    confirmButtonText: 'Baik',
+                    confirmButtonColor: '#3085d6',
+                });
                 return;
             }
 
             // Check file size (10MB)
             if (file.size > 10 * 1024 * 1024) {
-                alert("Ukuran file tidak boleh lebih dari 10MB!");
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ukuran File Terlalu Besar',
+                    text: 'Ukuran file tidak boleh lebih dari 10MB!',
+                    confirmButtonText: 'Baik',
+                    confirmButtonColor: '#3085d6',
+                });
                 return;
             }
 
@@ -372,10 +673,31 @@ export default function PengangkatanDppiProvinsi() {
     };
 
     const removeFile = (fieldName: keyof typeof dokumen) => {
-        setDokumen(prev => ({
-            ...prev,
-            [fieldName]: null
-        }));
+        Swal.fire({
+            title: 'Hapus File?',
+            text: 'Apakah Anda yakin ingin menghapus file ini?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setDokumen(prev => ({
+                    ...prev,
+                    [fieldName]: null
+                }));
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'File Dihapus',
+                    text: 'File berhasil dihapus',
+                    confirmButtonText: 'Baik',
+                    confirmButtonColor: '#3085d6',
+                });
+            }
+        });
     };
 
     const calculateProgress = () => {
@@ -384,7 +706,7 @@ export default function PengangkatanDppiProvinsi() {
 
     const handleProvinsiSelect = (kab: any) => {
         setSelectedProvinsi(kab.nama_provinsi);
-        setSelectedProvinsiId(kab.id); // Simpan ID
+        setSelectedProvinsiId(kab.id);
         setSearchProvinsi(kab.nama_provinsi);
         setShowDropdown(false);
     };
@@ -392,6 +714,7 @@ export default function PengangkatanDppiProvinsi() {
     const clearProvinsi = () => {
         setSelectedProvinsi("");
         setSearchProvinsi("");
+        setSelectedProvinsiId(null);
     };
 
     return (
@@ -400,7 +723,7 @@ export default function PengangkatanDppiProvinsi() {
                 <div className='mx-auto max-w-318.75 px-2'>
                     <ul className='flex'>
                         <div className='py-2 mx-auto text-slate-50 text-center'>
-                            <span className="text-lg font-semibold">Form Kelengkapan Dokumen Pengangkatan Pertama Kali Pelaksana Duta Pancasila Paskibraka Indonesia Tingkat Provinsi 2026</span>
+                            <span className="text-lg font-semibold">Form Kelengkapan Dokumen Pengangkatan Pertama Kali Pelaksana Duta Pancasila Paskibraka Indonesia Tingkat Provinsi TA {new Date().getFullYear()}</span>
                         </div>
                     </ul>
                 </div>
@@ -409,9 +732,9 @@ export default function PengangkatanDppiProvinsi() {
             <div className='px-2 max-w-318.75 mb-8 mx-auto'>
                 {/* Progress Indicator */}
                 <p className="md:text-lg lg:text-xl mb-4 font-medium">
-                    {currentStep === 1 && "Pilih Kota/Provinsi – Step 1 of 5"}
+                    {currentStep === 1 && "Pilih Provinsi – Step 1 of 5"}
                     {currentStep === 2 && "Data PIC – Step 2 of 5"}
-                    {currentStep === 3 && "Nama Galon Peserta – Step 3 of 5"}
+                    {currentStep === 3 && "Nama Calon Peserta – Step 3 of 5"}
                     {currentStep === 4 && "Unggah Dokumen – Step 4 of 5"}
                     {currentStep === 5 && "Tinjau Ulang – Step 5 of 5"}
                 </p>
@@ -505,9 +828,14 @@ export default function PengangkatanDppiProvinsi() {
                                     name="nama"
                                     value={picData.nama}
                                     onChange={handlePicChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    required
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${picErrors.nama
+                                        ? 'border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-red-500'
+                                        }`}
                                 />
+                                {picErrors.nama && (
+                                    <p className="mt-1 text-sm text-red-600">{picErrors.nama}</p>
+                                )}
                             </div>
 
                             <div>
@@ -519,9 +847,14 @@ export default function PengangkatanDppiProvinsi() {
                                     name="jabatan"
                                     value={picData.jabatan}
                                     onChange={handlePicChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    required
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${picErrors.jabatan
+                                        ? 'border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-red-500'
+                                        }`}
                                 />
+                                {picErrors.jabatan && (
+                                    <p className="mt-1 text-sm text-red-600">{picErrors.jabatan}</p>
+                                )}
                             </div>
 
                             <div>
@@ -531,11 +864,18 @@ export default function PengangkatanDppiProvinsi() {
                                 <input
                                     type="text"
                                     name="nip"
+                                    minLength={16}
+                                    maxLength={16}
                                     value={picData.nip}
                                     onChange={handlePicChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    required
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${picErrors.nip
+                                        ? 'border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-red-500'
+                                        }`}
                                 />
+                                {picErrors.nip && (
+                                    <p className="mt-1 text-sm text-red-600">{picErrors.nip}</p>
+                                )}
                             </div>
 
                             <div>
@@ -547,9 +887,14 @@ export default function PengangkatanDppiProvinsi() {
                                     name="noTelp"
                                     value={picData.noTelp}
                                     onChange={handlePicChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    required
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${picErrors.noTelp
+                                        ? 'border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-red-500'
+                                        }`}
                                 />
+                                {picErrors.noTelp && (
+                                    <p className="mt-1 text-sm text-red-600">{picErrors.noTelp}</p>
+                                )}
                             </div>
 
                             <div>
@@ -561,9 +906,14 @@ export default function PengangkatanDppiProvinsi() {
                                     name="email"
                                     value={picData.email}
                                     onChange={handlePicChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    required
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${picErrors.email
+                                        ? 'border-red-500 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-red-500'
+                                        }`}
                                 />
+                                {picErrors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{picErrors.email}</p>
+                                )}
                             </div>
                         </div>
 
@@ -575,8 +925,12 @@ export default function PengangkatanDppiProvinsi() {
                                 Kembali
                             </button>
                             <button
-                                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                className={`px-6 py-2 text-white rounded-md ${Object.keys(picErrors).length > 0
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-red-600 hover:bg-red-700'
+                                    }`}
                                 onClick={handleNext}
+                                disabled={Object.keys(picErrors).length > 0}
                             >
                                 Selanjutnya
                             </button>
@@ -584,232 +938,316 @@ export default function PengangkatanDppiProvinsi() {
                     </div>
                 )}
 
+                {/* Step 3: Struktur Organisasi */}
                 {currentStep === 3 && (
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h3 className="text-lg font-semibold mb-6">Nama Calon Peserta</h3>
                         <div className="space-y-6">
                             {/* Ketua */}
                             <div className="border-b pb-4">
-
+                                <h4 className="font-medium text-gray-800 mb-4">Ketua</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Ketua
+                                            Ketua 1 *
                                         </label>
                                         <input
                                             type="text"
                                             name="ketua_1"
                                             value={strukturData.ketua_1}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.ketua_1
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.ketua_1 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.ketua_1}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Ketua
+                                            Ketua 2 *
                                         </label>
                                         <input
                                             type="text"
                                             name="ketua_2"
                                             value={strukturData.ketua_2}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.ketua_2
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.ketua_2 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.ketua_2}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Wakil Ketua */}
                             <div className="border-b pb-4">
+                                <h4 className="font-medium text-gray-800 mb-4">Wakil Ketua</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Wakil Ketua
+                                            Wakil Ketua 1 *
                                         </label>
                                         <input
                                             type="text"
                                             name="wakil_ketua_1"
                                             value={strukturData.wakil_ketua_1}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.wakil_ketua_1
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.wakil_ketua_1 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.wakil_ketua_1}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Wakil Ketua
+                                            Wakil Ketua 2 *
                                         </label>
                                         <input
                                             type="text"
                                             name="wakil_ketua_2"
                                             value={strukturData.wakil_ketua_2}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.wakil_ketua_2
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.wakil_ketua_2 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.wakil_ketua_2}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Sekretaris */}
                             <div className="border-b pb-4">
-
+                                <h4 className="font-medium text-gray-800 mb-4">Sekretaris</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Sekretaris
+                                            Sekretaris 1 *
                                         </label>
                                         <input
                                             type="text"
                                             name="sekretaris_1"
                                             value={strukturData.sekretaris_1}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.sekretaris_1
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.sekretaris_1 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.sekretaris_1}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Sekretaris
+                                            Sekretaris 2 *
                                         </label>
                                         <input
                                             type="text"
                                             name="sekretaris_2"
                                             value={strukturData.sekretaris_2}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.sekretaris_2
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.sekretaris_2 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.sekretaris_2}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Kepala Divisi Dukungan */}
                             <div className="border-b pb-4">
+                                <h4 className="font-medium text-gray-800 mb-4">
+                                    Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila 1 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_dukungan_1"
                                             value={strukturData.kepala_divisi_dukungan_1}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_dukungan_1
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_dukungan_1 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_dukungan_1}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                            Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila 2 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_dukungan_2"
                                             value={strukturData.kepala_divisi_dukungan_2}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_dukungan_2
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_dukungan_2 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_dukungan_2}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Kepala Divisi Kompetensi */}
                             <div className="border-b pb-4">
+                                <h4 className="font-medium text-gray-800 mb-4">
+                                    Kepala Divisi Peningkatan Kompetensi
+                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Peningkatan Kompetensi
+                                            Kepala Divisi Peningkatan Kompetensi 1 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_kompetensi_1"
                                             value={strukturData.kepala_divisi_kompetensi_1}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_kompetensi_1
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_kompetensi_1 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_kompetensi_1}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Peningkatan Kompetensi
+                                            Kepala Divisi Peningkatan Kompetensi 2 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_kompetensi_2"
                                             value={strukturData.kepala_divisi_kompetensi_2}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_kompetensi_2
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_kompetensi_2 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_kompetensi_2}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Kepala Divisi Aktualisasi */}
                             <div className="border-b pb-4">
+                                <h4 className="font-medium text-gray-800 mb-4">
+                                    Kepala Divisi Aktualisasi Nilai-nilai Pancasila
+                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila
+                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila 1 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_aktualisasi_1"
                                             value={strukturData.kepala_divisi_aktualisasi_1}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_aktualisasi_1
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_aktualisasi_1 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_aktualisasi_1}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila
+                                            Kepala Divisi Aktualisasi Nilai-nilai Pancasila 2 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_aktualisasi_2"
                                             value={strukturData.kepala_divisi_aktualisasi_2}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_aktualisasi_2
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_aktualisasi_2 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_aktualisasi_2}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Kepala Divisi Kominfo */}
                             <div className="border-b pb-4">
+                                <h4 className="font-medium text-gray-800 mb-4">
+                                    Kepala Divisi Komunikasi, Teknologi dan Informasi
+                                </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Komunikasi, Teknologi dan Informasi
+                                            Kepala Divisi Komunikasi, Teknologi dan Informasi 1 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_kominfo_1"
                                             value={strukturData.kepala_divisi_kominfo_1}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_kominfo_1
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_kominfo_1 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_kominfo_1}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-gray-700 font-medium mb-2">
-                                            Kepala Divisi Komunikasi, Teknologi dan Informasi
+                                            Kepala Divisi Komunikasi, Teknologi dan Informasi 2 *
                                         </label>
                                         <input
                                             type="text"
                                             name="kepala_divisi_kominfo_2"
                                             value={strukturData.kepala_divisi_kominfo_2}
                                             onChange={handleStrukturChange}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            required
+                                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${strukturErrors.kepala_divisi_kominfo_2
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-red-500'
+                                                }`}
                                         />
+                                        {strukturErrors.kepala_divisi_kominfo_2 && (
+                                            <p className="mt-1 text-sm text-red-600">{strukturErrors.kepala_divisi_kominfo_2}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -823,8 +1261,12 @@ export default function PengangkatanDppiProvinsi() {
                                 Kembali
                             </button>
                             <button
-                                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                className={`px-6 py-2 text-white rounded-md ${Object.keys(strukturErrors).length > 0
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-red-600 hover:bg-red-700'
+                                    }`}
                                 onClick={handleNext}
+                                disabled={Object.keys(strukturErrors).length > 0}
                             >
                                 Selanjutnya
                             </button>
@@ -847,10 +1289,11 @@ export default function PengangkatanDppiProvinsi() {
                         </div>
 
                         <div className="space-y-6">
+                            {/* Dokumen-dokumen (sama seperti sebelumnya) */}
                             {/* Surat Sekretaris Daerah */}
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Surat Sekretaris Daerah Provinsi, Provinsi kepada Kepala BPIP melalui Deputi Diktat *
+                                    Surat Sekretaris Daerah Provinsi kepada Kepala BPIP melalui Deputi Diktat *
                                 </label>
                                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-500 transition-colors">
                                     <input
@@ -902,6 +1345,11 @@ export default function PengangkatanDppiProvinsi() {
                                         onChange={handleFileChange('daftarRiwayatHidup')}
                                     />
                                     <label htmlFor="daftarRiwayatHidup" className="cursor-pointer">
+                                        <div className="text-gray-600 mb-2">
+                                            <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                        </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
                                         <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
                                     </label>
@@ -938,6 +1386,11 @@ export default function PengangkatanDppiProvinsi() {
                                         onChange={handleFileChange('portofolio')}
                                     />
                                     <label htmlFor="portofolio" className="cursor-pointer">
+                                        <div className="text-gray-600 mb-2">
+                                            <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                        </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
                                         <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
                                     </label>
@@ -974,6 +1427,11 @@ export default function PengangkatanDppiProvinsi() {
                                         onChange={handleFileChange('kartuKeluarga')}
                                     />
                                     <label htmlFor="kartuKeluarga" className="cursor-pointer">
+                                        <div className="text-gray-600 mb-2">
+                                            <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                        </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
                                         <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
                                     </label>
@@ -1010,6 +1468,11 @@ export default function PengangkatanDppiProvinsi() {
                                         onChange={handleFileChange('sertifikatPDP')}
                                     />
                                     <label htmlFor="sertifikatPDP" className="cursor-pointer">
+                                        <div className="text-gray-600 mb-2">
+                                            <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                        </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
                                         <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
                                     </label>
@@ -1046,6 +1509,11 @@ export default function PengangkatanDppiProvinsi() {
                                         onChange={handleFileChange('sertifikatDiktatPIP')}
                                     />
                                     <label htmlFor="sertifikatDiktatPIP" className="cursor-pointer">
+                                        <div className="text-gray-600 mb-2">
+                                            <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                        </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
                                         <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
                                     </label>
@@ -1116,6 +1584,29 @@ export default function PengangkatanDppiProvinsi() {
                                         <div className="md:col-span-2">
                                             <span className="text-gray-600">Email:</span> {picData.email}
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="border-b pb-4">
+                                    <h4 className="font-medium text-gray-800 mb-2">Struktur Organisasi</h4>
+                                    <div className="space-y-3">
+                                        <div><span className="text-gray-600">Ketua 1:</span> {strukturData.ketua_1}</div>
+                                        <div><span className="text-gray-600">Ketua 2:</span> {strukturData.ketua_2}</div>
+                                        <div><span className="text-gray-600">Wakil Ketua 1:</span> {strukturData.wakil_ketua_1}</div>
+                                        <div><span className="text-gray-600">Wakil Ketua 2:</span> {strukturData.wakil_ketua_2}</div>
+                                        <div><span className="text-gray-600">Sekretaris 1:</span> {strukturData.sekretaris_1}</div>
+                                        <div><span className="text-gray-600">Sekretaris 2:</span> {strukturData.sekretaris_2}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                            1:</span> {strukturData.kepala_divisi_dukungan_1}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Kepala Divisi Dukungan Pembentukan Paskibraka dan Duta Pancasila
+                                            2:</span> {strukturData.kepala_divisi_dukungan_2}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Peningkatan Kompetensi 1:</span> {strukturData.kepala_divisi_kompetensi_1}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Peningkatan Kompetensi 2:</span> {strukturData.kepala_divisi_kompetensi_2}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Aktualisasi Nilai-nilai Pancasila 1:</span> {strukturData.kepala_divisi_aktualisasi_1}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Aktualisasi Nilai-nilai Pancasila 2:</span> {strukturData.kepala_divisi_aktualisasi_2}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Komunikasi, Teknologi dan Informasi 1:</span> {strukturData.kepala_divisi_kominfo_1}</div>
+                                        <div><span className="text-gray-600">Kepala Divisi Komunikasi, Teknologi dan Informasi 2:</span> {strukturData.kepala_divisi_kominfo_2}</div>
+
                                     </div>
                                 </div>
 
