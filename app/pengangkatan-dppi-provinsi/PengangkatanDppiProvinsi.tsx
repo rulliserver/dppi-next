@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
 import Swal from 'sweetalert2';
+import { BaseUrl } from "../components/baseUrl";
 
 export default function PengangkatanDppiProvinsi() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -120,7 +121,7 @@ export default function PengangkatanDppiProvinsi() {
     };
     const isValidNip = (nip: string): boolean => {
         const digitsOnly = nip.replace(/\D/g, '');
-        return digitsOnly.length == 16;
+        return digitsOnly.length == 18;
     };
 
     // Validasi PIC data
@@ -138,7 +139,7 @@ export default function PengangkatanDppiProvinsi() {
         }
 
         if (picData.nip.trim() && !isValidNip(picData.nip)) {
-            errors.nip = 'Format NIP tidak valid (harus 16 digit)';
+            errors.nip = 'Format NIP tidak valid (harus 18 digit)';
         }
 
         if (picData.noTelp.trim() && !isValidPhone(picData.noTelp)) {
@@ -864,8 +865,8 @@ export default function PengangkatanDppiProvinsi() {
                                 <input
                                     type="text"
                                     name="nip"
-                                    minLength={16}
-                                    maxLength={16}
+                                    minLength={18}
+                                    maxLength={18}
                                     value={picData.nip}
                                     onChange={handlePicChange}
                                     className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${picErrors.nip
@@ -1283,13 +1284,13 @@ export default function PengangkatanDppiProvinsi() {
                                 File yang diunggah harus berformat PDF. Pastikan file yang akan diupload memiliki ekstensi .pdf, karena format lain tidak akan diterima.
                             </p>
                             <h4 className="font-semibold text-blue-800 mb-2">Ukuran File</h4>
-                            <p className="text-sm text-blue-700">
+                            <p className="text-sm text-blue-700 mb-2">
                                 Ukuran file yang diunggah tidak boleh melebihi 10MB. Jika file Anda lebih besar dari batas ini, silakan lakukan kompresi atau pengurangan ukuran file agar sesuai dengan ketentuan.
                             </p>
+                          
                         </div>
 
                         <div className="space-y-6">
-                            {/* Dokumen-dokumen (sama seperti sebelumnya) */}
                             {/* Surat Sekretaris Daerah */}
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">

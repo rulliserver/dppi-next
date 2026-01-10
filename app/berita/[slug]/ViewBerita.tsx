@@ -137,7 +137,7 @@ export default function ViewBerita() {
     return (
         <div className='mx-2 my-20 md:mx-8 lg:mx-16'>
             {berita &&
-                <div className='my-16 max-w-[1360px] mx-auto'>
+                <div className='my-16 max-w-340 mx-auto'>
                     <div className='px-4 py-3'>
                         <p className='text-base font-bold md:text-3xl'>{berita.title}</p>
                         <p className='my-2 text-xs text-accent'>
@@ -147,7 +147,7 @@ export default function ViewBerita() {
                             {FormatLongDate(berita.tanggal)}
                             <span className='ml-2'>👁️ {berita.view}</span>
                         </p>
-                        <Image src={`${BaseUrl}/${berita.photo}`} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
+                        <Image src={`${BaseUrl}` + `${berita.photo}`} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
                         {berita.caption == 'null' || berita.caption == '-' ? '' : <p className='mb-4 text-sm'>{berita.caption}</p>}
                         <TextEditor data={berita.body} />
                     </div>
@@ -171,7 +171,7 @@ export default function ViewBerita() {
                     )}
 
                     {/* List Berita */}
-                    <div className='max-w-[1360px] mx-auto dark:text-black'>
+                    <div className='max-w-340 mx-auto dark:text-black'>
                         <div className='py-4 font-bold text-accent text-semibold'>Berita Lainnya:</div>
                         <div className='grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4'>
                             {data?.data.map(({ id, title, photo, slug, view, body, tanggal }: any) => {
@@ -209,7 +209,7 @@ export default function ViewBerita() {
 
                                         </p>
                                         <a href={`/berita/${slug}`}>
-                                            <Image src={`${BaseUrl}/${photo}`} width={800} height={400} alt='Photo Berita' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
+                                            <Image src={`${BaseUrl}` + `${photo}`} width={800} height={400} alt='Photo Berita' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
                                             <TextEditor data={preview} />
                                         </a>
                                         <a href={`/berita/${slug}`} className='text-accent'>

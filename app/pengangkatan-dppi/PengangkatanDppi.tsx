@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
 import Swal from 'sweetalert2';
+import { BaseUrl } from "../components/baseUrl";
 
 export default function PengangkatanDppiKabupaten() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -120,7 +121,7 @@ export default function PengangkatanDppiKabupaten() {
     };
     const isValidNip = (nip: string): boolean => {
         const digitsOnly = nip.replace(/\D/g, '');
-        return digitsOnly.length == 16;
+        return digitsOnly.length == 18;
     };
 
     // Validasi PIC data
@@ -138,7 +139,7 @@ export default function PengangkatanDppiKabupaten() {
         }
 
         if (picData.nip.trim() && !isValidNip(picData.nip)) {
-            errors.nip = 'Format NIP tidak valid (harus 16 digit)';
+            errors.nip = 'Format NIP tidak valid (harus 18 digit)';
         }
 
         if (picData.noTelp.trim() && !isValidPhone(picData.noTelp)) {
@@ -864,8 +865,8 @@ export default function PengangkatanDppiKabupaten() {
                                 <input
                                     type="text"
                                     name="nip"
-                                    minLength={16}
-                                    maxLength={16}
+                                    minLength={18}
+                                    maxLength={18}
                                     value={picData.nip}
                                     onChange={handlePicChange}
                                     className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${picErrors.nip
@@ -1288,8 +1289,8 @@ export default function PengangkatanDppiKabupaten() {
                             </p>
                         </div>
 
+
                         <div className="space-y-6">
-                            {/* Dokumen-dokumen (sama seperti sebelumnya) */}
                             {/* Surat Sekretaris Daerah */}
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
