@@ -505,18 +505,33 @@ export default function PengangkatanDppiKabupaten() {
                 // Success notification
                 Swal.fire({
                     icon: 'success',
-                    title: 'Pendaftaran Berhasil!',
+                    title: 'Submit Dokumen Berhasil!',
                     html: `
-                        <div class="text-left">
-                            <p>✅ Pendaftaran berhasil disubmit!</p>
-                            <ul class="list-disc pl-5 mt-2">
-                                <li>Kabupaten/Kota: <strong>${selectedKabupaten}</strong></li>
-                                <li>Dokumen berhasil diunggah: <strong>${successfulUploads.length}</strong></li>
-                            </ul>                           
-                        </div>
-                    `,
+        <div class="text-left">
+            <p><strong>DPPI Pusat</strong></p>
+            <p>Berikut ini adalah Bukti Submit Dokumen Pengangkatan DPPI (Provinsi)</p>
+            <ul class="list-disc pl-5 mt-2 space-y-1">
+                <li>Provinsi: <strong>${selectedKabupaten}</strong></li>
+                <li>Nama PIC: <strong>${picData.nama}</strong></li>
+                <li>ID Registrasi: <strong>${pendaftaranId}</strong></li>
+                <li>Tanggal Submit: <strong>${new Date().toLocaleDateString('id-ID')}</strong></li>
+            </ul>
+            <p class="mt-3"><strong>Nama Calon Peserta:</strong></p>
+            <ul class="list-disc pl-5 mt-1 space-y-1">
+                <li>Ketua: <strong>${strukturData.ketua_1} ; ${strukturData.ketua_2}</strong></li>
+                <li>Wakil Ketua: <strong>${strukturData.wakil_ketua_1} ; ${strukturData.wakil_ketua_2}</strong></li>
+                <li>Sekretaris: <strong>${strukturData.sekretaris_1} ; ${strukturData.sekretaris_2}</strong></li>
+                <li>Kepala Divisi Dukungan Pembentukan Paskibraka dan Purnapaskibraka Duta Pancasila: <strong>${strukturData.kepala_bidang_dukungan_1} ; ${strukturData.kepala_bidang_dukungan_2}</strong></li>
+                <li>Kepala Divisi Peningkatan Kompetensi: <strong>${strukturData.kepala_bidang_kompetensi_1} ; ${strukturData.kepala_bidang_kompetensi_2}</strong></li>
+                <li>Kepala Divisi Aktualisasi Nilai-Nilai Pancasila: <strong>${strukturData.kepala_bidang_aktualisasi_1} ; ${strukturData.kepala_bidang_aktualisasi_2}</strong></li>
+                <li>Kepala Divisi Komunikasi, Teknologi dan Informasi: <strong>${strukturData.kepala_bidang_kominfo_1} ; ${strukturData.kepala_bidang_kominfo_2}</strong></li>
+            </ul>
+            <p class="mt-3 text-sm">✅ Mohon untuk simpan/screenshot/foto/print halaman ini, bukti submit juga telah dikirimkan ke email Anda.</p>
+        </div>
+    `,
                     confirmButtonText: 'Selesai',
                     confirmButtonColor: '#3085d6',
+                    width: '800px',
                 });
 
                 // Reset form
