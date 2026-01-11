@@ -145,7 +145,7 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
         };
 
         trackVisit();
-    }, []); 
+    }, []);
 
 
     return (
@@ -258,6 +258,11 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                                 <Link href='/kontak'>
                                                     <li className={pathname === '/kontak' ? 'py-1 text-yellow-500' : 'py-1 text-white'}>
                                                         <span className='link link-underline link-underline-primary'> &#x2022; Kontak</span>
+                                                    </li>
+                                                </Link>
+                                                <Link href='/webinar/'>
+                                                    <li className={pathname === '/webinar/' ? 'py-1 text-yellow-500' : 'py-1 text-white'}>
+                                                        <span className='link link-underline link-underline-primary'> &#x2022; Webinar</span>
                                                     </li>
                                                 </Link>
                                             </ul>
@@ -377,6 +382,16 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                                 : 'whitespace-nowrap px-3 py-1 rounded-sm link link-underline link-underline-primary'
                                         }>
                                         Kontak
+                                    </li>
+                                </Link>
+                                <Link href='/webinar/' className='flex-1 py-2 pr-1 text-xs md:text-sm lg:text-base'>
+                                    <li
+                                        className={
+                                            pathname === '/webinar/'
+                                                ? 'whitespace-nowrap px-3 py-1 border-current border-b-2'
+                                                : 'whitespace-nowrap px-3 py-1 rounded-sm link link-underline link-underline-primary'
+                                        }>
+                                        Webinar
                                     </li>
                                 </Link>
                             </ul>
