@@ -5,7 +5,7 @@ import RatingsAdmin from './Rating';
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'Regulasi - DPPI BPIP RI'
+        title: 'Rating - DPPI BPIP RI'
     };
 }
 export default function Page() {

@@ -260,9 +260,9 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                                         <span className='link link-underline link-underline-primary'> &#x2022; Kontak</span>
                                                     </li>
                                                 </Link>
-                                                <Link href='/webinar/'>
-                                                    <li className={pathname === '/webinar/' ? 'py-1 text-yellow-500' : 'py-1 text-white'}>
-                                                        <span className='link link-underline link-underline-primary'> &#x2022; Webinar</span>
+                                                <Link href='https://dppi.bpip.go.id/webinar/'>
+                                                    <li className={pathname === 'https://dppi.bpip.go.id/webinar/' ? 'py-1 text-yellow-500' : 'py-1 text-white'}>
+                                                        <span className='link link-underline link-underline-primary'> &#x2022; Sertifikat</span>
                                                     </li>
                                                 </Link>
                                             </ul>
@@ -384,14 +384,14 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                         Kontak
                                     </li>
                                 </Link>
-                                <Link href='/webinar/' className='flex-1 py-2 pr-1 text-xs md:text-sm lg:text-base'>
+                                <Link href='https://dppi.bpip.go.id/webinar/' className='flex-1 py-2 pr-1 text-xs md:text-sm lg:text-base'>
                                     <li
                                         className={
-                                            pathname === '/webinar/'
+                                            pathname === 'https://dppi.bpip.go.id/webinar/'
                                                 ? 'whitespace-nowrap px-3 py-1 border-current border-b-2'
                                                 : 'whitespace-nowrap px-3 py-1 rounded-sm link link-underline link-underline-primary'
                                         }>
-                                        Webinar
+                                        Sertifikat
                                     </li>
                                 </Link>
                             </ul>

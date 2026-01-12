@@ -1139,6 +1139,9 @@ function RegisterForm() {
                                     autoComplete='no_piagam'
                                     value={data.no_piagam}
                                     onChange={handleOnChange}
+                                    required
+                                    tabIndex={15}
+                                    placeholder='Nomor Piagam / SK / STTP PDP'
                                 />
                             </div>
                             <div className='grid gap-2 mt-4'>
@@ -1149,6 +1152,7 @@ function RegisterForm() {
                                     type='file'
                                     accept='image/jpeg, image/jpg, image/png, application/pdf'
                                     onChange={handleFilePiagamChange}
+                                    required
                                 />
                             </div>
 

@@ -141,7 +141,7 @@ export default function Beranda() {
         <div>
             <div className='w-full max-h-150 2xl:max-h-187.5 flex justify-center'>
                 {video ?
-                    <video src={BaseUrl + video.file_video.replace('/uploads', 'uploads')} className='object-cover' loop autoPlay={true} />
+                    <video src={BaseUrl + video.file_video.replace('/uploads', 'uploads')} className='w-full object-cover' loop autoPlay={true} muted />
                     :
                     <Image src='/assets/images/capture.png' width='1980' height='800' alt="" />
                 }
