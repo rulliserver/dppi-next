@@ -529,6 +529,7 @@ export default function User() {
                                         className='text-sm col-span-3 border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm py-2 bg-white dark:bg-gray-700 dark:text-gray-200 px-2 dark:px-2 dark:border-red-500'>
                                         <option value=''>Pilih Role</option>
                                         <option value='Administrator'>Administrator</option>
+                                        <option value='Admin Pendaftaran'>Admin Pendaftaran</option>
                                         <option value='Admin Kesbangpol'>Admin Kesbangpol</option>
                                         <option value='Pelaksana'>Pelaksana</option>
                                         <option value='Anggota'>Anggota</option>
@@ -678,6 +679,7 @@ export default function User() {
                                         className='text-sm col-span-3 border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm py-2 bg-white dark:bg-gray-700 dark:text-gray-200 px-2 dark:px-2 dark:border-red-500'>
                                         <option value=''>Pilih Role</option>
                                         <option value='Administrator'>Administrator</option>
+                                        <option value='Admin Pendaftaran'>Admin Pendaftaran</option>
                                         <option value='Admin Kesbangpol'>Admin Kesbangpol</option>
                                         <option value='Pelaksana'>Pelaksana</option>
                                         <option value='Anggota'>Anggota</option>

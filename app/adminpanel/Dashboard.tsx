@@ -370,290 +370,299 @@ export default function Dashboard() {
 
     return (
         <>
-            <div className='py-4'>
-                <div className='text-gray-900 '>
-                    <div className='grid grid-cols-1 mt-2 md:grid-cols-4 md:gap-4 xl:gap-8'>
-                        <div className='justify-center mt-2 shadow-md '>
-                            <a href="/adminpanel/pdp/belum-registrasi" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
-                                <i className='text-5xl mx-auto  mt-4 fas fa-users'></i>
-                                <p className='text-center text-2xl'>{pdpTerdaftar && pdpTerdaftar.length} PDP</p>
-                                <p className='text-center text-2xl'>TERDAFTAR</p>
-                            </a>
-                        </div>
-                        <div className='justify-center mt-2 shadow-md '>
-                            <a href="/adminpanel/pdp/belum-diverifikasi" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
-                                <i className='text-5xl mx-auto  mt-4 fas fa-registered'></i>
-                                <p className='text-center text-2xl'>{pdpBelumDiverifikasi && pdpBelumDiverifikasi.length} PDP</p>
-                                <p className='text-center text-2xl'>TEREGISTER</p>
-                            </a>
-                        </div>
-                        <div className='justify-center mt-2 shadow-md '>
-                            <a href="/adminpanel/pdp/verified" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
-                                <i className='text-5xl mx-auto  mt-4 fas fa-user-check'></i>
-                                <p className='text-center text-2xl'>{pdpDiverifikasi && pdpDiverifikasi.length} PDP</p>
-                                <p className='text-center text-2xl'>TERVERIFIKASI</p>
-                            </a>
-                        </div>
-                        <div className='justify-center mt-2 shadow-md '>
-                            <a href="/adminpanel/pdp/simental" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
-                                {/* <i className=' fas fa-users'></i> */}
-                                <i className='text-5xl mx-auto  mt-4 fab fa-creative-commons-by'></i>
-                                <p className='text-center text-2xl'>{pdpSimental && pdpSimental.length} PDP</p>
-                                <p className='text-center text-2xl'>AKTIF</p>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className='relative p-0 overflow-hidden rounded-md'>
-                {user?.role === "Administrator" || user?.role === "Superadmin" ? (
-
-                    <div className='px-0 mx-auto mt-2 bg-gray-100 rounded-xl shadow-lg dark:bg-default lg:px-4'>
-                        <div className='grid grid-cols-3'>
-                            <p className='mx-2 my-auto mt-5 font-bold lg:text-xl dark:text-white'>Pesan Kontak</p>
-                            <div className='px-0 mx-auto mt-6 colspan-2 lg:px-4'>{loading && <div className='text-slate-900 dark:text-slate-50'>Loading...</div>}</div>
-                        </div>
-                        <div className='px-4 mx-auto overflow-auto text-xs 1xl:block 1xl:w-full 2xl:text-base'>
-                            <table ref={tableRef} className='table text-xs cell-border'>
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Tanggal</th>
-                                        <th>Nama</th>
-                                        <th>Telepon</th>
-                                        <th>Email</th>
-                                        <th>Jenis Pesan</th>
-                                        <th>Isi Pesan</th>
-                                        <th>Evidance</th>
-                                        <th>Keterangan</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                        <div className='flex flex-row justify-between mt-4'>
-                            <p className='px-4 text-accent'>*)klik pada pesan untuk menampilkan detail pesan</p>
-                            <button
-                                onClick={() => exportContactsXlsx(contact, 'data-contacts.xlsx')}
-                                className="px-4 py-2 rounded bg-green-600 text-white m-4 cursor-pointer"
-                            >
-                                Download Excel
-                            </button>
-                        </div>
-                    </div>
-                ) : ""}
-            </div>
-            <div className='my-2  rounded-xl p-4 bg-gray-100'>
-                <AdvancedStats />
-            </div>
-            {/* view Modal */}
-            <div id='viewModal' aria-hidden='true' className='fixed top-0 left-0 right-0 z-50 hidden p-4 md:inset-0 h-modal md:h-full'>
-                <div className='relative w-full h-full max-w-3xl max-h-125 mx-auto top-20 md:h-auto overflow-x-hidden rounded-lg dark:border-red-500 dark:border-2 shadow-md shadow-black overflow-y-auto'>
-                    <div className='relative bg-gray-200 dark:bg-default'>
-                        <div className='flex items-start justify-between p-4 border-b-2 border-white rounded-t dark:border-gray-700'>
-                            <div className='flex font-semibold text-gray-900 dark:text-white '>
-                                <span className='mr-1 text-accent'>Detail Pesan </span>
-                            </div>
-
-                            <button
-                                type='button'
-                                onClick={closeViewModal}
-                                className='close-btn text-gray-400 hover:text-gray-900 rounded-lg p-1.5 ml-auto inline-flex items-center dark:hover:text-white'
-                                publikasi-modal-hide='viewModal'>
-                                <i className='fas fa-times-circle'></i>
-                            </button>
-                        </div>
-
-                        <div className='px-4 py-2 font-semibold text-dark dark:text-white'>
-                            <div className='grid grid-cols-5 gap-4'>
-                                Nama{' '}
-                                <div className='col-span-4'>
-                                    : <span id='nama'></span>
-                                </div>
-                            </div>
-                            <div className='grid grid-cols-5 gap-4'>
-                                Telepon{' '}
-                                <div className='col-span-4'>
-                                    : <span id='telepon'></span>
-                                </div>
-                            </div>
-                            <div className='grid grid-cols-5 gap-4'>
-                                Email{' '}
-                                <div className='col-span-4'>
-                                    : <span id='email'></span>
-                                </div>
-                            </div>
-                            <div className='grid grid-cols-5 gap-4'>
-                                Jenis Pesan{' '}
-                                <div className='col-span-4'>
-                                    : <span id='jenisPesan'></span>
-                                </div>
-                            </div>
-                        </div>
-                        <p className='px-4 font-semibold text-dark dark:text-white'>Isi Pesan:</p>
-
-                        <p id='isiPesan' className='px-4 text-justify dark:text-white' />
-                        <p className='px-4'>
-                            {evidance ? (
-                                <a href={`${BaseUrl}/${evidance}`} target='_blank' className='underline text-blue-600'>
-                                    Link Evidance
+            {user?.role === "Administrator" || user?.role === "Superadmin" || user?.role === "Admin Kesbangpol" ? (
+                <div className='py-4'>
+                    <div className='text-gray-900 '>
+                        <div className='grid grid-cols-1 mt-2 md:grid-cols-4 md:gap-4 xl:gap-8'>
+                            <div className='justify-center mt-2 shadow-md '>
+                                <a href="/adminpanel/pdp/belum-registrasi" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                                    <i className='text-5xl mx-auto  mt-4 fas fa-users'></i>
+                                    <p className='text-center text-2xl'>{pdpTerdaftar && pdpTerdaftar.length} PDP</p>
+                                    <p className='text-center text-2xl'>TERDAFTAR</p>
                                 </a>
-                            ) : (
-                                ''
-                            )}
-                        </p>
-                        <div className='p-6 space-y-6'>
-                            <div className='mt-2 border-b dark:border-white0 border border-slate-200'></div>
-                            <div className='flex flex-row-reverse justify-between'>
-                                <button
-                                    type='button'
-                                    onClick={() => openReplyModal(currentMsg)}
-                                    className='px-4 py-0 bg-primary hover:bg-red-800 text-white rounded-md mt-2'
-                                >
-                                    Jawab Pesan
-                                </button>
-                                <button type='button' onClick={closeViewModal} className='px-8 py-2 hover:bg-yellow-600 mt-2 text-black bg-yellow-500 rounded-md'>
-                                    Tutup
-                                </button>
+                            </div>
+                            <div className='justify-center mt-2 shadow-md '>
+                                <a href="/adminpanel/pdp/belum-diverifikasi" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                                    <i className='text-5xl mx-auto  mt-4 fas fa-registered'></i>
+                                    <p className='text-center text-2xl'>{pdpBelumDiverifikasi && pdpBelumDiverifikasi.length} PDP</p>
+                                    <p className='text-center text-2xl'>TEREGISTER</p>
+                                </a>
+                            </div>
+                            <div className='justify-center mt-2 shadow-md '>
+                                <a href="/adminpanel/pdp/verified" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                                    <i className='text-5xl mx-auto  mt-4 fas fa-user-check'></i>
+                                    <p className='text-center text-2xl'>{pdpDiverifikasi && pdpDiverifikasi.length} PDP</p>
+                                    <p className='text-center text-2xl'>TERVERIFIKASI</p>
+                                </a>
+                            </div>
+                            <div className='justify-center mt-2 shadow-md '>
+                                <a href="/adminpanel/pdp/simental" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
+                                    {/* <i className=' fas fa-users'></i> */}
+                                    <i className='text-5xl mx-auto  mt-4 fab fa-creative-commons-by'></i>
+                                    <p className='text-center text-2xl'>{pdpSimental && pdpSimental.length} PDP</p>
+                                    <p className='text-center text-2xl'>AKTIF</p>
+                                </a>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div>) :
+                (<div className="flex items-center justify-center">
+                    <div className=" p-8 text-center">
+                        <h1 className="text-3xl font-bold text-gray-800 mb-2">Selamat Datang, {user?.name}!</h1>
+                        <p className="text-gray-600">Anda telah berhasil masuk ke Adminpanel.</p>
+                    </div>
+                </div>)
+            }
+            {user?.role === "Administrator" || user?.role === "Superadmin" ? (
+                <div>
+                    <div className='relative p-0 overflow-hidden rounded-md'>
 
-            {/* delete Modal */}
-            <div id='deleteModal' aria-hidden='true' className='fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full'>
-                <div className='fixed z-30 grid w-full grid-cols-1 lg:grid-cols-5 md:top-12 lg:top-40 top-14'>
-                    <div className='flex flex-col p-1 lg:p-4 dark:border-gray-600'></div>
-                    <div className='w-[50%] mx-auto bg-gray-100 border-2 border-red-200 rounded-md shadow-md lg:col-span-3 lg:px-3 dark:bg-default shadow-red-200'>
-                        <div className='flex flex-col p-4 rounded-t dark:border-gray-600'>
-                            <div className='flex font-semibold text-gray-900 dark:text-white'>
-                                <span className='mr-1 text-accent'>Hapus Data </span>
+                        <div className='px-0 mx-auto mt-2 bg-gray-100 rounded-xl shadow-lg dark:bg-default lg:px-4'>
+                            <div className='grid grid-cols-3'>
+                                <p className='mx-2 my-auto mt-5 font-bold lg:text-xl dark:text-white'>Pesan Kontak</p>
+                                <div className='px-0 mx-auto mt-6 colspan-2 lg:px-4'>{loading && <div className='text-slate-900 dark:text-slate-50'>Loading...</div>}</div>
                             </div>
-
-                            <button
-                                type='button'
-                                onClick={closeDeleteModal}
-                                className='close-btn text-gray-400 hover:text-gray-900 rounded-lg p-1.5 ml-auto inline-flex items-center dark:hover:text-white'
-                                publikasi-modal-hide='deleteModal'>
-                                <i className='fas fa-times-circle'></i>
-                            </button>
+                            <div className='px-4 mx-auto overflow-auto text-xs 1xl:block 1xl:w-full 2xl:text-base'>
+                                <table ref={tableRef} className='table text-xs cell-border'>
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Tanggal</th>
+                                            <th>Nama</th>
+                                            <th>Telepon</th>
+                                            <th>Email</th>
+                                            <th>Jenis Pesan</th>
+                                            <th>Isi Pesan</th>
+                                            <th>Evidance</th>
+                                            <th>Keterangan</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            <div className='flex flex-row justify-between mt-4'>
+                                <p className='px-4 text-accent'>*)klik pada pesan untuk menampilkan detail pesan</p>
+                                <button
+                                    onClick={() => exportContactsXlsx(contact, 'data-contacts.xlsx')}
+                                    className="px-4 py-2 rounded bg-green-600 text-white m-4 cursor-pointer"
+                                >
+                                    Download Excel
+                                </button>
+                            </div>
                         </div>
-                        {/* <div className='flex flex-row text-center'> */}
-                        <span className='pl-10 mr-1 dark:text-white'>Anda yakin ingin menghapus pesan </span>
-                        <span id='deskripsiDelete' className='pl-10 sm:pl-0 dark:text-white' /> <span className='dark:text-white'>?</span>
-                        {/* </div> */}
-                        <div className='p-6 space-y-6'>
-                            <form onSubmit={handleDelete} encType='multipart/form-data'>
-                                <div className='mt-2 border-b dark:border-white0 border border-slate-200'></div>
-                                <div className='grid grid-cols-3 mt-1 mr-2'>
-                                    <button type='button' onClick={closeDeleteModal} className='py-2 mt-2 bg-yellow-500 rounded-md text-dark'>
-                                        Batal
-                                    </button>
-                                    <div className=''></div>
-                                    <button type='submit' className='py-2 mt-2 text-white rounded-md bg-accent'>
-                                        HAPUS
+
+                    </div>
+                    <div className='my-2  rounded-xl p-4 bg-gray-100'>
+                        <AdvancedStats />
+                    </div>
+                    {/* view Modal */}
+                    <div id='viewModal' aria-hidden='true' className='fixed top-0 left-0 right-0 z-50 hidden p-4 md:inset-0 h-modal md:h-full'>
+                        <div className='relative w-full h-full max-w-3xl max-h-125 mx-auto top-20 md:h-auto overflow-x-hidden rounded-lg dark:border-red-500 dark:border-2 shadow-md shadow-black overflow-y-auto'>
+                            <div className='relative bg-gray-200 dark:bg-default'>
+                                <div className='flex items-start justify-between p-4 border-b-2 border-white rounded-t dark:border-gray-700'>
+                                    <div className='flex font-semibold text-gray-900 dark:text-white '>
+                                        <span className='mr-1 text-accent'>Detail Pesan </span>
+                                    </div>
+
+                                    <button
+                                        type='button'
+                                        onClick={closeViewModal}
+                                        className='close-btn text-gray-400 hover:text-gray-900 rounded-lg p-1.5 ml-auto inline-flex items-center dark:hover:text-white'
+                                        publikasi-modal-hide='viewModal'>
+                                        <i className='fas fa-times-circle'></i>
                                     </button>
                                 </div>
-                            </form>
+
+                                <div className='px-4 py-2 font-semibold text-dark dark:text-white'>
+                                    <div className='grid grid-cols-5 gap-4'>
+                                        Nama{' '}
+                                        <div className='col-span-4'>
+                                            : <span id='nama'></span>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-5 gap-4'>
+                                        Telepon{' '}
+                                        <div className='col-span-4'>
+                                            : <span id='telepon'></span>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-5 gap-4'>
+                                        Email{' '}
+                                        <div className='col-span-4'>
+                                            : <span id='email'></span>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-5 gap-4'>
+                                        Jenis Pesan{' '}
+                                        <div className='col-span-4'>
+                                            : <span id='jenisPesan'></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p className='px-4 font-semibold text-dark dark:text-white'>Isi Pesan:</p>
+
+                                <p id='isiPesan' className='px-4 text-justify dark:text-white' />
+                                <p className='px-4'>
+                                    {evidance ? (
+                                        <a href={`${BaseUrl}/${evidance}`} target='_blank' className='underline text-blue-600'>
+                                            Link Evidance
+                                        </a>
+                                    ) : (
+                                        ''
+                                    )}
+                                </p>
+                                <div className='p-6 space-y-6'>
+                                    <div className='mt-2 border-b dark:border-white0 border border-slate-200'></div>
+                                    <div className='flex flex-row-reverse justify-between'>
+                                        <button
+                                            type='button'
+                                            onClick={() => openReplyModal(currentMsg)}
+                                            className='px-4 py-0 bg-primary hover:bg-red-800 text-white rounded-md mt-2'
+                                        >
+                                            Jawab Pesan
+                                        </button>
+                                        <button type='button' onClick={closeViewModal} className='px-8 py-2 hover:bg-yellow-600 mt-2 text-black bg-yellow-500 rounded-md'>
+                                            Tutup
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Reply Modal */}
-            {replyOpen && (
-                <div
-                    id='replyModal'
-                    aria-hidden='true'
-                    className='fixed inset-0 z-50 p-4 md:p-6 bg-black/40 flex items-start md:items-center justify-center'
-                >
-                    <div className='w-full max-w-2xl bg-gray-100 dark:bg-default rounded-lg shadow-xl border border-slate-200 dark:border-slate-700'>
-                        <div className='flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700'>
-                            <p className='font-semibold text-gray-900 dark:text-white'>Balas Email</p>
-                            <button onClick={closeReplyModal} className='text-gray-500 hover:text-gray-700'>
-                                <i className='fas fa-times-circle'></i>
-                            </button>
+                    {/* delete Modal */}
+                    <div id='deleteModal' aria-hidden='true' className='fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full'>
+                        <div className='fixed z-30 grid w-full grid-cols-1 lg:grid-cols-5 md:top-12 lg:top-40 top-14'>
+                            <div className='flex flex-col p-1 lg:p-4 dark:border-gray-600'></div>
+                            <div className='w-[50%] mx-auto bg-gray-100 border-2 border-red-200 rounded-md shadow-md lg:col-span-3 lg:px-3 dark:bg-default shadow-red-200'>
+                                <div className='flex flex-col p-4 rounded-t dark:border-gray-600'>
+                                    <div className='flex font-semibold text-gray-900 dark:text-white'>
+                                        <span className='mr-1 text-accent'>Hapus Data </span>
+                                    </div>
+
+                                    <button
+                                        type='button'
+                                        onClick={closeDeleteModal}
+                                        className='close-btn text-gray-400 hover:text-gray-900 rounded-lg p-1.5 ml-auto inline-flex items-center dark:hover:text-white'
+                                        publikasi-modal-hide='deleteModal'>
+                                        <i className='fas fa-times-circle'></i>
+                                    </button>
+                                </div>
+                                {/* <div className='flex flex-row text-center'> */}
+                                <span className='pl-10 mr-1 dark:text-white'>Anda yakin ingin menghapus pesan </span>
+                                <span id='deskripsiDelete' className='pl-10 sm:pl-0 dark:text-white' /> <span className='dark:text-white'>?</span>
+                                {/* </div> */}
+                                <div className='p-6 space-y-6'>
+                                    <form onSubmit={handleDelete} encType='multipart/form-data'>
+                                        <div className='mt-2 border-b dark:border-white0 border border-slate-200'></div>
+                                        <div className='grid grid-cols-3 mt-1 mr-2'>
+                                            <button type='button' onClick={closeDeleteModal} className='py-2 mt-2 bg-yellow-500 rounded-md text-dark'>
+                                                Batal
+                                            </button>
+                                            <div className=''></div>
+                                            <button type='submit' className='py-2 mt-2 text-white rounded-md bg-accent'>
+                                                HAPUS
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-
-                        <form onSubmit={handleSendReply} className='p-4 space-y-3' encType='multipart/form-data'>
-                            <div className='grid grid-cols-3 items-center gap-2'>
-                                <label className='text-sm'>Kepada</label>
-                                <input
-                                    type='email'
-                                    required
-                                    value={replyForm.to}
-                                    onChange={(e) => setReplyForm({ ...replyForm, to: e.target.value })}
-                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
-                                />
-                            </div>
-                            <div className='grid grid-cols-3 items-center gap-2'>
-                                <label className='text-sm'>CC</label>
-                                <input
-                                    type='text'
-                                    placeholder='opsional, pisahkan dengan koma'
-                                    value={replyForm.cc}
-                                    onChange={(e) => setReplyForm({ ...replyForm, cc: e.target.value })}
-                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
-                                />
-                            </div>
-                            <div className='grid grid-cols-3 items-center gap-2'>
-                                <label className='text-sm'>BCC</label>
-                                <input
-                                    type='text'
-                                    placeholder='opsional, pisahkan dengan koma'
-                                    value={replyForm.bcc}
-                                    onChange={(e) => setReplyForm({ ...replyForm, bcc: e.target.value })}
-                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
-                                />
-                            </div>
-                            <div className='grid grid-cols-3 items-center gap-2'>
-                                <label className='text-sm'>Subjek</label>
-                                <input
-                                    type='text'
-                                    required
-                                    value={replyForm.subject}
-                                    onChange={(e) => setReplyForm({ ...replyForm, subject: e.target.value })}
-                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
-                                />
-                            </div>
-                            <div className='grid grid-cols-3 gap-2'>
-                                <label className='text-sm'>Pesan</label>
-                                <textarea
-                                    required
-                                    rows={8}
-                                    value={replyForm.message}
-                                    onChange={(e) => setReplyForm({ ...replyForm, message: e.target.value })}
-                                    className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
-                                />
-                            </div>
-                            <div className='grid grid-cols-3 items-center gap-2'>
-                                <label className='text-sm'>Lampiran</label>
-                                <input
-                                    type='file'
-                                    accept='image/*,application/pdf'
-                                    onChange={(e) => setReplyForm({ ...replyForm, attachment: e.target.files?.[0] ?? null })}
-                                    className='col-span-2 text-sm'
-                                />
-                            </div>
-
-                            <div className='mt-2 border-t border-slate-200 dark:border-slate-700 pt-3 flex justify-end gap-2'>
-                                <button type='button' onClick={closeReplyModal} className='px-4 py-2 rounded-md bg-yellow-500 text-dark'>
-                                    Batal
-                                </button>
-                                <button
-                                    type='submit'
-                                    disabled={sending}
-                                    className='px-4 py-2 rounded-md bg-accent text-white disabled:opacity-60'
-                                >
-                                    {sending ? 'Mengirim...' : 'Kirim'}
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
-            )}
 
+                    {/* Reply Modal */}
+                    {replyOpen && (
+                        <div
+                            id='replyModal'
+                            aria-hidden='true'
+                            className='fixed inset-0 z-50 p-4 md:p-6 bg-black/40 flex items-start md:items-center justify-center'
+                        >
+                            <div className='w-full max-w-2xl bg-gray-100 dark:bg-default rounded-lg shadow-xl border border-slate-200 dark:border-slate-700'>
+                                <div className='flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700'>
+                                    <p className='font-semibold text-gray-900 dark:text-white'>Balas Email</p>
+                                    <button onClick={closeReplyModal} className='text-gray-500 hover:text-gray-700'>
+                                        <i className='fas fa-times-circle'></i>
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleSendReply} className='p-4 space-y-3' encType='multipart/form-data'>
+                                    <div className='grid grid-cols-3 items-center gap-2'>
+                                        <label className='text-sm'>Kepada</label>
+                                        <input
+                                            type='email'
+                                            required
+                                            value={replyForm.to}
+                                            onChange={(e) => setReplyForm({ ...replyForm, to: e.target.value })}
+                                            className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                        />
+                                    </div>
+                                    <div className='grid grid-cols-3 items-center gap-2'>
+                                        <label className='text-sm'>CC</label>
+                                        <input
+                                            type='text'
+                                            placeholder='opsional, pisahkan dengan koma'
+                                            value={replyForm.cc}
+                                            onChange={(e) => setReplyForm({ ...replyForm, cc: e.target.value })}
+                                            className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                        />
+                                    </div>
+                                    <div className='grid grid-cols-3 items-center gap-2'>
+                                        <label className='text-sm'>BCC</label>
+                                        <input
+                                            type='text'
+                                            placeholder='opsional, pisahkan dengan koma'
+                                            value={replyForm.bcc}
+                                            onChange={(e) => setReplyForm({ ...replyForm, bcc: e.target.value })}
+                                            className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                        />
+                                    </div>
+                                    <div className='grid grid-cols-3 items-center gap-2'>
+                                        <label className='text-sm'>Subjek</label>
+                                        <input
+                                            type='text'
+                                            required
+                                            value={replyForm.subject}
+                                            onChange={(e) => setReplyForm({ ...replyForm, subject: e.target.value })}
+                                            className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                        />
+                                    </div>
+                                    <div className='grid grid-cols-3 gap-2'>
+                                        <label className='text-sm'>Pesan</label>
+                                        <textarea
+                                            required
+                                            rows={8}
+                                            value={replyForm.message}
+                                            onChange={(e) => setReplyForm({ ...replyForm, message: e.target.value })}
+                                            className='col-span-2 rounded-md border border-slate-300 px-3 py-2 text-sm w-full'
+                                        />
+                                    </div>
+                                    <div className='grid grid-cols-3 items-center gap-2'>
+                                        <label className='text-sm'>Lampiran</label>
+                                        <input
+                                            type='file'
+                                            accept='image/*,application/pdf'
+                                            onChange={(e) => setReplyForm({ ...replyForm, attachment: e.target.files?.[0] ?? null })}
+                                            className='col-span-2 text-sm'
+                                        />
+                                    </div>
+
+                                    <div className='mt-2 border-t border-slate-200 dark:border-slate-700 pt-3 flex justify-end gap-2'>
+                                        <button type='button' onClick={closeReplyModal} className='px-4 py-2 rounded-md bg-yellow-500 text-dark'>
+                                            Batal
+                                        </button>
+                                        <button
+                                            type='submit'
+                                            disabled={sending}
+                                            className='px-4 py-2 rounded-md bg-accent text-white disabled:opacity-60'
+                                        >
+                                            {sending ? 'Mengirim...' : 'Kirim'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </div>) : ""}
         </>
     );
 }

@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 const data = await res.json();
                 setUser(data);
 
-                if (data.role === 'Superadmin' || data.role === 'Administrator' || data.role === 'Admin Kesbangpol') {
+                if (data.role === 'Superadmin' || data.role === 'Administrator' || data.role === 'Admin Kesbangpol' || data.role === 'Admin Pendaftaran') {
                     return;
                 } else {
                     window.location.href = '/userpanel';
@@ -397,7 +397,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         </li>
                                     ))}
 
-                                    {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                    {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Pendaftaran" ? (
                                         <div className="">
                                             <li className='px-3 mt-4 text-gray-500 text-sm'>--- Pendaftaran DPPI</li>
                                             <li>
@@ -486,94 +486,96 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 </div>
                             ) : ''}
                             {/* pdp */}
-                            <div className={regexPdp.test(window.location.href) ? 'grup3 grup3-active' : 'grup3'} onClick={handlePdpMenu} id='pdp-menu'>
-                                <button
-                                    className={
-                                        regexPdp.test(window.location.href)
-                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                    }>
-                                    <i className='mx-2 text-xl py-auto fas fa-users text-accent'></i>
-                                    <div className='grid grid-cols-12'>
-                                        <span className='col-span-11 py-1 mx-0 text-left menu-list' id='menu-name3'>
-                                            Data PDP
-                                        </span>
-                                        <span className='my-auto'>
-                                            <svg
-                                                className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
-                                                xmlns='http://www.w3.org/2000/svg'
-                                                viewBox='0 0 20 20'>
-                                                <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </button>
-                                <div className={regexPdp.test(window.location.href) ? '' : 'hidden'} id='pdp-list'>
-                                    <div className='flex py-2 mx-2'>
-                                        <a className='flex' href='/adminpanel/pdp/belum-registrasi'>
-                                            <i
-                                                className={
-                                                    regexPdpBelumRegistrasi.test(window.location.href)
-                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                }></i>
-                                            <p className={regexPdpBelumRegistrasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
-                                                PDP Belum Registrasi
-                                            </p>
-                                        </a>
-                                    </div>
-                                    <div className='flex py-2 mx-2'>
-                                        <a className='flex' href='/adminpanel/pdp/belum-diverifikasi'>
-                                            <i
-                                                className={
-                                                    regexPdpBelumDiverifikasi.test(window.location.href)
-                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                }></i>
-                                            <p className={regexPdpBelumDiverifikasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
-                                                PDP Belum Diverifikasi
-                                            </p>
-                                        </a>
-                                    </div>
+                            {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Kesbangpol" ? (
+                                <div className={regexPdp.test(window.location.href) ? 'grup3 grup3-active' : 'grup3'} onClick={handlePdpMenu} id='pdp-menu'>
+                                    <button
+                                        className={
+                                            regexPdp.test(window.location.href)
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i className='mx-2 text-xl py-auto fas fa-users text-accent'></i>
+                                        <div className='grid grid-cols-12'>
+                                            <span className='col-span-11 py-1 mx-0 text-left menu-list' id='menu-name3'>
+                                                Data PDP
+                                            </span>
+                                            <span className='my-auto'>
+                                                <svg
+                                                    className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
+                                                    xmlns='http://www.w3.org/2000/svg'
+                                                    viewBox='0 0 20 20'>
+                                                    <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                    </button>
+                                    <div className={regexPdp.test(window.location.href) ? '' : 'hidden'} id='pdp-list'>
+                                        <div className='flex py-2 mx-2'>
+                                            <a className='flex' href='/adminpanel/pdp/belum-registrasi'>
+                                                <i
+                                                    className={
+                                                        regexPdpBelumRegistrasi.test(window.location.href)
+                                                            ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                            : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                    }></i>
+                                                <p className={regexPdpBelumRegistrasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                    PDP Belum Registrasi
+                                                </p>
+                                            </a>
+                                        </div>
+                                        <div className='flex py-2 mx-2'>
+                                            <a className='flex' href='/adminpanel/pdp/belum-diverifikasi'>
+                                                <i
+                                                    className={
+                                                        regexPdpBelumDiverifikasi.test(window.location.href)
+                                                            ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                            : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                    }></i>
+                                                <p className={regexPdpBelumDiverifikasi.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                    PDP Belum Diverifikasi
+                                                </p>
+                                            </a>
+                                        </div>
 
-                                    <div className='flex py-2 mx-2'>
-                                        <a className='flex' href='/adminpanel/pdp/verified'>
-                                            <i
-                                                className={
-                                                    regexPdpVerified.test(window.location.href)
-                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                }></i>
-                                            <p className={regexPdpVerified.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Verified </p>
-                                        </a>
+                                        <div className='flex py-2 mx-2'>
+                                            <a className='flex' href='/adminpanel/pdp/verified'>
+                                                <i
+                                                    className={
+                                                        regexPdpVerified.test(window.location.href)
+                                                            ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                            : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                    }></i>
+                                                <p className={regexPdpVerified.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Verified </p>
+                                            </a>
+                                        </div>
+                                        <div className='flex py-2 mx-2'>
+                                            <a className='flex' href='/adminpanel/pdp/simental'>
+                                                <i
+                                                    className={
+                                                        regexPdpSimental.test(window.location.href)
+                                                            ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                            : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                    }></i>
+                                                <p className={regexPdpSimental.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Simental </p>
+                                            </a>
+                                        </div>
+                                        <div className='flex py-2 mx-2'>
+                                            <a className='flex' href='/adminpanel/pdp/tidak-aktif'>
+                                                <i
+                                                    className={
+                                                        regexPdpTidakAktif.test(window.location.href)
+                                                            ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                            : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                    }></i>
+                                                <p className={regexPdpTidakAktif.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Tidak Aktif</p>
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div className='flex py-2 mx-2'>
-                                        <a className='flex' href='/adminpanel/pdp/simental'>
-                                            <i
-                                                className={
-                                                    regexPdpSimental.test(window.location.href)
-                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                }></i>
-                                            <p className={regexPdpSimental.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Simental </p>
-                                        </a>
-                                    </div>
-                                    <div className='flex py-2 mx-2'>
-                                        <a className='flex' href='/adminpanel/pdp/tidak-aktif'>
-                                            <i
-                                                className={
-                                                    regexPdpTidakAktif.test(window.location.href)
-                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                }></i>
-                                            <p className={regexPdpTidakAktif.test(window.location.href) ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>PDP Tidak Aktif</p>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                                </div>)
+                                : ''}
 
-                            {user.role === "Administrator" || user.role === "Superadmin" ? (
-                                <div className="">
+                            <div>
+                                {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Pendaftaran" ? (
                                     <div
                                         className={
                                             pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' || pathname === 'list-pendaftaran-pengangkatan-dppi-provinsi'
@@ -608,234 +610,231 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' ? '' : 'hidden'
                                             }
                                             id='pendaftaran-list'>
-                                            {user.role === "Administrator" || user.role === "Superadmin" ? (
-                                                <div className='flex py-2 mx-2'>
-                                                    <a className='flex' href='/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'>
-                                                        <i
-                                                            className={
-                                                                pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'
-                                                                    ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                                    : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                            }></i>
-                                                        <p className={pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Tingkat Kab/Kota</p>
-                                                    </a>
-                                                </div>
-                                            ) : ''}
-                                            {user.role === "Administrator" || user.role === "Superadmin" ? (
-                                                // Tampilkan Pelaksana Provinsi
-                                                <div className='flex py-2 mx-2'>
-                                                    <a className='flex' href='/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'>
-                                                        <i
-                                                            className={
-                                                                pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'
-                                                                    ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                                    : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                            }
-                                                        />
-                                                        <p className={pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
-                                                            Tingkat Provinsi
-                                                        </p>
-                                                    </a>
-                                                </div>
-                                            ) : ""}
-
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'>
+                                                    <i
+                                                        className={
+                                                            pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }></i>
+                                                    <p className={pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Tingkat Kab/Kota</p>
+                                                </a>
+                                            </div>
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'>
+                                                    <i
+                                                        className={
+                                                            pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi'
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }
+                                                    />
+                                                    <p className={pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                        Tingkat Provinsi
+                                                    </p>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <a
-                                        href='/adminpanel/berita'
-                                        className={
-                                            regexBerita.test(window.location.href)
-                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                        }>
-                                        <i
-                                            className={
-                                                regexBerita.test(window.location.href)
-                                                    ? 'mx-2 text-xl py-auto fas fa-newspaper text-purple-600'
-                                                    : 'mx-2 text-xl py-auto fas fa-newspaper text-accent'
-                                            }></i>
-
-                                        <p className='mx-0 menu-list' id='menu-name1'>
-                                            Data Berita
-                                        </p>
-                                    </a>
-                                </div>
-                            ) : ''}
-
-                            {/* pelaksana */}
-
-                            <div
-                                className={
-                                    pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-kabupaten'
-                                        ? 'grup2 grup2-active'
-                                        : 'grup2'
-                                }
-                                onClick={handlePelaksanaMenu}
-                                id='pelaksana-menu'>
-                                <button
-                                    className={
-                                        pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-kabupaten'
-                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                    }>
-                                    <i className='mx-2 text-xl py-auto fas fa-user-tie text-accent'></i>
-                                    <div className='grid grid-cols-12'>
-                                        <span className='col-span-11 py-1 mx-1 text-left menu-list' id='menu-name2'>
-                                            Pelaksana
-                                        </span>
-                                        <span className='my-auto'>
-                                            <svg
-                                                className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
-                                                xmlns='http://www.w3.org/2000/svg'
-                                                viewBox='0 0 20 20'>
-                                                <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </button>
-                                <div
-                                    className={
-                                        pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-kabupaten' ? '' : 'hidden'
-                                    }
-                                    id='pelaksana-list'>
-                                    {user.role === "Administrator" || user.role === "Superadmin" ? (
-                                        <div className='flex py-2 mx-2'>
-                                            <a className='flex' href='/adminpanel/pelaksana-pusat'>
+                                ) :
+                                    user.role === "Administrator" || user.role === "Superadmin" ? (
+                                        <div>
+                                            <a href='/adminpanel/berita'
+                                                className={
+                                                    regexBerita.test(window.location.href)
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
                                                 <i
                                                     className={
-                                                        pathname === '/adminpanel/pelaksana-pusat'
-                                                            ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                            : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        regexBerita.test(window.location.href)
+                                                            ? 'mx-2 text-xl py-auto fas fa-newspaper text-purple-600'
+                                                            : 'mx-2 text-xl py-auto fas fa-newspaper text-accent'
                                                     }></i>
-                                                <p className={pathname === '/adminpanel/pelaksana-pusat' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Pelaksana Pusat</p>
+
+                                                <p className='mx-0 menu-list' id='menu-name1'>
+                                                    Data Berita
+                                                </p>
                                             </a>
                                         </div>
                                     ) : ''}
-                                    {user.role === "Administrator" || user.role === "Superadmin" || (user.role === "Admin Kesbangpol" && user.id_kabupaten == 0)
-                                        ? (
-                                            // Tampilkan Pelaksana Provinsi
-                                            <div className='flex py-2 mx-2'>
-                                                <a className='flex' href='/adminpanel/pelaksana-provinsi'>
-                                                    <i
-                                                        className={
-                                                            pathname === '/adminpanel/pelaksana-provinsi'
-                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                        }
-                                                    />
-                                                    <p className={pathname === '/adminpanel/pelaksana-provinsi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
-                                                        Pelaksana Provinsi
-                                                    </p>
-                                                </a>
-                                            </div>
-                                        ) : ""}
-                                    {user.role === "Administrator" || user.role === "Superadmin" || (user.role === "Admin Kesbangpol" && user.id_kabupaten !== 0)
-                                        ? (
-                                            // Tampilkan Pelaksana Kabupaten
-                                            <div className='flex py-2 mx-2'>
-                                                <a className='flex' href='/adminpanel/pelaksana-kabupaten'>
-                                                    <i
-                                                        className={
-                                                            pathname === '/adminpanel/pelaksana-kabupaten'
-                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                        }
-                                                    />
-                                                    <p className={pathname === '/adminpanel/pelaksana-kabupaten' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
-                                                        Pelaksana Kabupaten
-                                                    </p>
-                                                </a>
-                                            </div>
-                                        )
-                                        : null // Jika tidak memenuhi kondisi manapun, tampilkan 'null' (tidak ada apa-apa)
-                                    }
-                                </div>
-                            </div>
-                            {user.role === "Administrator" || user.role === "Superadmin" ? (
-                                <>
-                                    <a
-                                        href='/adminpanel/galeri-foto'
+
+                                {/* pelaksana */}
+                                {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Kesbangpol" ? (
+                                    <div
                                         className={
-                                            pathname === '/adminpanel/galeri-foto'
-                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                        }>
-                                        <i
+                                            pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-kabupaten'
+                                                ? 'grup2 grup2-active'
+                                                : 'grup2'
+                                        }
+                                        onClick={handlePelaksanaMenu}
+                                        id='pelaksana-menu'>
+                                        <button
+                                            className={
+                                                pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-kabupaten'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i className='mx-2 text-xl py-auto fas fa-user-tie text-accent'></i>
+                                            <div className='grid grid-cols-12'>
+                                                <span className='col-span-11 py-1 mx-1 text-left menu-list' id='menu-name2'>
+                                                    Pelaksana
+                                                </span>
+                                                <span className='my-auto'>
+                                                    <svg
+                                                        className='w-4 h-4 my-auto transition duration-150 ease-in-out transform -rotate-90 fill-current menu-arrow text-accent'
+                                                        xmlns='http://www.w3.org/2000/svg'
+                                                        viewBox='0 0 20 20'>
+                                                        <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                        </button>
+                                        <div
+                                            className={
+                                                pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-kabupaten' ? '' : 'hidden'
+                                            }
+                                            id='pelaksana-list'>
+                                            {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                                <div className='flex py-2 mx-2'>
+                                                    <a className='flex' href='/adminpanel/pelaksana-pusat'>
+                                                        <i
+                                                            className={
+                                                                pathname === '/adminpanel/pelaksana-pusat'
+                                                                    ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                    : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                            }></i>
+                                                        <p className={pathname === '/adminpanel/pelaksana-pusat' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Pelaksana Pusat</p>
+                                                    </a>
+                                                </div>
+                                            ) : ''}
+                                            {user.role === "Administrator" || user.role === "Superadmin" || (user.role === "Admin Kesbangpol" && user.id_kabupaten == 0)
+                                                ? (
+                                                    // Tampilkan Pelaksana Provinsi
+                                                    <div className='flex py-2 mx-2'>
+                                                        <a className='flex' href='/adminpanel/pelaksana-provinsi'>
+                                                            <i
+                                                                className={
+                                                                    pathname === '/adminpanel/pelaksana-provinsi'
+                                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                                }
+                                                            />
+                                                            <p className={pathname === '/adminpanel/pelaksana-provinsi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                                Pelaksana Provinsi
+                                                            </p>
+                                                        </a>
+                                                    </div>
+                                                ) : ""}
+                                            {user.role === "Administrator" || user.role === "Superadmin" || (user.role === "Admin Kesbangpol" && user.id_kabupaten !== 0)
+                                                ? (
+                                                    // Tampilkan Pelaksana Kabupaten
+                                                    <div className='flex py-2 mx-2'>
+                                                        <a className='flex' href='/adminpanel/pelaksana-kabupaten'>
+                                                            <i
+                                                                className={
+                                                                    pathname === '/adminpanel/pelaksana-kabupaten'
+                                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                                }
+                                                            />
+                                                            <p className={pathname === '/adminpanel/pelaksana-kabupaten' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                                Pelaksana Kabupaten
+                                                            </p>
+                                                        </a>
+                                                    </div>
+                                                )
+                                                : null // Jika tidak memenuhi kondisi manapun, tampilkan 'null' (tidak ada apa-apa)
+                                            }
+                                        </div>
+                                    </div>
+                                ) : ''}
+                                {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                    <>
+                                        <a
+                                            href='/adminpanel/galeri-foto'
                                             className={
                                                 pathname === '/adminpanel/galeri-foto'
-                                                    ? 'ml-2 mr-1 text-xl py-auto fas fa-image text-purple-600'
-                                                    : 'ml-2 mr-1 text-xl py-auto fas fa-image text-accent'
-                                            }></i>
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/galeri-foto'
+                                                        ? 'ml-2 mr-1 text-xl py-auto fas fa-image text-purple-600'
+                                                        : 'ml-2 mr-1 text-xl py-auto fas fa-image text-accent'
+                                                }></i>
 
-                                        <p className='mx-1 menu-list' id='menu-name3'>
-                                            Galeri Kegiatan
-                                        </p>
-                                    </a>
-                                    <a
-                                        href='/adminpanel/kegiatan'
-                                        className={
-                                            pathname === '/adminpanel/kegiatan'
-                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                        }>
-                                        <i
+                                            <p className='mx-1 menu-list' id='menu-name3'>
+                                                Galeri Kegiatan
+                                            </p>
+                                        </a>
+                                        <a
+                                            href='/adminpanel/kegiatan'
                                             className={
                                                 pathname === '/adminpanel/kegiatan'
-                                                    ? 'mx-2 text-xl py-auto fas fa-calendar-check text-purple-600'
-                                                    : 'mx-2 text-xl py-auto fas fa-calendar-check text-accent'
-                                            }></i>
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/kegiatan'
+                                                        ? 'mx-2 text-xl py-auto fas fa-calendar-check text-purple-600'
+                                                        : 'mx-2 text-xl py-auto fas fa-calendar-check text-accent'
+                                                }></i>
 
-                                        <p className='mx-1 menu-list' id='menu-name4'>
-                                            Kegiatan
-                                        </p>
-                                    </a>
+                                            <p className='mx-1 menu-list' id='menu-name4'>
+                                                Kegiatan
+                                            </p>
+                                        </a>
+                                        <a
+                                            href='/adminpanel/regulasi'
+                                            className={
+                                                pathname === '/adminpanel/regulasi'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/regulasi' ? 'mx-2 text-xl py-auto fas fa-file-alt text-purple-600' : 'mx-2 text-xl py-auto fas fa-file-alt text-accent'
+                                                }></i>
+
+                                            <p className='mx-1 menu-list' id='menu-name5'>
+                                                Regulasi
+                                            </p>
+                                        </a>
+                                    </>) : ''}
+                                {user.role === "Superadmin" ? (
                                     <a
-                                        href='/adminpanel/regulasi'
+                                        href='/adminpanel/user'
                                         className={
-                                            pathname === '/adminpanel/regulasi'
+                                            pathname === '/adminpanel/user'
                                                 ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
                                                 : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
                                         }>
                                         <i
                                             className={
-                                                pathname === '/adminpanel/regulasi' ? 'mx-2 text-xl py-auto fas fa-file-alt text-purple-600' : 'mx-2 text-xl py-auto fas fa-file-alt text-accent'
+                                                pathname === '/adminpanel/user' ? 'mx-2 text-xl py-auto fas fa-users-cog text-purple-600' : 'mx-2 text-xl py-auto fas fa-users-cog text-accent'
                                             }></i>
 
-                                        <p className='mx-1 menu-list' id='menu-name5'>
-                                            Regulasi
+                                        <p className='mx-1 menu-list' id='menu-name6'>
+                                            Users
                                         </p>
-                                    </a>
-                                </>) : ''}
-                            {user.role === "Superadmin" ? (
-                                <a
-                                    href='/adminpanel/user'
-                                    className={
-                                        pathname === '/adminpanel/user'
-                                            ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                            : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                    }>
-                                    <i
-                                        className={
-                                            pathname === '/adminpanel/user' ? 'mx-2 text-xl py-auto fas fa-users-cog text-purple-600' : 'mx-2 text-xl py-auto fas fa-users-cog text-accent'
-                                        }></i>
-
-                                    <p className='mx-1 menu-list' id='menu-name6'>
-                                        Users
-                                    </p>
-                                </a>) : ''}
+                                    </a>) : ''}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Main Content */}
-                    <main
-                        className='main-content-dashboard'
-                        id='main-content'
-                        ref={mainContentRef}
-                    >
-                        {children}
-                    </main>
-                </div>
+                        {/* Main Content */}
+                        <main
+                            className='main-content-dashboard'
+                            id='main-content'
+                            ref={mainContentRef}
+                        >
+                            {children}
+                        </main>
+                    </div>
+                </div >
             </div >
         </main >
     );
