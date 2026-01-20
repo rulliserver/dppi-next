@@ -23,8 +23,8 @@ export default function Profil() {
     return (
         <div className='max-w-7xl mx-auto'>
             <div className='my-8'>
-                <p className='text-3xl text-center font-bold text-red-700'>
-                    Tentang <span className='text-black dark:text-white'> PDP</span>
+                <p className='text-2xl text-center font-bold text-red-700'>
+                    Tentang <span className='text-black dark:text-white'> Duta Pancasila Paskibraka Indonesia</span>
                 </p>
                 {profile ?
                     <div className='px-0 mx-auto mt-6 dark:text-white text-justify'>

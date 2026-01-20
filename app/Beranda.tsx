@@ -11,6 +11,8 @@ import Image from "next/image";
 import RatingForm from './components/RatingForm';
 import RatingStats from './components/RatingStats';
 import RatingDisplay from "./components/RatingDisplay";
+import AnnouncementPopup from "./components/AnnouncementPopup";
+import { log } from "console";
 export default function Beranda() {
     const [video, setVideo]: any = useState();
     const [berita, setBerita]: any = useState();
@@ -124,6 +126,25 @@ export default function Beranda() {
             });
     };
 
+    const [pengumuman, setPengumuman]: any = useState();
+    const getPengumuman = () => {
+        axios.get(`${UrlApi}/pengumuman`)
+            .then((response: any) => {
+                if (response.data) {
+                    setPengumuman(
+                        response.data
+                    );
+                } else {
+                    setPengumuman(null);
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching pengumuman:', error);
+                setPengumuman(null);
+            });
+    }
+
+
     useEffect(() => {
         getVideo();
         getBerita();
@@ -133,12 +154,13 @@ export default function Beranda() {
         getDataPDPKabupaten();
         getDataProvinsi();
         getDataKabupaten();
+        getPengumuman();
     }, []);
-
-
 
     return (
         <div>
+            {pengumuman ? <AnnouncementPopup pengumuman={pengumuman?.announce} /> : null}
+
             <div className='w-full max-h-150 2xl:max-h-187.5 flex justify-center'>
                 {video ?
                     <video src={BaseUrl + video.file_video.replace('/uploads', 'uploads')} className='w-full object-cover' loop autoPlay={true} muted />

@@ -638,7 +638,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         </div>
                                     </div>
                                 ) :
-                                    user.role === "Administrator" || user.role === "Superadmin" ? (
+                                    ''}
+                                {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                    <div>
                                         <div>
                                             <a href='/adminpanel/berita'
                                                 className={
@@ -658,7 +660,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 </p>
                                             </a>
                                         </div>
-                                    ) : ''}
+                                        <div>
+                                            <a href='/adminpanel/pengumuman'
+                                                className={
+                                                    pathname === '/adminpanel/pengumuman'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i
+                                                    className={
+                                                        pathname === '/adminpanel/pengumuman'
+                                                            ? 'mx-4 text-xl py-auto fas fa-info text-purple-600'
+                                                            : 'mx-4 text-xl py-auto fas fa-info text-accent'
+                                                    }></i>
+
+                                                <p className='mx-0 menu-list' id='menu-name1'>
+                                                    Pengumuman
+                                                </p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                ) : ''}
 
                                 {/* pelaksana */}
                                 {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Kesbangpol" ? (
