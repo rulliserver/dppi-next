@@ -639,7 +639,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     </div>
                                 ) :
                                     ''}
-                                {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Berita" ? (
                                     <div>
                                         <div>
                                             <a href='/adminpanel/berita'

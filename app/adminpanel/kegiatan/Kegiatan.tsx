@@ -737,7 +737,7 @@ export default function Kegiatan() {
                                     <select
                                         name='kategori'
                                         id='kategori'
-                                        className='col-span-3 dark:bg-gray-700 border-gray-300 bg-white focus:border-accent focus:ring-accent rounded-md shadow-sm dark:text-gray-200 max-w-[540px]'
+                                        className='col-span-3 dark:bg-gray-700 border-gray-300 bg-white focus:border-accent focus:ring-accent rounded-md shadow-sm dark:text-gray-200 max-w-135'
                                         onChange={handleChangeCreate}>
                                         <option value=''>Pilih Salah Satu</option>
                                         <option value='Seleksi PDP'>Seleksi PDP</option>
@@ -879,7 +879,7 @@ export default function Kegiatan() {
             < div
                 id='deleteModal'
                 className='justify-center fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full' >
-                <div className='fixed z-30 w-full justify-center max-w-[500px] mx-auto md:top-12 lg:top-40 top-14'>
+                <div className='fixed z-30 w-full justify-center max-w-125 mx-auto md:top-12 lg:top-40 top-14'>
                     <div className='flex flex-col p-1 lg:p-4 dark:border-gray-600'></div>
                     <div className='w-full mx-auto bg-gray-100 border-2 border-red-200 rounded-md shadow-md lg:col-span-3 lg:px-3 dark:bg-default shadow-red-200'>
                         <div className='flex flex-col px-4 pt-2 rounded-t dark:border-gray-600 border-b'>
