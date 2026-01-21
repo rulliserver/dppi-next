@@ -103,7 +103,7 @@ function LoginForm() {
 
             const role = user.role || 'User';
             window.location.href =
-                role.includes('Admin') ? '/adminpanel' : '/userpanel';
+                role.includes('Admin') || role.includes('Jurnalis') ? '/adminpanel' : '/userpanel';
 
         } catch (err: any) {
             setErrorMessage(err.message || 'Login gagal, coba lagi.');
