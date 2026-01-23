@@ -519,10 +519,10 @@ export default function ListKabKota() {
                                                             <div className="text-sm text-gray-500">{item.nama_provinsi}</div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-6 py-4 whitespace-nowrap" max-width={250}>
                                                         <div>
                                                             <div className="text-sm font-medium text-gray-900">{item.nama_pic}</div>
-                                                            <div className="text-sm text-gray-500">{item.jabatan_pic}</div>
+                                                            <div className="text-sm text-gray-500 max-w-40 text-wrap">{item.jabatan_pic}</div>
                                                             <div className="text-sm text-gray-500">{item.nip_pic}</div>
                                                         </div>
                                                     </td>
