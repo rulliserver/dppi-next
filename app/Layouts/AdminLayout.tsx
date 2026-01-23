@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 const data = await res.json();
                 setUser(data);
 
-                if (data.role === 'Superadmin' || data.role === 'Administrator' || data.role === 'Admin Kesbangpol' || data.role === 'Admin Pendaftaran') {
+                if (data.role === 'Superadmin' || data.role === 'Administrator' || data.role === 'Admin Kesbangpol' || data.role === 'Admin Pendaftaran' || data.role === 'Jurnalis') {
                     return;
                 } else {
                     window.location.href = '/userpanel';
