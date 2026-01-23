@@ -12,7 +12,7 @@
         "@ckeditor/ckeditor5-build-decoupled-document": "^39.0.2",
         "@headlessui/react": "^2.2.9",
         "@heroicons/react": "^2.2.0",
-        "@react-pdf/renderer": "^4.3.1",
+        "@react-pdf/renderer": "^4.3.2",
         "@tanstack/react-table": "^8.21.3",
         "axios": "^1.13.2",
         "datatables.net-dt": "^2.3.4",

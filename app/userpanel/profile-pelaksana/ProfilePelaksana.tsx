@@ -586,7 +586,7 @@ export default function ProfilePelaksana() {
 
             {/* create Modal */}
             <div id='createModal' className='fixed top-0 left-0 right-0 z-50 hidden p-4 xl:inset-0 backdrop-blur-sm bg-white/50 min-h-svh'>
-                <div className='md:absolute left-0 right-0 relative w-full h-full max-w-xl xl:max-h-[700px] mx-auto xl:top-20 top-4 xl:h-auto overflow-x-hidden overflow-y-auto'>
+                <div className='md:absolute left-0 right-0 relative w-full h-full max-w-xl xl:max-h-175 mx-auto xl:top-20 top-4 xl:h-auto overflow-x-hidden overflow-y-auto'>
                     <div className='relative bg-gray-200 rounded-lg shadow-lg dark:bg-default'>
                         <div className='flex items-start justify-between p-4 border-b-2 border-white rounded-t dark:border-gray-600'>
                             <div className='flex font-semibold text-gray-900 dark:text-white '>
@@ -662,7 +662,7 @@ export default function ProfilePelaksana() {
                                         <select
                                             name='id_provinsi'
                                             id='id_provinsi'
-                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-[540px]'
+                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
                                             tabIndex={3}
                                             onChange={handleChangeCreate}
                                             value={dataCreate.id_provinsi}
@@ -684,7 +684,7 @@ export default function ProfilePelaksana() {
                                         <select
                                             name='id_kabupaten'
                                             id='id_kabupaten'
-                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-[540px]'
+                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
                                             tabIndex={4}
                                             onChange={handleChangeCreate}
                                             value={dataCreate.id_kabupaten}
@@ -705,7 +705,7 @@ export default function ProfilePelaksana() {
                                     <select
                                         name='jabatan'
                                         id='jabatan'
-                                        className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-[540px]'
+                                        className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
                                         tabIndex={5}
                                         onChange={handleChangeCreate}
                                         value={dataCreate.jabatan}
@@ -736,7 +736,7 @@ export default function ProfilePelaksana() {
 
             {/* edit Modal */}
             <div id='editModal' className='fixed top-0 left-0 right-0 z-50 hidden p-4 xl:inset-0 backdrop-blur-sm bg-white/50 min-h-svh'>
-                <div className='md:absolute left-0 right-0 relative w-full h-full max-w-xl xl:max-h-[700px] mx-auto xl:top-20 top-4 xl:h-auto overflow-x-hidden overflow-y-auto'>
+                <div className='md:absolute left-0 right-0 relative w-full h-full max-w-xl xl:max-h-175 mx-auto xl:top-20 top-4 xl:h-auto overflow-x-hidden overflow-y-auto'>
                     <div className='relative mx-auto bg-gray-200 rounded-lg shadow-lg dark:bg-default'>
                         <div className='flex items-start justify-between p-4 border-b-2 border-white rounded-t dark:border-gray-600'>
                             <div className='flex font-semibold text-gray-900 dark:text-white '>
@@ -813,7 +813,7 @@ export default function ProfilePelaksana() {
                                         <select
                                             name='id_provinsi'
                                             id='id_provinsi'
-                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-[540px]'
+                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
                                             tabIndex={3}
                                             onChange={handleOnChange}
                                             value={dataPelaksana.id_provinsi}
@@ -834,7 +834,7 @@ export default function ProfilePelaksana() {
                                         <select
                                             name='id_kabupaten'
                                             id='id_kabupaten'
-                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-[540px]'
+                                            className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
                                             tabIndex={4}
                                             onChange={handleOnChange}
                                             value={dataPelaksana.id_kabupaten}
@@ -854,7 +854,7 @@ export default function ProfilePelaksana() {
                                     <select
                                         name='jabatan'
                                         id='jabatan'
-                                        className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-[540px]'
+                                        className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
                                         tabIndex={5}
                                         value={dataPelaksana.jabatan}
                                         onChange={handleOnChange}
@@ -884,7 +884,7 @@ export default function ProfilePelaksana() {
 
             {/* delete Modal */}
             <div id='deleteModal' className='justify-center fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full'>
-                <div className='fixed z-30 w-full justify-center max-w-[500px] mx-auto md:top-12 lg:top-40 top-14'>
+                <div className='fixed z-30 w-full justify-center max-w-125 mx-auto md:top-12 lg:top-40 top-14'>
                     <div className='w-full mx-auto bg-gray-100 border-2 border-red-200 rounded-md shadow-md dark:bg-default'>
                         <div className='flex flex-col px-4 py-2 rounded-t border-b dark:border-gray-600'>
                             <div className='flex font-semibold text-gray-900 dark:text-white'>
