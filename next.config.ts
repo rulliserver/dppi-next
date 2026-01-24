@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+
+    transpilePackages: [
+        '@react-pdf/renderer',
+        '@react-pdf/types'
+    ],
     images: {
         formats: ['image/webp', 'image/avif'],
         unoptimized: true,
@@ -13,14 +18,10 @@ const nextConfig = {
             {
                 protocol: 'https',
                 hostname: '127.0.0.1',
+                port: '8000',
                 pathname: '/uploads/**',
             },
         ],
     },
-    experimental: {
-
-        serverComponentsExternalPackages: ['@react-pdf/renderer'],
-    },
 }
-
 module.exports = nextConfig

@@ -203,7 +203,7 @@ export default function Berita() {
 
                                     </p>
                                     <a href={`/berita/${slug}`}>
-                                        <Image src={`${BaseUrl}/${photo}`} width={800} height={400} alt='Photo Berita' className='w-full max-h-[700px] align-middle bg-no-repeat object-cover opacity-90' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
+                                        <Image src={`${BaseUrl}${photo}`} width={800} height={400} alt='Photo Berita' className='w-full max-h-175 align-middle bg-no-repeat object-cover opacity-90' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
                                         <TextEditor data={preview} />
                                     </a>
                                     <a href={`/berita/${slug}`} className='text-accent'>

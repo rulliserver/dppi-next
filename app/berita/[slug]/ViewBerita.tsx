@@ -147,7 +147,7 @@ export default function ViewBerita() {
                             {FormatLongDate(berita.tanggal)}
                             <span className='ml-2'>👁️ {berita.view}</span>
                         </p>
-                        <Image src={`${BaseUrl}` + `${berita.photo}`} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
+                        <Image src={`${BaseUrl}` + `${berita.photo.replace('/uploads', 'uploads')}`} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
                         {berita.caption == 'null' || berita.caption == '-' ? '' : <p className='mb-4 text-sm'>{berita.caption}</p>}
                         <TextEditor data={berita.body} />
                     </div>
