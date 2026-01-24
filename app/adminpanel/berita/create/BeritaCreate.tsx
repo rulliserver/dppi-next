@@ -44,7 +44,7 @@ export default function BeritaCreate() {
         tanggal: new Date(),
         caption: '',
         author: '',
-        status: 0,
+        status: 1,
         sumber: '',
     });
     console.log(data);
@@ -235,9 +235,10 @@ export default function BeritaCreate() {
                             onChange={handleChange}
                             id='tanggal'
                             name='tanggal'
+                            required
                         />
                     </div>
-                    {user.role === 'Superadmin' || user.role === 'Administrator' ? (
+                    {user.role === 'Superadmin' || user.role === 'Administrator' || user.role === 'Jurnalis' ? (
                         <div className='grid grid-cols-5 mt-1 mr-2'>
                             <InputLabel htmlFor='status' value='Status Berita' className='flex py-1 text-sm text-dark dark:text-white' />
                             <select
@@ -256,8 +257,7 @@ export default function BeritaCreate() {
                             <InputLabel htmlFor='status' value='Status Berita' className='bg-white flex py-1 text-sm text-dark dark:text-white' />
                             <select
                                 name='status'
-                                id='status'
-                                required
+                                id='status'                                
                                 onChange={handleChange}
                                 className='col-span-1 text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark'>
                                 <option value='0'>Belum disetujui</option>

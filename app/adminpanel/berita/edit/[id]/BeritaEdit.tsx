@@ -309,7 +309,7 @@ export default function BeritaEdit() {
                         />
                     </div>
 
-                    {(user?.role === 'Superadmin' || user?.role === 'Administrator') && (
+                    {(user?.role === 'Superadmin' || user?.role === 'Administrator' || user?.role === 'Jurnalis') && (
                         <div className='grid grid-cols-5 mt-1 mr-2'>
                             <InputLabel htmlFor='status' value='Status Berita' className='flex py-1 text-sm text-dark  dark:text-white' />
                             <select

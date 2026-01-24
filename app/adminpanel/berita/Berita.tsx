@@ -66,7 +66,7 @@ export default function Berita() {
         setErrorMsg('');
 
         try {
-            const res = await axios.get<PaginatedResponse>(`${UrlApi}/post?${qs}`, {
+            const res = await axios.get<PaginatedResponse>(`${UrlApi}/adminpanel/post?${qs}`, {
                 withCredentials: true,
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },
@@ -292,7 +292,7 @@ export default function Berita() {
                                         </td>
 
                                         <td>
-                                            <div className="relative w-[200px] h-[110px]">
+                                            <div className="relative w-50 h-27.5">
                                                 <Image
                                                     src={imageSrc(item)}
                                                     alt={item.caption || item.title}

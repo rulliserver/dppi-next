@@ -17,6 +17,8 @@ import { UrlApi } from '@/app/components/apiUrl';
 import InputLabel from '@/app/components/InputLabel';
 import TextInput from '@/app/components/TextInput';
 import { BaseUrl } from '@/app/components/baseUrl';
+import { canvasPreview2 } from '@/app/components/CanvasPreview2';
+import { useDebounceEffect2 } from '@/app/components/useDebounceEffect2';
 
 registerLocale('id', id);
 
@@ -80,23 +82,39 @@ export default function Kegiatan() {
 
     //photo
     const [imgSrc, setImgSrc] = useState('');
+    const [imgSrc2, setImgSrc2] = useState('');
     const previewCanvasRef = useRef(null);
+    const previewCanvasRef2 = useRef(null);
     const imgRef = useRef(null);
+    const imgRef2 = useRef(null);
     const [crop, setCrop]: any = useState({
         width: 5,
         height: 3,
         aspect: 5 / 3,
     });
+    const [crop2, setCrop2]: any = useState({
+        width: 5,
+        height: 3,
+        aspect: 5 / 3,
+    });
     const [completedCrop, setCompletedCrop]: any = useState();
+    const [completedCrop2, setCompletedCrop2]: any = useState();
     const [scale, setScale] = useState(1);
     const [rotate, setRotate] = useState(0);
     const [aspect, setAspect]: any = useState(5 / 3);
-
     function onSelectFile(e: any) {
         if (e.target.files && e.target.files.length > 0) {
             setCrop(undefined);
             const reader: any = new FileReader();
             reader.addEventListener('load', () => setImgSrc(reader.result.toString() || ''));
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    }
+    function onSelectFile2(e: any) {
+        if (e.target.files && e.target.files.length > 0) {
+            setCrop2(undefined);
+            const reader: any = new FileReader();
+            reader.addEventListener('load', () => setImgSrc2(reader.result.toString() || ''));
             reader.readAsDataURL(e.target.files[0]);
         }
     }
@@ -116,6 +134,16 @@ export default function Kegiatan() {
         },
         100,
         [completedCrop, scale, rotate]
+    );
+
+    useDebounceEffect2(
+        async () => {
+            if (completedCrop2?.width && completedCrop2?.height && imgRef2.current && previewCanvasRef2.current) {
+                canvasPreview2(imgRef2.current, previewCanvasRef2.current, completedCrop2, scale, rotate);
+            }
+        },
+        100,
+        [completedCrop2, scale, rotate]
     );
 
     //tanggal Kegiatan
@@ -285,8 +313,8 @@ export default function Kegiatan() {
             const formData = new FormData();
 
             // Handle photo upload
-            if (previewCanvasRef.current) {
-                const canvas: any = previewCanvasRef.current;
+            if (previewCanvasRef2.current) {
+                const canvas: any = previewCanvasRef2.current;
                 const croppedBlob: any = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
                 formData.append('photo', croppedBlob);
             }
@@ -472,16 +500,16 @@ export default function Kegiatan() {
                                 <div className='px-4 py-2 text-dark dark:text-white'>
                                     <div className='grid grid-cols-4 gap-2 mt-4'>
                                         <InputLabel htmlFor='photo'>Undangan/Brosur/Foto:</InputLabel>
-                                        <input className='col-span-3 bg-white dark:bg-gray-700 border-2 text-sm w-full rounded-md' type='file' accept='image/*' onChange={onSelectFile} />
+                                        <input className='col-span-3 bg-white dark:bg-gray-700 border-2 text-sm w-full rounded-md' type='file' accept='image/*' onChange={onSelectFile2} />
                                     </div>
                                     <p className='text-xs text-accent'>*) abaikan jika tidak ada perubahan</p>
                                     <div className='grid grid-cols-2 gap-4 my-2 mx-36'>
-                                        {Boolean(imgSrc) && (
-                                            <ReactCrop crop={crop} onChange={(_, percentCrop) => setCrop(percentCrop)} onComplete={(c) => setCompletedCrop(c)} aspect={aspect}>
+                                        {Boolean(imgSrc2) && (
+                                            <ReactCrop crop={crop2} onChange={(_, percentCrop) => setCrop2(percentCrop)} onComplete={(c) => setCompletedCrop2(c)} aspect={aspect}>
                                                 <img
-                                                    ref={imgRef}
+                                                    ref={imgRef2}
                                                     alt='Crop me'
-                                                    src={imgSrc}
+                                                    src={imgSrc2}
                                                     data-form={`scale(${scale}) rotate(${rotate}deg)`}
                                                     style={{ transform: `scale(${scale}) rotate(${rotate}deg)` }}
                                                     onLoad={onImageLoad}
@@ -489,14 +517,14 @@ export default function Kegiatan() {
                                             </ReactCrop>
                                         )}
                                         <div>
-                                            {Boolean(completedCrop) && (
+                                            {Boolean(completedCrop2) && (
                                                 <canvas
-                                                    ref={previewCanvasRef}
+                                                    ref={previewCanvasRef2}
                                                     style={{
                                                         border: '1px solid black',
                                                         objectFit: 'contain',
-                                                        width: completedCrop.width,
-                                                        height: completedCrop.height,
+                                                        width: completedCrop2.width,
+                                                        height: completedCrop2.height,
                                                     }}
                                                 />
                                             )}
