@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
 import Swal from 'sweetalert2';
-import { BaseUrl } from "../components/baseUrl";
 
 export default function PengangkatanDppiKabupaten() {
     const [currentStep, setCurrentStep] = useState(1);

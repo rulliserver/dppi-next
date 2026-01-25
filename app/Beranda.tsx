@@ -245,7 +245,7 @@ export default function Beranda() {
                 <Peta DataPdpProv={dataPDPProv} DataPdpKab={dataPDPKab} kab={dataKab} prov={dataProv} />
                 <p className="mt-12 text-2xl text-center font-black">-PORTAL PENDAFTARAN PERTAMA KALI DPPI DAERAH-</p>
                 <h4 className="font-semibold text-blue-800 mt-4 mb-2">Template Dokumen Lampiran</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
                     <a
                         href={`${BaseUrl}` + `uploads/assets/lampiran_1.docx`}
                         target="_blank"
@@ -269,7 +269,7 @@ export default function Beranda() {
                         <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span className="text-blue-700 font-medium">Template Daftar Riwayat Hidup</span>
+                        <span className="text-blue-700 font-medium">Template DRH</span>
                     </a>
 
                     <a
@@ -283,6 +283,30 @@ export default function Beranda() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span className="text-blue-700 font-medium">Template Portofolio</span>
+                    </a>
+                    <a
+                        href={`${BaseUrl}` + `uploads/assets/sk_nomor_50_pertama_kali.pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center p-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                        download
+                    >
+                        <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-blue-700 font-medium">SK No. 50 - Tata Cara</span>
+                    </a>
+                    <a
+                        href={`${BaseUrl}` + `uploads/assets/persiapan_sebelum_pengangkatan_dppi_daerah.pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center p-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                        download
+                    >
+                        <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-blue-700 font-medium">Persiapkan Sebelum Pelaksanaan</span>
                     </a>
                 </div>
 

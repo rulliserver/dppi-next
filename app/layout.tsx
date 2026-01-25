@@ -29,16 +29,16 @@ export default function RootLayout({
                 <meta name="geo.placename" content="Indonesia" />
                 <meta name="web_author" content="Sekretariat DPPI Pusat" />
                 <meta name="author" content="Sekretariat DPPI Pusat" />
-                <meta name="keywords" content="DPPI, Duta Pancasila Purnapaskibraka Indonesia, PDP, Purnapaskibraka Duta Pancasila, BPIP, Pancasila, Purna Paskibraka Indonesia, PASKIBRAKA, Badan Pembinaan Ideologi Pancasila , Badan Pembinaan, Ideologi Pancasila" />
-                <meta name="description" content="Duta Pancasila Purnapaskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
+                <meta name="keywords" content="DPPI, Duta pancasila Paskibraka Indonesia, PDP, Purnapaskibraka Duta Pancasila, BPIP, Pancasila, Purna Paskibraka Indonesia, PASKIBRAKA, Badan Pembinaan Ideologi Pancasila , Badan Pembinaan, Ideologi Pancasila" />
+                <meta name="description" content="Duta pancasila Paskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
                 <meta property="og:locale" content="id_ID" />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="/" />
-                <meta property="og:site_name" content="DPPI BPIP RI - Duta Pancasila Purnapaskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
+                <meta property="og:site_name" content="DPPI BPIP RI - Duta pancasila Paskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
                 <meta property="og:type" content="website" />
-                <meta property="og:title" content="DPPI BPIP RI - Duta Pancasila Purnapaskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
-                <meta property="og:description" content="Duta Pancasila Purnapaskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
-                <meta property="og:keyword" content="DPPI, Duta Pancasila Purnapaskibraka Indonesia, BPIP, Pancasila, Purna Paskibraka Indonesia, PASKIBRAKA, Badan Pembinaan Ideologi Pancasila , Badan Pembinaan, Ideologi Pancasila" />
+                <meta property="og:title" content="DPPI BPIP RI - Duta pancasila Paskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
+                <meta property="og:description" content="Duta pancasila Paskibraka Indonesia Badan Pembinaan Ideologi Pancasila Republik Indonesia" />
+                <meta property="og:keyword" content="DPPI, Duta pancasila Paskibraka Indonesia, BPIP, Pancasila, Purna Paskibraka Indonesia, PASKIBRAKA, Badan Pembinaan Ideologi Pancasila , Badan Pembinaan, Ideologi Pancasila" />
                 <meta property="og:image" content="" />
                 <meta property="article:publisher" content="" />
                 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css' />
