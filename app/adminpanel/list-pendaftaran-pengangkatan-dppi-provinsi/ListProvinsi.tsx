@@ -32,6 +32,7 @@ interface PendaftaranDppi {
     path_daftar_riwayat_hidup: string | null;
     path_portofolio: string | null;
     path_kartu_keluarga: string | null;
+    rekomendasi: string | null;
 }
 
 interface DashboardStats {
@@ -338,6 +339,93 @@ export default function ListKabKota() {
         );
     };
 
+    //upload rekomendasi
+    const [rekomendasi, setRekomendasi]: any = useState();
+    const [modalRekomendasi, setModalRekomendasi] = useState(false);
+    const showModalRekomendasi = () => {
+        setModalRekomendasi(true);
+        setShowDetailModal(false);
+    }
+    const handleUploadRekomendasi = async (id: number, file: File) => {
+        const result = await Swal.fire({
+            title: 'Upload Rekomendasi',
+            text: 'Yakin ingin mengupload file rekomendasi?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Upload',
+            cancelButtonText: 'Batal'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                // Convert file to base64
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+
+                reader.onload = async () => {
+                    const base64String = (reader.result as string).split(',')[1];
+
+                    await axios.post(`${UrlApi}/pendaftaran-dppi-provinsi/${id}/upload-rekomendasi`, {
+                        field_name: 'rekomendasi',
+                        file_name: file.name,
+                        base64_content: base64String
+                    }, { withCredentials: true });
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Rekomendasi berhasil diupload',
+                    });
+
+                    fetchPendaftaran();
+                    fetchStats();
+                    window.location.reload();
+                };
+            } catch (error) {
+                console.error('Error uploading rekomendasi:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Gagal mengupload rekomendasi',
+                });
+            }
+        }
+    };
+
+    const handleDownloadRekomendasi = async (id: number, kabupatenName: string) => {
+        try {
+            const response = await axios.get(
+                `${UrlApi}/pendaftaran-dppi-provinsi/${id}/download-rekomendasi`,
+                {
+                    withCredentials: true,
+                    responseType: 'blob'
+                }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `rekomendasi_${kabupatenName.replace(/\s+/g, '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'File rekomendasi berhasil didownload',
+            });
+        } catch (error) {
+            console.error('Error downloading rekomendasi:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Gagal mendownload file rekomendasi',
+            });
+        }
+    };
+
+
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="mx-auto">
@@ -569,6 +657,28 @@ export default function ListKabKota() {
                                                                 <TrashIcon className="w-5 h-5" />
                                                             </button>
                                                         </div>
+                                                        {
+                                                            item.status === 'approved' && item.rekomendasi ? (
+                                                                <button
+                                                                    onClick={() => handleDownloadRekomendasi(item.id, item.nama_provinsi)}
+                                                                    className='mt-2 inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200'
+                                                                >
+                                                                    <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
+                                                                    Surat Rekomendasi
+                                                                </button>
+                                                            ) : item.status === 'approved' ? (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedPendaftaran(item);
+                                                                        setModalRekomendasi(true);
+                                                                    }}
+                                                                    className='mt-2 inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200'
+                                                                >
+                                                                    <ArrowUpTrayIcon className="w-4 h-4 mr-1" />
+                                                                    Upload Rekomendasi
+                                                                </button>
+                                                            ) : ''
+                                                        }
                                                     </td>
                                                 </tr>
                                             ))
@@ -739,6 +849,19 @@ export default function ListKabKota() {
                                             </div>
                                         ))}
                                     </div>
+                                    {selectedPendaftaran.status === 'approved' ?
+
+                                        <div className="mx-auto">
+                                            <button
+                                                className="inline-flex items-center px-3 py-1 mx-auto bg-green-100 text-green-700 rounded hover:bg-green-200"
+                                                onClick={showModalRekomendasi}>
+                                                <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                                                Upload Rekomendasi
+                                            </button>
+                                        </div>
+
+                                        : ''
+                                    }
                                 </div>
 
                                 {/* Timestamps */}
@@ -755,6 +878,7 @@ export default function ListKabKota() {
                             </div>
                         </div>
 
+
                         <div className="px-6 py-4 border-t bg-gray-50 flex justify-end space-x-3">
                             <button
                                 onClick={() => setShowDetailModal(false)}
@@ -763,25 +887,111 @@ export default function ListKabKota() {
                                 Tutup
                             </button>
                             <div className="flex space-x-2">
-                                <button
-                                    onClick={() => handleUpdateStatus(selectedPendaftaran.id, 'review')}
-                                    className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
-                                >
-                                    Set Review
-                                </button>
-                                <button
-                                    onClick={() => handleUpdateStatus(selectedPendaftaran.id, 'approved')}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                                >
-                                    Setujui
-                                </button>
+                                {selectedPendaftaran.status === 'review' || selectedPendaftaran.status === 'approved' ?
+                                    null :
+                                    <button
+                                        onClick={() => handleUpdateStatus(selectedPendaftaran.id, 'review')}
+                                        className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                                    >
+                                        Set Review
+                                    </button>
+                                }
+
+                                {selectedPendaftaran.status === "approved" ?
+                                    ''
+                                    :
+                                    <button
+                                        onClick={() => handleUpdateStatus(selectedPendaftaran.id, 'approved')}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                    >
+                                        Setujui
+                                    </button>
+                                }
+
                                 <button
                                     onClick={() => handleUpdateStatus(selectedPendaftaran.id, 'rejected')}
                                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                                 >
                                     Tolak
                                 </button>
+
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {modalRekomendasi && selectedPendaftaran && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                        <div className="px-6 py-4 border-b">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Upload Rekomendasi #{selectedPendaftaran.id}
+                                </h3>
+                                <button
+                                    onClick={() => setModalRekomendasi(false)}
+                                    className="text-gray-400 hover:text-gray-500"
+                                >
+                                    <span className="sr-only">Close</span>
+                                    <XCircleIcon className="w-6 h-6" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Upload File Rekomendasi (PDF)
+                                </label>
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setRekomendasi(e.target.files[0]);
+                                        }
+                                    }}
+                                    className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Hanya file PDF dengan ukuran maksimal 10MB
+                                </p>
+                            </div>
+
+                            {rekomendasi && (
+                                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                                    <p className="text-sm font-medium text-gray-900">
+                                        File terpilih: {rekomendasi.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        Ukuran: {(rekomendasi.size / 1024 / 1024).toFixed(2)} MB
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="px-6 py-4 border-t bg-gray-50 flex justify-end space-x-3">
+                            <button
+                                onClick={() => setModalRekomendasi(false)}
+                                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={() => handleUploadRekomendasi(selectedPendaftaran.id, rekomendasi)}
+                                disabled={!rekomendasi}
+                                className={`px-4 py-2 text-white rounded-lg ${rekomendasi
+                                    ? 'bg-green-600 hover:bg-green-700'
+                                    : 'bg-gray-400 cursor-not-allowed'
+                                    }`}
+                            >
+                                Upload
+                            </button>
                         </div>
                     </div>
                 </div>
