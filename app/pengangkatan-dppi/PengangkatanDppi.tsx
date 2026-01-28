@@ -508,9 +508,9 @@ export default function PengangkatanDppiKabupaten() {
                     html: `
         <div class="text-left">
             <p><strong>DPPI Pusat</strong></p>
-            <p>Berikut ini adalah Bukti Submit Dokumen Pengangkatan DPPI (Provinsi)</p>
+            <p>Berikut ini adalah Bukti Submit Dokumen Pengangkatan DPPI (Kabupaten)</p>
             <ul class="list-disc pl-5 mt-2 space-y-1">
-                <li>Provinsi: <strong>${selectedKabupaten}</strong></li>
+                <li>Kabupaten: <strong>${selectedKabupaten}</strong></li>
                 <li>Nama PIC: <strong>${picData.nama}</strong></li>
                 <li>ID Registrasi: <strong>${pendaftaranId}</strong></li>
                 <li>Tanggal Submit: <strong>${new Date().toLocaleDateString('id-ID')}</strong></li>

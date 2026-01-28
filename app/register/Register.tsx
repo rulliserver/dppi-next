@@ -141,7 +141,7 @@ function RegisterForm() {
             id_kabupaten: '', // Reset kabupaten saat provinsi berubah
         }));
     };
-    console.log(data);
+
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: currentYear - 1950 + 1 }, (_, index) => currentYear - index);
 
