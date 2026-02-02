@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
 import Swal from 'sweetalert2';
+import { BaseUrl } from "../components/baseUrl";
 
 export default function PengangkatanDppiKabupaten() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -498,8 +499,8 @@ export default function PengangkatanDppiKabupaten() {
                     });
 
                 // Tunggu semua upload selesai
-                const uploadResults: any = await uploadDocumentsSequentially(pendaftaranId);
-                const successfulUploads = uploadResults.filter((result: any) => result !== null);
+                const uploadResults = await Promise.all(uploadPromises);
+                const successfulUploads = uploadResults.filter(result => result !== null);
 
                 // Success notification
                 Swal.fire({
@@ -508,9 +509,9 @@ export default function PengangkatanDppiKabupaten() {
                     html: `
         <div class="text-left">
             <p><strong>DPPI Pusat</strong></p>
-            <p>Berikut ini adalah Bukti Submit Dokumen Pengangkatan DPPI (Kabupaten)</p>
+            <p>Berikut ini adalah Bukti Submit Dokumen Pengangkatan DPPI (Provinsi)</p>
             <ul class="list-disc pl-5 mt-2 space-y-1">
-                <li>Kabupaten: <strong>${selectedKabupaten}</strong></li>
+                <li>Provinsi: <strong>${selectedKabupaten}</strong></li>
                 <li>Nama PIC: <strong>${picData.nama}</strong></li>
                 <li>ID Registrasi: <strong>${pendaftaranId}</strong></li>
                 <li>Tanggal Submit: <strong>${new Date().toLocaleDateString('id-ID')}</strong></li>
@@ -548,8 +549,8 @@ export default function PengangkatanDppiKabupaten() {
             if (error.response) {
                 if (error.response.status === 400) {
                     errorMessage = "Data tidak valid. Harap periksa kembali.";
-                } else if (error.response.status === 413) {
-                    errorMessage = "File yang dikirimkan terlalu besar.";
+                } else if (error.response.status === 401) {
+                    errorMessage = "Anda harus login terlebih dahulu.";
                 } else if (error.response.status === 409) {
                     errorMessage = "Pendaftaran untuk kabupaten ini sudah ada.";
                 } else if (error.response.status === 500) {
@@ -579,112 +580,16 @@ export default function PengangkatanDppiKabupaten() {
     // Helper function untuk convert file ke base64
     const convertFileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
-            // Validasi ukuran file sebelum proses
-            if (file.size > 100 * 1024 * 1024) {
-                reject(new Error("File terlalu besar (max 100MB)"));
-                return;
-            }
-
             const reader = new FileReader();
-
-            // Tambahkan timeout
-            const timeout = setTimeout(() => {
-                reader.abort();
-                reject(new Error("Timeout membaca file"));
-            }, 30000); // 30 detik timeout
-
-            reader.onload = () => {
-                clearTimeout(timeout);
-                try {
-                    const base64String = (reader.result as string).split(',')[1];
-                    resolve(base64String);
-                } catch (error) {
-                    reject(error);
-                }
-            };
-
-            reader.onerror = (error) => {
-                clearTimeout(timeout);
-                reject(error);
-            };
-
-            reader.onabort = () => {
-                clearTimeout(timeout);
-                reject(new Error("Membaca file dibatalkan"));
-            };
-
             reader.readAsDataURL(file);
+            reader.onload = () => {
+                const base64String = (reader.result as string).split(',')[1];
+                resolve(base64String);
+            };
+            reader.onerror = error => reject(error);
         });
     };
 
-    const uploadDocumentsSequentially = async (pendaftaranId: number) => {
-        const documents = Object.entries(dokumen)
-            .filter(([_, file]) => file !== null)
-            .map(([key, file]) => ({ key, file: file! }));
-
-        const uploadResults = [];
-
-        for (const { key, file } of documents) {
-            try {
-                // Tambahkan delay antar upload
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                const base64Content = await convertFileToBase64(file);
-
-                const fieldMapping: Record<string, string> = {
-                    suratSekda: 'surat_sekda',
-                    daftarRiwayatHidup: 'daftar_riwayat_hidup',
-                    portofolio: 'portofolio',
-                    kartuKeluarga: 'kartu_keluarga',
-                    sertifikatPDP: 'sertifikat_pdp',
-                    sertifikatDiktatPIP: 'sertifikat_diktat_pip'
-                };
-
-                const backendFieldName = fieldMapping[key] || key;
-
-                const uploadData = {
-                    field_name: backendFieldName,
-                    file_name: file.name,
-                    base64_content: base64Content
-                };
-
-                const result = await axios.post(
-                    `${UrlApi}/pendaftaran-dppi/${pendaftaranId}/upload/${backendFieldName}`,
-                    uploadData,
-                    {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        timeout: 300000 // 5 menit timeout
-                    }
-                );
-
-                uploadResults.push(result);
-                console.log(`File ${key} uploaded successfully`);
-
-            } catch (uploadError: any) {
-                console.error(`Error uploading ${key}:`, uploadError);
-
-                // Tampilkan error spesifik
-                let errorMessage = `Gagal mengupload ${key}`;
-                if (uploadError.response?.data?.error) {
-                    errorMessage += `: ${uploadError.response.data.error}`;
-                }
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Upload Gagal',
-                    text: errorMessage,
-                    confirmButtonText: 'Baik',
-                    confirmButtonColor: '#d33',
-                });
-
-                return null; // Stop jika ada error
-            }
-        }
-
-        return uploadResults;
-    };
     // Reset form setelah submit berhasil
     const resetForm = () => {
         setSelectedKabupaten("");
@@ -765,11 +670,11 @@ export default function PengangkatanDppiKabupaten() {
             }
 
             // Check file size (10MB)
-            if (file.size > 100 * 1024 * 1024) {
+            if (file.size > 10 * 1024 * 1024) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Ukuran File Terlalu Besar',
-                    text: 'Ukuran file tidak boleh lebih dari 100MB!',
+                    text: 'Ukuran file tidak boleh lebih dari 10MB!',
                     confirmButtonText: 'Baik',
                     confirmButtonColor: '#3085d6',
                 });
@@ -1413,7 +1318,6 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('suratSekda')}
-                                        required
                                     />
                                     <label htmlFor="suratSekda" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
@@ -1455,7 +1359,6 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('daftarRiwayatHidup')}
-                                        required
                                     />
                                     <label htmlFor="daftarRiwayatHidup" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
@@ -1497,7 +1400,6 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('portofolio')}
-                                        required
                                     />
                                     <label htmlFor="portofolio" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
@@ -1539,7 +1441,6 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('kartuKeluarga')}
-                                        required
                                     />
                                     <label htmlFor="kartuKeluarga" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
