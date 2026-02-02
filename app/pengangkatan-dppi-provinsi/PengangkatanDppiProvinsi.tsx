@@ -1318,6 +1318,7 @@ export default function PengangkatanDppiProvinsi() {
                                         id="suratSekda"
                                         className="hidden"
                                         accept=".pdf"
+                                        required
                                         onChange={handleFileChange('suratSekda')}
                                     />
                                     <label htmlFor="suratSekda" className="cursor-pointer">
@@ -1358,6 +1359,7 @@ export default function PengangkatanDppiProvinsi() {
                                         type="file"
                                         id="daftarRiwayatHidup"
                                         className="hidden"
+                                        required
                                         accept=".pdf"
                                         onChange={handleFileChange('daftarRiwayatHidup')}
                                     />
@@ -1400,6 +1402,7 @@ export default function PengangkatanDppiProvinsi() {
                                         id="portofolio"
                                         className="hidden"
                                         accept=".pdf"
+                                        required
                                         onChange={handleFileChange('portofolio')}
                                     />
                                     <label htmlFor="portofolio" className="cursor-pointer">
@@ -1441,6 +1444,7 @@ export default function PengangkatanDppiProvinsi() {
                                         id="kartuKeluarga"
                                         className="hidden"
                                         accept=".pdf"
+                                        required
                                         onChange={handleFileChange('kartuKeluarga')}
                                     />
                                     <label htmlFor="kartuKeluarga" className="cursor-pointer">

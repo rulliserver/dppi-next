@@ -1317,6 +1317,7 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('suratSekda')}
+                                        required
                                     />
                                     <label htmlFor="suratSekda" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
@@ -1358,6 +1359,7 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('daftarRiwayatHidup')}
+                                        required
                                     />
                                     <label htmlFor="daftarRiwayatHidup" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
@@ -1399,6 +1401,7 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('portofolio')}
+                                        required
                                     />
                                     <label htmlFor="portofolio" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
@@ -1440,6 +1443,7 @@ export default function PengangkatanDppiKabupaten() {
                                         className="hidden"
                                         accept=".pdf"
                                         onChange={handleFileChange('kartuKeluarga')}
+                                        required
                                     />
                                     <label htmlFor="kartuKeluarga" className="cursor-pointer">
                                         <div className="text-gray-600 mb-2">
