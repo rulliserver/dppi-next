@@ -550,8 +550,8 @@ export default function PengangkatanDppiProvinsi() {
             if (error.response) {
                 if (error.response.status === 400) {
                     errorMessage = "Data tidak valid. Harap periksa kembali.";
-                } else if (error.response.status === 401) {
-                    errorMessage = "Anda harus login terlebih dahulu.";
+                } else if (error.response.status === 413) {
+                    errorMessage = "File yang dikirimkan terlalu besar.";
                 } else if (error.response.status === 409) {
                     errorMessage = "Pendaftaran untuk provinsi ini sudah ada.";
                 } else if (error.response.status === 500) {
@@ -671,11 +671,11 @@ export default function PengangkatanDppiProvinsi() {
             }
 
             // Check file size (10MB)
-            if (file.size > 10 * 1024 * 1024) {
+            if (file.size > 100 * 1024 * 1024) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Ukuran File Terlalu Besar',
-                    text: 'Ukuran file tidak boleh lebih dari 10MB!',
+                    text: 'Ukuran file tidak boleh lebih dari 100MB!',
                     confirmButtonText: 'Baik',
                     confirmButtonColor: '#3085d6',
                 });
