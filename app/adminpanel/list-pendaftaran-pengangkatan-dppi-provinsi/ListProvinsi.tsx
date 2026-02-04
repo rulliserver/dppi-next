@@ -18,6 +18,8 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface PendaftaranDppi {
+    path_sertifikat_pdp: any;
+    path_sertifikat_diktat_pip: any;
     id: number;
     id_kabupaten: number;
     nama_provinsi: string;
@@ -825,6 +827,8 @@ export default function ListKabKota() {
                                             { type: 'daftar_riwayat_hidup', label: 'Daftar Riwayat Hidup', path: selectedPendaftaran.path_daftar_riwayat_hidup },
                                             { type: 'portofolio', label: 'Portofolio', path: selectedPendaftaran.path_portofolio },
                                             { type: 'kartu_keluarga', label: 'Kartu Keluarga', path: selectedPendaftaran.path_kartu_keluarga },
+                                            { type: 'sertifikat_pdp', label: 'Sertifikat PDP', path: selectedPendaftaran.path_sertifikat_pdp },
+                                            { type: 'sertifikat_diktat_pip', label: 'Sertifikat Diktat PIP', path: selectedPendaftaran.path_sertifikat_diktat_pip },
                                         ].map((doc) => (
                                             <div key={doc.type} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                                 <div>

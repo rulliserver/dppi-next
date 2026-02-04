@@ -32,6 +32,8 @@ interface PendaftaranDppi {
     path_daftar_riwayat_hidup: string | null;
     path_portofolio: string | null;
     path_kartu_keluarga: string | null;
+    path_sertifikat_pdp: any;
+    path_sertifikat_diktat_pip: any;
     rekomendasi: string | null;
 }
 
@@ -826,6 +828,8 @@ export default function ListKabKota() {
                                             { type: 'daftar_riwayat_hidup', label: 'Daftar Riwayat Hidup', path: selectedPendaftaran.path_daftar_riwayat_hidup },
                                             { type: 'portofolio', label: 'Portofolio', path: selectedPendaftaran.path_portofolio },
                                             { type: 'kartu_keluarga', label: 'Kartu Keluarga', path: selectedPendaftaran.path_kartu_keluarga },
+                                            { type: 'sertifikat_pdp', label: 'Sertifikat PDP', path: selectedPendaftaran.path_sertifikat_pdp },
+                                            { type: 'sertifikat_diktat_pip', label: 'Sertifikat Diktat PIP', path: selectedPendaftaran.path_sertifikat_diktat_pip },
                                         ].map((doc) => (
                                             <div key={doc.type} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                                 <div>
