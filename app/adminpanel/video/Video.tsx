@@ -94,7 +94,7 @@ function Video() {
                     return (
                         <div key={key} className='bg-gray-700 border-2 rounded-md border-inherit'>
                             <div className='px-2 text-center py-2'>
-                                <video src={`${BaseUrl}${item.file_video}`} controls className='mx-auto w-full h-full' />
+                                <video src={`${BaseUrl}${item.file_video.replace('/', '')}`} controls className='mx-auto w-full h-full' />
                             </div>
                             <div className='col-span-2 px-2 py-2 text-white'>
                                 <div className='flex flex-row justify-between'>
