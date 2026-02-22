@@ -11,37 +11,19 @@ import { canvasPreview2 } from '@/app/components/CanvasPreview2';
 import { useDebounceEffect } from '@/app/components/useDebounceEffect';
 import { useDebounceEffect2 } from '@/app/components/useDebounceEffect2';
 import { UrlApi } from '@/app/components/apiUrl';
-import Pagination from '@/app/components/Pagination';
 import { BaseUrl } from '@/app/components/baseUrl';
 import Image from 'next/image';
-import * as XLSX from 'xlsx-js-style';
 
-type Pelaksana = {
+
+type MajelisPertimbangan = {
     id: number;
-    id_pdp?: String;
+    id_pdp?: number;
     nama_lengkap: string;
     photo?: string | null;
     jabatan?: string | null;
 };
 
-type PaginationLink = { url: string | null; label: string; active: boolean };
 
-type ListResp = {
-    links: PaginationLink[];
-    data: Pelaksana[];
-    current_page: number;
-    total_pages: number;
-    total_items: number;
-    per_page: number;
-    from: number;
-    to: number;
-    query: string;
-};
-interface ExcelPdpData {
-    'ID PDP': number;
-    'Nama Lengkap': string;
-    'Jabatan': string;
-}
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
     return centerCrop(
         makeAspectCrop({ unit: '%', width: 90 }, aspect, mediaWidth, mediaHeight),
@@ -50,20 +32,14 @@ function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: numbe
     );
 }
 
-export default function PelaksanaPusat() {
+export default function MajelisPertimbangan() {
     // list state
-    const [items, setItems] = useState<Pelaksana[]>([]);
-    const [links, setLinks] = useState<PaginationLink[]>([]);
-    const [page, setPage] = useState<number>(1);
-    const [perPage, setPerPage] = useState<number>(10);
-    const [q, setQ] = useState<string>('');
+    const [items, setItems] = useState<MajelisPertimbangan[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    // jabatan
-    const [jabatan, setJabatan] = useState<{ nama_jabatan: string }[]>([]);
 
     // edit form
-    const [dataPelaksana, setDataPelaksana] = useState<{ id: number | ''; nama_lengkap: string; jabatan: string; id_pdp: any }>({
+    const [dataMajelisPertimbangan, setDataMajelisPertimbangan] = useState<{ id: number | ''; nama_lengkap: string; jabatan: string; id_pdp: any }>({
         id: '',
         nama_lengkap: '',
         jabatan: '',
@@ -149,17 +125,16 @@ export default function PelaksanaPusat() {
         100,
         [completedCropEdit, scale2, rotate2]
     );
-
     // --------- fetchers ---------
-    const fetchList = async (p = page, pp = perPage, qq = q) => {
+    const fetchList = async () => {
         setLoading(true);
         try {
-            const res = await axios.get<ListResp>(
-                `${UrlApi}/adminpanel/pelaksana-pusat?page=${p}&per_page=${pp}&q=${encodeURIComponent(qq || '')}`,
+            const res = await axios.get(
+                `${UrlApi}/adminpanel/majelis-pertimbangan`,
                 { withCredentials: true, headers: { Accept: 'application/json' } }
             );
-            setItems(res.data.data || []);
-            setLinks(res.data.links || []);
+                  setItems(res.data || []);
+
         } catch (err: any) {
             console.error(err);
             Swal.fire({ icon: 'error', text: err.response?.data || 'Gagal memuat data' });
@@ -168,40 +143,20 @@ export default function PelaksanaPusat() {
         }
     };
 
-    const fetchJabatan = async () => {
-        try {
-            const res = await axios.get<{ nama_jabatan: string }[]>(`${UrlApi}/adminpanel/jabatan`, {
-                withCredentials: true,
-                headers: { Accept: 'application/json' },
-            });
-            setJabatan(res.data || []);
-        } catch (e) {
-            console.error(e);
-            setJabatan([]);
-        }
-    };
-
     useEffect(() => {
-        fetchList(1, perPage, q);
-        fetchJabatan();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchList();
     }, []);
-
-    useEffect(() => {
-        fetchList(page, perPage, q);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, perPage]);
 
     // --------- handlers ---------
     const openCreate = () => document.getElementById('createModal')?.classList.remove('hidden');
     const closeCreate = () => document.getElementById('createModal')?.classList.add('hidden');
-    const openEdit = (row: Pelaksana) => {
-        setDataPelaksana({ id: row.id, nama_lengkap: row.nama_lengkap ?? '', jabatan: row.jabatan ?? '', id_pdp: row.id_pdp ?? '' });
+    const openEdit = (row: MajelisPertimbangan) => {
+        setDataMajelisPertimbangan({ id: row.id, nama_lengkap: row.nama_lengkap ?? '', jabatan: row.jabatan ?? '', id_pdp: row.id_pdp ?? '' });
         document.getElementById('editModal')?.classList.remove('hidden');
     };
     const closeEdit = () => document.getElementById('editModal')?.classList.add('hidden');
 
-    const openDelete = (row: Pelaksana) => {
+    const openDelete = (row: MajelisPertimbangan) => {
         setDeleteId(row.id);
         setDeleteName(row.nama_lengkap);
         document.getElementById('deleteModal')?.classList.remove('hidden');
@@ -213,27 +168,22 @@ export default function PelaksanaPusat() {
     };
 
     const handleChangeCreate = (e: any) => setDataCreate((s) => ({ ...s, [e.target.name]: e.target.value }));
-    const handleOnChange = (e: any) => setDataPelaksana((s) => ({ ...s, [e.target.name]: e.target.value }));
+    const handleOnChange = (e: any) => setDataMajelisPertimbangan((s) => ({ ...s, [e.target.name]: e.target.value }));
 
-    // search
-    const onSearch = async (e: FormEvent) => {
-        e.preventDefault();
-        setPage(1);
-        await fetchList(1, perPage, q);
-    };
 
-    // delete → DELETE /pelaksana-pusat/{id}
+
+    // delete → DELETE /majelis-pertimbangan/{id}
     const deleteSubmit = async (e: any) => {
         e.preventDefault();
         if (!deleteId) return;
         try {
-            await axios.delete(`${UrlApi}/adminpanel/pelaksana-pusat/${deleteId}`, {
+            await axios.delete(`${UrlApi}/adminpanel/majelis-pertimbangan/${deleteId}`, {
                 withCredentials: true,
                 headers: { Accept: 'application/json' },
             });
-            Swal.fire({ icon: 'success', text: 'Pelaksana berhasil dihapus', confirmButtonColor: '#2563eb' });
+            Swal.fire({ icon: 'success', text: 'MajelisPertimbangan berhasil dihapus', confirmButtonColor: '#2563eb' });
             closeDelete();
-            fetchList(page, perPage, q);
+            fetchList();
         } catch (error: any) {
             console.error(error);
             Swal.fire({ icon: 'error', text: error.response?.data || 'Gagal menghapus data' });
@@ -244,348 +194,72 @@ export default function PelaksanaPusat() {
         e.preventDefault();
 
         const form = new FormData();
-        form.append('nama_lengkap', dataPelaksana.nama_lengkap);
-        form.append('jabatan', dataPelaksana.jabatan);
-        form.append('id_pdp', dataPelaksana.id_pdp);
+        form.append('nama_lengkap', dataMajelisPertimbangan.nama_lengkap);
+        form.append('jabatan', 'Majelis Pertimbangan DPPI');
+        form.append('id_pdp', dataMajelisPertimbangan.id_pdp);
         if (previewCanvasEditRef.current) {
             await new Promise<void>((resolve) => {
                 previewCanvasEditRef.current!.toBlob(async (blob) => {
-                    if (blob) form.append('photo', blob, `pelaksana_${Date.now()}.webp`);
+                    if (blob) form.append('photo', blob, `MajelisPertimbangan_${Date.now()}.webp`);
                     resolve();
                 }, 'image/webp', 0.92);
             });
         }
 
-        await axios.put(`${UrlApi}/adminpanel/pelaksana-pusat/${dataPelaksana.id}`, form, {
+        await axios.put(`${UrlApi}/adminpanel/majelis-pertimbangan/${dataMajelisPertimbangan.id}`, form, {
             withCredentials: true,
             headers: { Accept: 'application/json' },
         });
         Swal.fire({
             icon: 'success',
-            text: 'Pelaksana berhasil disimpan',
+            text: 'MajelisPertimbangan berhasil disimpan',
             showConfirmButton: true,
             confirmButtonText: 'OK',
             confirmButtonColor: '#2563eb',
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = '/adminpanel/pelaksana-pusat'
+                window.location.href = '/adminpanel/majelis-pertimbangan'
             }
         });
 
     };
 
 
-    // create → POST /pelaksana-pusat
+    // create → POST /majelis-pertimbangan
     const handleSubmitCreate = async (e: FormEvent) => {
         e.preventDefault();
 
         const form = new FormData();
         form.append('nama_lengkap', dataCreate.nama_lengkap);
-        form.append('jabatan', dataCreate.jabatan);
+        form.append('jabatan', 'Majelis Pertimbangan DPPI');
         form.append('id_pdp', dataCreate.id_pdp);
         if (previewCanvasRef.current) {
             await new Promise<void>((resolve) => {
                 previewCanvasRef.current!.toBlob(async (blob) => {
-                    if (blob) form.append('photo', blob, `pelaksana_${Date.now()}.webp`);
+                    if (blob) form.append('photo', blob, `MajelisPertimbangan_${Date.now()}.webp`);
                     resolve();
                 }, 'image/webp', 0.92);
             });
         }
 
-        await axios.post(`${UrlApi}/adminpanel/pelaksana-pusat`, form, {
+        await axios.post(`${UrlApi}/adminpanel/majelis-pertimbangan`, form, {
             withCredentials: true,
-            headers: { Accept: 'application/json' }, // JANGAN set Content-Type manual
+            headers: { Accept: 'application/json' }, 
         });
         Swal.fire({
             icon: 'success',
-            text: 'Pelaksana berhasil disimpan',
+            text: 'Majelis Pertimbangan DPPI berhasil disimpan',
             showConfirmButton: true,
             confirmButtonText: 'OK',
             confirmButtonColor: '#2563eb',
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = '/adminpanel/pelaksana-pusat'
+                window.location.href = '/adminpanel/majelis-pertimbangan'
             }
         });
 
 
     };
-
-    // pagination handler
-    const onPageChange = (_url: string, p: number) => setPage(p);
-
-    const downloadAllExcel = async () => {
-        try {
-            Swal.fire({
-                title: 'Mengumpulkan Data',
-                text: 'Sedang mengambil semua data...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            const params = new URLSearchParams();
-
-            let response;
-            response = await axios.get(`${UrlApi}/adminpanel/pelaksana-pusat?page=${1}&per_page=${10}&q=${encodeURIComponent('')}`, {
-                withCredentials: true
-            });
-
-
-            let allData: Pelaksana[] = [];
-            allData = response.data.data;
-
-            if (allData.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    text: 'Tidak ada data untuk diunduh',
-                    confirmButtonColor: '#2563eb'
-                });
-                return;
-            }
-
-            if (allData.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    text: 'Tidak ada data untuk diunduh',
-                    confirmButtonColor: '#2563eb'
-                });
-                return;
-            }
-
-            // Format data untuk Excel
-            const excelData: ExcelPdpData[] = allData.map((item, index) => ({
-                'No.': index + 1,
-                'ID PDP': item.id,
-                'Nama Lengkap': item.nama_lengkap,
-                'Jabatan': item.jabatan || '-'
-            }));
-
-            // Buat workbook dan worksheet
-            const wb = XLSX.utils.book_new();
-
-            // Buat data dengan judul
-            const worksheetData = [
-                // Baris 1: Judul Utama
-                ['PELAKSANA PUSAT'],
-
-                // Baris 2: Informasi Filter
-                [`Data diambil pada: ${new Date().toLocaleString('id-ID')}`],
-                [],
-                [],
-
-
-
-                // Baris 5: Header Tabel
-                Object.keys(excelData[0])
-            ];
-
-            // Tambahkan data
-            excelData.forEach(row => {
-                worksheetData.push(Object.values(row));
-            });
-
-            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-            // Hitung jumlah kolom
-            const totalColumns = Object.keys(excelData[0]).length;
-
-            // ===== STYLING =====
-            // Style untuk judul utama
-            const titleStyle = {
-                font: {
-                    name: 'Arial',
-                    sz: 16,
-                    bold: true,
-
-                },
-
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                },
-                border: {
-                    top: { style: "thin", color: { rgb: "000000" } },
-                    left: { style: "thin", color: { rgb: "000000" } },
-                    bottom: { style: "thin", color: { rgb: "000000" } },
-                    right: { style: "thin", color: { rgb: "000000" } }
-                }
-            };
-
-            // Style untuk informasi
-            const infoStyle = {
-                font: {
-                    name: 'Arial',
-                    sz: 10,
-                    italic: true,
-                    color: { rgb: "666666" }
-                },
-                alignment: {
-                    horizontal: "left",
-                    vertical: "center"
-                }
-            };
-
-            // Style untuk header tabel
-            const headerStyle = {
-                font: {
-                    name: 'Arial',
-                    sz: 11,
-                    bold: true,
-                    color: { rgb: "FFFFFF" }
-                },
-                fill: {
-                    fgColor: { rgb: "C80004" }
-                },
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center",
-                    wrapText: true
-                },
-                border: {
-                    top: { style: "thin", color: { rgb: "000000" } },
-                    left: { style: "thin", color: { rgb: "000000" } },
-                    bottom: { style: "thin", color: { rgb: "000000" } },
-                    right: { style: "thin", color: { rgb: "000000" } }
-                }
-            };
-
-            // Style untuk data
-            const dataStyle = {
-                font: {
-                    name: 'Arial',
-                    sz: 10
-                },
-                alignment: {
-                    vertical: "center",
-                    wrapText: true
-                },
-                border: {
-                    top: { style: "thin", color: { rgb: "DDDDDD" } },
-                    left: { style: "thin", color: { rgb: "DDDDDD" } },
-                    bottom: { style: "thin", color: { rgb: "DDDDDD" } },
-                    right: { style: "thin", color: { rgb: "DDDDDD" } }
-                }
-            };
-
-            // Style khusus untuk kolom nomor
-            const numberStyle = {
-                ...dataStyle,
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                }
-            };
-
-            // ===== TERAPKAN STYLING =====
-            // Judul utama (Baris 1, colspan seluruh kolom)
-            ws['!merges'] = ws['!merges'] || [];
-            ws['!merges'].push(
-                { s: { r: 0, c: 0 }, e: { r: 0, c: totalColumns - 1 } }
-            );
-
-            // Apply styles ke semua cell
-            const applyStyleToCell = (cell: XLSX.CellObject | undefined, style: any) => {
-                if (cell) {
-                    cell.s = style;
-                }
-            };
-
-            // Judul utama
-            const titleCell = 'A1';
-            if (!ws[titleCell]) {
-                ws[titleCell] = { v: worksheetData[0][0], t: 's' };
-            }
-            applyStyleToCell(ws[titleCell], titleStyle);
-
-            // Informasi tanggal
-            const infoCell1 = 'A2';
-            if (!ws[infoCell1]) {
-                ws[infoCell1] = { v: worksheetData[1][0], t: 's' };
-            }
-            applyStyleToCell(ws[infoCell1], infoStyle);
-
-            // Informasi filter
-            const infoCell2 = 'A3';
-            if (!ws[infoCell2]) {
-                ws[infoCell2] = { v: worksheetData[2][0], t: 's' };
-            }
-            applyStyleToCell(ws[infoCell2], infoStyle);
-
-            // Header tabel (Baris 5)
-            for (let col = 0; col < totalColumns; col++) {
-                const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col });
-                if (ws[cellAddress]) {
-                    applyStyleToCell(ws[cellAddress], headerStyle);
-                }
-            }
-
-            // Data rows (mulai dari baris 6)
-            const dataRange = XLSX.utils.decode_range(ws['!ref'] || 'A1:Z1');
-            for (let row = 5; row <= dataRange.e.r; row++) {
-                for (let col = 0; col < totalColumns; col++) {
-                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-                    if (!ws[cellAddress]) continue;
-
-                    // Apply base data style
-                    let style: any = { ...dataStyle };
-
-                    // Center align untuk kolom nomor (kolom 0)
-                    if (col === 0) {
-                        style = { ...style, ...numberStyle };
-                    }
-
-                    applyStyleToCell(ws[cellAddress], style);
-                }
-            }
-
-            // ===== PENGATURAN KOLOM =====
-            ws['!cols'] = [
-                { width: 6 },   // No. Urut
-                { width: 8 },   // ID PDP             
-                { width: 50 },  // Nama Lengkap      
-                { width: 75 },  // Jabatan  
-            ];
-
-            // Atur tinggi baris
-            ws['!rows'] = [
-                { hpt: 25 }, // Baris 1 - Judul (lebih tinggi)
-                { hpt: 20 }, // Baris 2 - Info
-                { hpt: 20 }, // Baris 3 - Filter
-                { hpt: 5 },  // Baris 4 - Spasi
-                { hpt: 30 }, // Baris 5 - Header
-                ...Array(allData.length).fill({ hpt: 18 }) // Data rows
-            ];
-
-            // Tambahkan worksheet ke workbook
-            XLSX.utils.book_append_sheet(wb, ws, 'PELAKSANA PUSAT');
-
-            // Generate nama file
-            let fileName = 'Pelaksana_Pusat';
-            fileName += `_${new Date().toISOString().split('T')[0]}.xlsx`;
-
-            // Download file
-            XLSX.writeFile(wb, fileName);
-
-            Swal.fire({
-                icon: 'success',
-                text: `File Excel berhasil diunduh: ${fileName}\nTotal data: ${allData.length} records`,
-                confirmButtonColor: '#2563eb',
-                timer: 5000
-            });
-
-        } catch (error: any) {
-            console.error('Error downloading Excel:', error);
-            Swal.fire({
-                icon: 'error',
-                text: 'Gagal mengunduh file Excel: ' + (error.response?.data?.message || error.message),
-                confirmButtonColor: '#2563eb'
-            });
-        }
-    };
-
-
 
     return (
         <>
@@ -593,83 +267,15 @@ export default function PelaksanaPusat() {
             <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6'>
                 <div className='flex items-center mb-4 lg:mb-0'>
                     <i className='text-accent fa fa-user-tie text-5xl pr-5'></i>
-                    <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>PELAKSANA PUSAT</p>
+                    <p className='text-accent mt-1 mx-2 font-bold lg:text-2xl dark:text-white'>Majelis Pertimbangan DPPI</p>
                 </div>
                 <button className='text-center bg-teal-700 hover:bg-teal-800 px-3 py-1 rounded-lg text-white' onClick={openCreate}>
-                    Tambah Data Pelaksana
+                    Tambah Data
                 </button>
 
             </div>
-            {/* Filter Wilayah dan Search */}
-            <div className='col-span-1  gap-2 mb-5'>
-                {/* Tombol Download Excel */}
-                <button
-                    onClick={downloadAllExcel} // Ganti dari downloadExcel
-                    className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
-                >
-                    <i className='fas fa-file-excel mr-2'></i> Download Semua Data
-                </button>
-            </div>
-            <div className='bg-white grid grid-cols-1 p-4 flex-row dark:bg-gray-800 pb-4 rounded-lg shadow-lg mx-1 mb-6'>
-                <div className='md:col-span-2'>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                        Pencarian
-                    </label>
-                    <form onSubmit={onSearch} className='flex gap-2'>
-                        <input
-                            type="text"
-                            value={q}
-                            onChange={(e) => setQ(e.target.value)}
-                            placeholder='Cari nama/jabatan...'
-                            className='flex-1 p-2 border border-gray-300 rounded-md focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white'
-                        />
-                        <button
-                            type='submit'
-                            className='px-4 py-2 bg-accent text-white rounded-md hover:bg-red-800'
-                        >
-                            <i className='fas fa-search'></i>
-                        </button>
-                    </form>
-                </div>
+        
 
-
-
-            </div>
-
-            {/* <div className='py-4'>
-                <div className='text-gray-9000 flex flex-row justify-between'>
-                    <div className='flex flex-row'>
-                        <i className='text-accent fa fa-user-tie text-xl pr-5'></i>
-                        <p className='text-2xl py-2 font-semibold text-accent'>PELAKSANA PUSAT</p>
-                    </div>
-                    <button className='text-center bg-green-700 hover:bg-green-800 px-2 rounded-lg text-white' onClick={openCreate}>
-                        Tambah Data Pelaksana
-                    </button>
-
-                </div>
-            </div>
-            <div className='w-full mt-4'>
-                <form onSubmit={onSearch} className='w-full flex gap-2'>
-                    <input
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        className='border px-2 py-2 rounded-md text-sm'
-                        placeholder='Cari nama/jabatan...'
-                    />
-                    <button className='text-center bg-gray-200 hover:bg-gray-300 px-3 rounded-lg' type='submit'>
-                        Cari
-                    </button>
-                </form>
-                <div className='w-full flex gap-2'>
-    
-                    <button
-                        onClick={downloadAllExcel} 
-                        className='px-4 py-2 text-sm font-semibold text-white rounded-md bg-green-600 hover:bg-green-700 flex items-center'
-                    >
-                        <i className='fas fa-file-excel mr-2'></i> Download Semua Data
-                    </button>
-                </div>
-            </div> */}
 
             {loading && <div className='px-0 mx-auto mt-6 lg:px-4 text-slate-900 dark:text-slate-50'>Loading...</div>}
 
@@ -698,7 +304,7 @@ export default function PelaksanaPusat() {
 
                                 {items.map((row, idx) => (
                                     <tr key={row.id} className='border-b'>
-                                        <td className='py-2 px-2 border'>{(page - 1) * perPage + idx + 1}</td>
+                                        <td className='py-2 px-2 border'>{idx + 1}</td>
                                         <td className='py-2 px-2 border'>
                                             <Image
                                                 src={row.photo ? `${BaseUrl + row.photo}` : '/assets/images/placeholder-user.png'}
@@ -732,10 +338,7 @@ export default function PelaksanaPusat() {
                             </tbody>
                         </table>
 
-                        {/* Pagination */}
-                        <div className='px-0 py-6'>
-                            {links && links.length > 0 && <Pagination links={links} onPageChange={onPageChange} />}
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -746,7 +349,7 @@ export default function PelaksanaPusat() {
                     <div className='relative bg-gray-200 rounded-lg shadow-lg dark:bg-default'>
                         <div className='flex items-start justify-between p-4 border-b-2 border-white rounded-t dark:border-gray-600'>
                             <div className='flex font-semibold text-gray-900 dark:text-white '>
-                                <span className='mr-1 text-accent'>Tambah Pelaksana Pusat</span>
+                                <span className='mr-1 text-accent'>Tambah MajelisPertimbangan Pusat</span>
                             </div>
                             <button type='button' onClick={closeCreate} className='text-accent hover:scale-125 rounded-lg p-1.5 text-lg'>
                                 <i className='fas fa-times-circle'></i>
@@ -812,24 +415,7 @@ export default function PelaksanaPusat() {
                                     />
                                 </div>
 
-                                <div className='grid gap-2 mt-4'>
-                                    <InputLabel htmlFor='nama_jabatan'>Jabatan:</InputLabel>
-                                    <select
-                                        name='jabatan'
-                                        id='jabatan'
-                                        className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
-                                        tabIndex={3}
-                                        onChange={handleChangeCreate}
-                                        value={dataCreate.jabatan}
-                                    >
-                                        <option value=''>Pilih Salah Satu</option>
-                                        {jabatan.map((item) => (
-                                            <option value={item.nama_jabatan} key={item.nama_jabatan}>
-                                                {item.nama_jabatan}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+
                             </div>
                             <div className='border-t-2 mt-4'></div>
                             <div className='flex justify-between mt-4 px-8 pb-8'>
@@ -851,7 +437,7 @@ export default function PelaksanaPusat() {
                     <div className='relative mx-auto bg-gray-200 rounded-lg shadow-lg dark:bg-default'>
                         <div className='flex items-start justify-between p-4 border-b-2 border-white rounded-t dark:border-gray-600'>
                             <div className='flex font-semibold text-gray-900 dark:text-white '>
-                                <span className='mr-1 text-accent'>Edit Pelaksana Pusat</span>
+                                <span className='mr-1 text-accent'>Edit MajelisPertimbangan Pusat</span>
                             </div>
                             <button type='button' onClick={closeEdit} className='text-accent hover:scale-125 rounded-lg p-1.5 text-lg'>
                                 <i className='fas fa-times-circle'></i>
@@ -892,7 +478,7 @@ export default function PelaksanaPusat() {
                                         type='text'
                                         name='nama_lengkap'
                                         required
-                                        defaultValue={dataPelaksana.nama_lengkap}
+                                        defaultValue={dataMajelisPertimbangan.nama_lengkap}
                                         tabIndex={1}
                                         autoComplete='nama_lengkap'
                                         pattern="[^'$<>\x22]+"
@@ -913,26 +499,8 @@ export default function PelaksanaPusat() {
                                         title="Hanya angka"
                                         autoComplete='id_pdp'
                                         onChange={handleOnChange}
-                                        value={dataPelaksana.id_pdp}
+                                        value={dataMajelisPertimbangan.id_pdp}
                                     />
-                                </div>
-                                <div className='grid gap-2 mt-4'>
-                                    <InputLabel htmlFor='nama_jabatan'>Jabatan:</InputLabel>
-                                    <select
-                                        name='jabatan'
-                                        id='jabatan'
-                                        className='border-gray-300 bg-white focus:border-accent focus:ring-accent dark:bg-black rounded-md shadow-sm dark:text-gray-200 max-w-135'
-                                        tabIndex={3}
-                                        value={dataPelaksana.jabatan}
-                                        onChange={handleOnChange}
-                                    >
-                                        <option value=''>Pilih Salah Satu</option>
-                                        {jabatan.map((item) => (
-                                            <option value={item.nama_jabatan} key={item.nama_jabatan}>
-                                                {item.nama_jabatan}
-                                            </option>
-                                        ))}
-                                    </select>
                                 </div>
                             </div>
                             <div className='border-t-2 mt-4'></div>

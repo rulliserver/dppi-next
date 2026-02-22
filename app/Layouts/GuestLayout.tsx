@@ -210,6 +210,11 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                                     <p className='text-gray-400'>&nbsp; Pelaksana</p>
                                                 </div>
                                                 <ul className='ml-5'>
+                                                    <Link href='/majelis-pertimbangan'>
+                                                        <li className={pathname === '/majelis-pertimbangan' ? 'py-1 text-yellow-500' : 'py-1 text-white'}>
+                                                            <span className='link link-underline link-underline-primary'> &#x2022; Majelis Pertimbangan</span>
+                                                        </li>
+                                                    </Link>
                                                     <Link href='/pelaksana-pusat'>
                                                         <li className={pathname === '/pelaksana-pusat' ? 'py-1 text-yellow-500' : 'py-1 text-white'}>
                                                             <span className='link link-underline link-underline-primary'> &#x2022; Pelaksana Pusat</span>
@@ -315,6 +320,11 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                         </span>
                                     </button>
                                     <ul className='bg-white shadow-lg px-4 dropdown-menu-header shadow-gray-500 border-t-6 border-secondary'>
+                                        <Link href='/majelis-pertimbangan'>
+                                            <li className='py-1 text-primary'>
+                                                <span className='link link-underline link-underline-primary'>Majelis Pertimbangan</span>
+                                            </li>
+                                        </Link>
                                         <Link href='/pelaksana-pusat'>
                                             <li className='py-1 text-primary'>
                                                 <span className='link link-underline link-underline-primary'>Pelaksana Pusat</span>

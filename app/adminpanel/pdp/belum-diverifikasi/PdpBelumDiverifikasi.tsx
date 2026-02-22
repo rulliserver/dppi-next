@@ -486,15 +486,7 @@ function PdpBelumDiverifikasi() {
                 return;
             }
 
-            if (allData.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    text: 'Tidak ada data untuk diunduh',
-                    confirmButtonColor: '#2563eb'
-                });
-                return;
-            }
-
+  
             // Format data untuk Excel
             const excelData: ExcelPdpData[] = allData.map((item, index) => ({
                 'No.': index + 1,
@@ -737,7 +729,7 @@ function PdpBelumDiverifikasi() {
             XLSX.utils.book_append_sheet(wb, ws, 'PDP BELUM DIVERIFIKASI');
 
             // Generate nama file
-            let fileName = 'PDP_Verified_Semua_Data';
+            let fileName = 'PDP_Belum_Diverifikasi_Semua_Data';
             if (selectedProvinsi) {
                 const provinsiName = provinsiList.find(p => p.id === selectedProvinsi)?.nama_provinsi || '';
                 fileName += `_${provinsiName.replace(/\s+/g, '_')}`;

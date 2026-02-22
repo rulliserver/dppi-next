@@ -422,6 +422,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                     Data Pendaftaran DPPI Tingkat Provinsi
                                                 </a>
                                             </li>
+                                            <li>
+                                                <a
+                                                    href='/adminpanel/upload-surat-rekomendasi'
+                                                    className={`block px-4 py-2 ${pathname === '/adminpanel/upload-surat-rekomendasi'
+                                                        ? 'bg-violet-500 text-white rounded-md'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    Surat Rekomendasi
+                                                </a>
+                                            </li>
 
                                         </div>
                                     ) : ""}
@@ -578,7 +589,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Pendaftaran" ? (
                                     <div
                                         className={
-                                            pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' || pathname === 'list-pendaftaran-pengangkatan-dppi-provinsi'
+                                            pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' || pathname === 'list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === 'upload-surat-rekomendasi'
                                                 ? 'grup4 grup4-active'
                                                 : 'grup4'
                                         }
@@ -586,7 +597,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         id='pendaftaran-menu'>
                                         <button
                                             className={
-                                                pathname === 'list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota'
+                                                pathname === 'list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' || pathname === '/adminpanel/upload-surat-rekomendasi'
                                                     ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
                                                     : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
                                             }>
@@ -607,7 +618,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         </button>
                                         <div
                                             className={
-                                                pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' ? '' : 'hidden'
+                                                pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' || pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-kab-kota' || pathname === '/adminpanel/upload-surat-rekomendasi' ? '' : 'hidden'
                                             }
                                             id='pendaftaran-list'>
                                             <div className='flex py-2 mx-2'>
@@ -632,6 +643,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                     />
                                                     <p className={pathname === '/adminpanel/list-pendaftaran-pengangkatan-dppi-provinsi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
                                                         Tingkat Provinsi
+                                                    </p>
+                                                </a>
+                                            </div>
+                                            <div className='flex py-2 mx-2'>
+                                                <a className='flex' href='/adminpanel/upload-surat-rekomendasi'>
+                                                    <i
+                                                        className={
+                                                            pathname === '/adminpanel/upload-surat-rekomendasi'
+                                                                ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                        }
+                                                    />
+                                                    <p className={pathname === '/adminpanel/upload-surat-rekomendasi' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>
+                                                        Surat Rekomendasi
                                                     </p>
                                                 </a>
                                             </div>
@@ -715,21 +740,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         </button>
                                         <div
                                             className={
-                                                pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/pelaksana-kabupaten' ? '' : 'hidden'
+                                                pathname === '/adminpanel/pelaksana-provinsi' || pathname === '/adminpanel/pelaksana-pusat' || pathname === '/adminpanel/majelis-pertimbangan' || pathname === '/adminpanel/pelaksana-kabupaten' ? '' : 'hidden'
                                             }
                                             id='pelaksana-list'>
                                             {user.role === "Administrator" || user.role === "Superadmin" ? (
-                                                <div className='flex py-2 mx-2'>
-                                                    <a className='flex' href='/adminpanel/pelaksana-pusat'>
-                                                        <i
-                                                            className={
-                                                                pathname === '/adminpanel/pelaksana-pusat'
-                                                                    ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
-                                                                    : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
-                                                            }></i>
-                                                        <p className={pathname === '/adminpanel/pelaksana-pusat' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Pelaksana Pusat</p>
-                                                    </a>
-                                                </div>
+                                                <>
+                                                    <div className='flex py-2 mx-2'>
+                                                        <a className='flex' href='/adminpanel/majelis-pertimbangan'>
+                                                            <i
+                                                                className={
+                                                                    pathname === '/adminpanel/majelis-pertimbangan'
+                                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                                }></i>
+                                                            <p className={pathname === '/adminpanel/majelis-pertimbangan' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Majelis Pertimbangan</p>
+                                                        </a>
+                                                    </div>
+                                                    <div className='flex py-2 mx-2'>
+                                                        <a className='flex' href='/adminpanel/pelaksana-pusat'>
+                                                            <i
+                                                                className={
+                                                                    pathname === '/adminpanel/pelaksana-pusat'
+                                                                        ? 'pl-8 mx-2 my-auto text-sm fas fa-circle text-purple-600 blur-[1.5px]'
+                                                                        : 'pl-8 mx-2 my-auto text-sm fas fa-circle text-accent'
+                                                                }></i>
+                                                            <p className={pathname === '/adminpanel/pelaksana-pusat' ? 'mx-1 menu-list font-semibold' : 'mx-1 menu-list'}>Pelaksana Pusat</p>
+                                                        </a>
+                                                    </div>
+                                                </>
                                             ) : ''}
                                             {user.role === "Administrator" || user.role === "Superadmin" || (user.role === "Admin Kesbangpol" && user.id_kabupaten == 0)
                                                 ? (

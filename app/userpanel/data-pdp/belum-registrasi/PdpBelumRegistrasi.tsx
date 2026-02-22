@@ -440,6 +440,8 @@ function PdpBelumRegistrasi() {
                 response = await axios.get(`${UrlApi}/kesbangpol/pdp-belum-registrasi-all?${params.toString()}`, {
                     withCredentials: true
                 });
+                console.log(response);
+
             }
 
             // Untuk pdp-belum-registrasi-all, response.data adalah array langsung, bukan object pagination
@@ -450,7 +452,7 @@ function PdpBelumRegistrasi() {
                 allData = response.data;
             } else {
                 // Endpoint biasa mengembalikan object pagination
-                allData = response.data.data;
+                allData = response.data;
             }
 
             if (allData.length === 0) {
@@ -708,7 +710,7 @@ function PdpBelumRegistrasi() {
                 { hpt: 30 }, // Baris 5 - Header
                 ...Array(allData.length).fill({ hpt: 30 }) // Data rows
             ];
-            
+
             // Tambahkan worksheet ke workbook
             XLSX.utils.book_append_sheet(wb, ws, 'PDP BELUM REGISTRASI');
 
@@ -746,7 +748,6 @@ function PdpBelumRegistrasi() {
             });
         }
     };
-
     // Fungsi untuk mendapatkan informasi filter
     const getFilterInfo = (): string => {
         const filters = [];
@@ -1004,7 +1005,7 @@ function PdpBelumRegistrasi() {
                                                     className='bg-blue-500 hover:bg-blue-600 px-2 py-1 rounded text-white text-center text-xs'
                                                 >
                                                     Lihat
-                                                </a>                                                                                     
+                                                </a>
 
                                             </div>
                                         </td>

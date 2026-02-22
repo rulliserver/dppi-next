@@ -534,6 +534,7 @@ export default function User() {
                                         <option value='Admin Kesbangpol'>Admin Kesbangpol</option>
                                         <option value='Pelaksana'>Pelaksana</option>
                                         <option value='Anggota'>Anggota</option>
+                                        <option value='Majelis Pertimbangan DPPI'>Majelis Pertimbangan DPPI</option>
                                     </select>
                                 </div>
                                 <div className='grid grid-cols-4 gap-2 mt-4'>
@@ -685,6 +686,7 @@ export default function User() {
                                         <option value='Admin Kesbangpol'>Admin Kesbangpol</option>
                                         <option value='Pelaksana'>Pelaksana</option>
                                         <option value='Anggota'>Anggota</option>
+                                        <option value='Majelis Pertimbangan DPPI'>Majelis Pertimbangan DPPI</option>
                                     </select>
                                 </div>
                                 <div className='grid grid-cols-4 gap-2 mt-4'>

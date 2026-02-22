@@ -130,7 +130,7 @@ export default function IdCard() {
 
                 <div className='2xl:flex 2xl:flex-row'>
                     <div className='relative p-0 overflow-hidden rounded-md mb-4 mr-4'>
-                        <div className='w-[348px] h-56 md:w-[522px] md:h-[336px] lg:w-[696px] lg:h-[448px] overflow-hidden'>
+                        <div className='w-87 h-56 md:w-130.5 md:h-84 lg:w-174 lg:h-112 overflow-hidden'>
                             <div style={{ backgroundImage: 'url("/assets/images/bg-card.jpg")', backgroundSize: 'cover', width: '100%', height: '100%' }}>
                                 <div className='bg-red w-full h-[28%] bg-red-800 p-2'>
                                     <div className='flex flex-row justify-between'>
@@ -154,7 +154,7 @@ export default function IdCard() {
                                 <div className='p-4 relative'>
                                     <div className='flex flex-row'>
                                         <div className=''>
-                                            <img src={`${BaseUrl}${pdp.photo}`} className='w-[87px] md:w-[130.5px] lg:w-[174px]' alt='Foto Diri' />
+                                            <img src={`${BaseUrl}${pdp.photo}`} className='w-21.75 md:w-[130.5px] lg:w-43.5' alt='Foto Diri' />
                                             <p className='text-[0.45rem] md:text-[0.55rem] lg:text-xs text-center'>
                                                 Tanggal Cetak <br />
                                                 {(() => {
@@ -222,7 +222,7 @@ export default function IdCard() {
                         </div>
                     </div>
                     <div className='relative p-0 overflow-hidden rounded-md mb-2'>
-                        <div className='w-[348px] h-56 md:w-[522px] md:h-[336px] lg:w-[696px] lg:h-[448px] overflow-hidden'>
+                        <div className='w-87 h-56 md:w-130.5 md:h-84 lg:w-174 lg:h-112 overflow-hidden'>
                             <div
                                 style={{
                                     backgroundImage: 'url("/assets/images/bg-card.jpg")',

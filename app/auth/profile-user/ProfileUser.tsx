@@ -95,10 +95,14 @@ export default function ProfileUser(props: any) {
         try {
             const formData = new FormData();
 
-            // Handle avatar upload hanya jika ada crop
             if (previewCanvasRef.current && completedCrop) {
                 const canvas: any = previewCanvasRef.current;
                 const croppedBlob: any = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
+                if (croppedBlob && croppedBlob.size > 3 * 1024 * 1024) { // 2MB
+                    Swal.fire('Error', 'File terlalu besar, maksimal 3MB', 'error');
+                    setProcessing(false);
+                    return;
+                }
                 if (croppedBlob) {
                     formData.append('avatar', croppedBlob, 'avatar.png');
                 }
@@ -108,39 +112,36 @@ export default function ProfileUser(props: any) {
             formData.append('email', data.email);
             formData.append('address', data.address || '');
             formData.append('phone', data.phone || '');
-
-            console.log('Sending update request...'); // Debug log
-
-            const response = await fetch(`${UrlApi}/userpanel/profile`, { // Pastikan path benar
+            const response = await fetch(`${UrlApi}/userpanel/profile`, {
                 method: 'PUT',
                 credentials: 'include',
                 body: formData
             });
 
-            const responseText = await response.text(); // Baca sebagai text dulu
-            console.log('Response:', responseText); // Debug log
-
+            // 1. Cek jika response tidak OK
             if (!response.ok) {
-                // Coba parse sebagai JSON, jika gagal gunakan text
-                let errorData;
-                try {
-                    errorData = JSON.parse(responseText);
-                } catch {
-                    errorData = { message: responseText || 'Gagal mengubah data user' };
+                let errorMessage = 'Gagal memperbarui profil';
+
+                if (response.status === 413) {
+                    // Ini akan menangkap error "Request Entity Too Large" dari Nginx
+                    errorMessage = 'Ukuran file terlalu besar! Maksimal 5MB.';
+                } else if (response.status === 502 || response.status === 504) {
+                    errorMessage = 'Server sedang sibuk atau down. Coba lagi nanti.';
+                } else {
+                    // Coba ambil pesan dari JSON jika ada, jika gagal (seperti HTML tadi), gunakan default
+                    try {
+                        const errorJson = await response.json();
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch {
+                        errorMessage = `Terjadi kesalahan (Error ${response.status})`;
+                    }
                 }
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+
+                // Langsung lempar error ke blok catch
+                throw new Error(errorMessage);
             }
 
-            // Parse response sebagai JSON
-            let result;
-            try {
-                result = JSON.parse(responseText);
-            } catch (parseError) {
-                console.error('JSON parse error:', parseError);
-                throw new Error('Invalid response from server');
-            }
-
-            // Refresh user data
+            // 2. Refresh user data
             const responseUser = await fetch(`${UrlApi}/user`, {
                 credentials: 'include'
             });
@@ -154,23 +155,23 @@ export default function ProfileUser(props: any) {
 
             Swal.fire({
                 icon: 'success',
+                title: 'Berhasil!',
                 text: 'Profile berhasil diupdate',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
                 confirmButtonColor: '#2563eb'
             }).then((result) => {
                 if (result.isConfirmed) {
                     setFormEdit(false);
                 }
             });
+
         } catch (error: any) {
             console.error('Update error:', error);
             Swal.fire({
                 icon: 'error',
-                text: error.message || 'Terjadi kesalahan saat mengirim data',
-                confirmButtonText: 'OK'
+                title: 'Gagal',
+                text: 'Terjadi kesalahan sistem',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#d33'
             });
         } finally {
             setProcessing(false);

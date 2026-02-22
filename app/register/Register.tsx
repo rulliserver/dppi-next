@@ -15,8 +15,6 @@ import InputLabel from '../components/InputLabel';
 import TextInput from '../components/TextInput';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
-
-
 interface Pdp {
     id: number;
     no_piagam: string;
@@ -68,11 +66,14 @@ function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {
 }
 
 const animatedComponents = makeAnimated();
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB dalam bytes
 
 function RegisterForm() {
     const { executeRecaptcha } = useGoogleReCaptcha();
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [photoError, setPhotoError] = useState<string>('');
+    const [piagamError, setPiagamError] = useState<string>('');
 
     const [data, setData] = useState<any>({
         nik: '',
@@ -176,11 +177,22 @@ function RegisterForm() {
     const aspect = 2 / 3;
 
     function onSelectFile(e: any) {
+        setPhotoError(''); // Reset error message
+
         if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+
+            // Validasi ukuran file
+            if (file.size > MAX_FILE_SIZE) {
+                setPhotoError('Ukuran file foto tidak boleh lebih dari 5MB');
+                e.target.value = ''; // Reset input file
+                return;
+            }
+
             setCrop(undefined);
             const reader: any = new FileReader();
             reader.addEventListener('load', () => setImgSrc(reader.result.toString() || ''));
-            reader.readAsDataURL(e.target.files[0]);
+            reader.readAsDataURL(file);
         }
     }
 
@@ -299,12 +311,55 @@ function RegisterForm() {
     };
 
     const handleFilePiagamChange = (e: any) => {
-        setSelectedFilePiagam(e);
+        setPiagamError(''); // Reset error message
+
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+
+            // Validasi ukuran file
+            if (file.size > MAX_FILE_SIZE) {
+                setPiagamError('Ukuran file piagam tidak boleh lebih dari 5MB');
+                e.target.value = ''; // Reset input file
+                return;
+            }
+
+            setSelectedFilePiagam(e);
+        }
+    };
+
+    // Validasi sebelum submit
+    const validateFiles = (): boolean => {
+        if (previewCanvasRef.current) {
+            // Validasi foto (jika sudah di-crop)
+            const canvas = previewCanvasRef.current;
+            canvas.toBlob((blob) => {
+                if (blob && blob.size > MAX_FILE_SIZE) {
+                    setPhotoError('Ukuran foto setelah crop terlalu besar (maksimal 5MB)');
+                    return false;
+                }
+            }, 'image/png', 0.8); // Kompresi 80% untuk mengurangi ukuran
+        }
+
+        if (selectedFilePiagam && selectedFilePiagam.target.files[0]) {
+            const file = selectedFilePiagam.target.files[0];
+            if (file.size > MAX_FILE_SIZE) {
+                setPiagamError('Ukuran file piagam tidak boleh lebih dari 5MB');
+                return false;
+            }
+        }
+
+        return true;
     };
 
     //submit 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+
+        // Validasi ukuran file sebelum submit
+        if (!validateFiles()) {
+            return;
+        }
+
         setIsSubmitting(true);
         setErrorMessage('');
 
@@ -365,7 +420,7 @@ function RegisterForm() {
             // Handle photo upload
             if (previewCanvasRef.current) {
                 const canvas = previewCanvasRef.current;
-                const croppedBlob: any = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
+                const croppedBlob: any = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.8)); // Kompresi 80%
                 formData.append('avatar', croppedBlob);
             }
 
@@ -578,11 +633,6 @@ function RegisterForm() {
         getDetailBakat()
     }, []);
 
-
-
-
-
-
     return (
         <div className='bg-gray-50 pb-28 dark:bg-gray-700'>
             <div className='max-w-7xl min-h-svh mx-auto'>
@@ -638,6 +688,10 @@ function RegisterForm() {
                                     accept='image/*'
                                     onChange={onSelectFile}
                                 />
+                                <p className="text-xs text-gray-600">Maksimal ukuran file: 5MB</p>
+                                {photoError && (
+                                    <p className="text-xs text-red-600">{photoError}</p>
+                                )}
                             </div>
 
                             <div className='grid grid-cols-2 gap-4 my-2'>
@@ -1154,6 +1208,10 @@ function RegisterForm() {
                                     onChange={handleFilePiagamChange}
                                     required
                                 />
+                                <p className="text-xs text-gray-600">Maksimal ukuran file: 5MB</p>
+                                {piagamError && (
+                                    <p className="text-xs text-red-600">{piagamError}</p>
+                                )}
                             </div>
 
                             <div className='border-t-2 md:border-t-2 mt-4'>

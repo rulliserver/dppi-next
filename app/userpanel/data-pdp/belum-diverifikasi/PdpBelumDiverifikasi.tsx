@@ -474,7 +474,7 @@ function PdpBelumDiverifikasi() {
                 allData = response.data;
             } else {
                 // Endpoint biasa mengembalikan object pagination
-                allData = response.data.data;
+                allData = response.data;
             }
 
             if (allData.length === 0) {
@@ -486,15 +486,7 @@ function PdpBelumDiverifikasi() {
                 return;
             }
 
-            if (allData.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    text: 'Tidak ada data untuk diunduh',
-                    confirmButtonColor: '#2563eb'
-                });
-                return;
-            }
-
+  
             // Format data untuk Excel
             const excelData: ExcelPdpData[] = allData.map((item, index) => ({
                 'No.': index + 1,
@@ -737,7 +729,7 @@ function PdpBelumDiverifikasi() {
             XLSX.utils.book_append_sheet(wb, ws, 'PDP BELUM DIVERIFIKASI');
 
             // Generate nama file
-            let fileName = 'PDP_Verified_Semua_Data';
+            let fileName = 'PDP_Belum_Diverifikasi_Semua_Data';
             if (selectedProvinsi) {
                 const provinsiName = provinsiList.find(p => p.id === selectedProvinsi)?.nama_provinsi || '';
                 fileName += `_${provinsiName.replace(/\s+/g, '_')}`;
@@ -770,6 +762,7 @@ function PdpBelumDiverifikasi() {
             });
         }
     };
+
 
     // Fungsi untuk mendapatkan informasi filter
     const getFilterInfo = (): string => {
@@ -1174,7 +1167,7 @@ function PdpBelumDiverifikasi() {
 
             {/* delete Modal */}
             <div id='deleteModal' className='justify-center fixed top-0 left-0 right-0 z-50 hidden p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full'>
-                <div className='fixed z-30 w-full justify-center max-w-[500px] mx-auto md:top-12 lg:top-40 top-14'>
+                <div className='fixed z-30 w-full justify-center max-w-lg mx-auto md:top-12 lg:top-40 top-14'>
                     <div className='w-full mx-auto bg-gray-100 border-2 border-red-200 rounded-md shadow-md dark:bg-default'>
                         <div className='flex flex-col px-4 py-2 rounded-t border-b dark:border-gray-600'>
                             <div className='flex font-semibold text-gray-900 dark:text-white'>

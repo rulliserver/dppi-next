@@ -31,6 +31,16 @@ export default function Beranda() {
         if (savedSessionId) {
             setSessionId(savedSessionId);
         }
+        // const migrateid = () => axios.post(`${UrlApi}/safe-migrate-ids`)
+        //     .then((response: any) => {
+
+        //         console.log(response);
+
+        //     })
+        //     .catch((error) => {
+        //         console.error('Error fetching data setting:', error);
+        //     });
+        // migrateid();
     }, []);
 
     const handleRatingSuccess = () => {

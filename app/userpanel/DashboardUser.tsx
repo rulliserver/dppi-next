@@ -68,7 +68,7 @@ export default function Userpanel() {
                                     </div>
                                 ) : (
                                     <p className='mx-4 my-4 font-semibold'>
-                                        {pdp.posisi} {pdp.tingkat_penugasan}
+                                        {pdp.posisi === 'Majelis Pertimbangan DPPI' ? 'Majelis Pertimbangan DPPI' : `${pdp.posisi} ${pdp.tingkat_penugasan}`}
                                     </p>
                                 )}
                             </div>

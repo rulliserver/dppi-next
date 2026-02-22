@@ -669,12 +669,12 @@ export default function PengangkatanDppiKabupaten() {
                 return;
             }
 
-            // Check file size (10MB)
-            if (file.size > 10 * 1024 * 1024) {
+            // Check file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Ukuran File Terlalu Besar',
-                    text: 'Ukuran file tidak boleh lebih dari 10MB!',
+                    text: 'Ukuran file tidak boleh lebih dari 5MB!',
                     confirmButtonText: 'Baik',
                     confirmButtonColor: '#3085d6',
                 });
@@ -1300,7 +1300,7 @@ export default function PengangkatanDppiKabupaten() {
                             </p>
                             <h4 className="font-semibold text-blue-800 mb-2">Ukuran File</h4>
                             <p className="text-sm text-blue-700">
-                                Ukuran file yang diunggah tidak boleh melebihi 10MB. Jika file Anda lebih besar dari batas ini, silakan lakukan kompresi atau pengurangan ukuran file agar sesuai dengan ketentuan.
+                                Ukuran file yang diunggah tidak boleh melebihi 5MB. Jika file Anda lebih besar dari batas ini, silakan lakukan kompresi atau pengurangan ukuran file agar sesuai dengan ketentuan.
                             </p>
                         </div>
 
@@ -1326,7 +1326,7 @@ export default function PengangkatanDppiKabupaten() {
                                             </svg>
                                         </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
-                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
+                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 5MB</p>
                                     </label>
                                 </div>
                                 {dokumen.suratSekda && (
@@ -1367,7 +1367,7 @@ export default function PengangkatanDppiKabupaten() {
                                             </svg>
                                         </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
-                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
+                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 5MB</p>
                                     </label>
                                 </div>
                                 {dokumen.daftarRiwayatHidup && (
@@ -1408,7 +1408,7 @@ export default function PengangkatanDppiKabupaten() {
                                             </svg>
                                         </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
-                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
+                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 5MB</p>
                                     </label>
                                 </div>
                                 {dokumen.portofolio && (
@@ -1449,7 +1449,7 @@ export default function PengangkatanDppiKabupaten() {
                                             </svg>
                                         </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
-                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
+                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 5MB</p>
                                     </label>
                                 </div>
                                 {dokumen.kartuKeluarga && (
@@ -1490,7 +1490,7 @@ export default function PengangkatanDppiKabupaten() {
                                             </svg>
                                         </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
-                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
+                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 5MB</p>
                                     </label>
                                 </div>
                                 {dokumen.sertifikatPDP && (
@@ -1531,7 +1531,7 @@ export default function PengangkatanDppiKabupaten() {
                                             </svg>
                                         </div>
                                         <p className="text-gray-700 font-medium">Click or drag a file to this area to upload</p>
-                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 10MB</p>
+                                        <p className="text-sm text-gray-500 mt-1">Hanya file PDF dengan ukuran maksimal 5MB</p>
                                     </label>
                                 </div>
                                 {dokumen.sertifikatDiktatPIP && (
