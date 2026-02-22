@@ -142,24 +142,6 @@ export default function RegulasiList() {
                         </div>
                     </form>
 
-                    {/* Per Page Selector */}
-                    {/* <div className="flex items-center gap-2">
-                        <label htmlFor="perPage" className="text-sm text-gray-600">
-                            Items per page:
-                        </label>
-                        <select
-                            id="perPage"
-                            value={perPage}
-                            onChange={handlePerPageChange}
-                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                            <option value={4}>4</option>
-                            <option value={8}>8</option>
-                            <option value={12}>12</option>
-                            <option value={16}>16</option>
-                            <option value={20}>20</option>
-                        </select>
-                    </div> */}
                 </div>
 
                 {loading && (
@@ -181,8 +163,8 @@ export default function RegulasiList() {
                         <div className='px-0 mx-auto mt-6 dark:text-white text-justify shadow-md'>
                             <div className='bg-accent text-center text-2xl text-white font-semibold rounded-t-lg'>Regulasi</div>
                             <div className='flex flex-col'>
-                                {data.data.map((item: RegulasiItem) => (
-                                    <div className='mx-4' key={item.id}>
+                                {data.data.map((item: RegulasiItem, idx: number) => (
+                                    <div className='mx-4' key={idx}>
                                         <div className='grid md:grid-cols-6 my-5'>
                                             <div className='bg-gray-100 md:col-span-4 flex flex-col md:flex-row rounded-lg border'>
                                                 <img
