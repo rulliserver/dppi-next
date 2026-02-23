@@ -72,7 +72,6 @@ export default function PelaksanaKabupaten() {
     const [filterKabupaten, setFilterKabupaten] = useState<string>(''); // State untuk filter kabupaten
     const [loading, setLoading] = useState<boolean>(false);
     const [jabatan, setJabatan] = useState<{ nama_jabatan: string }[]>([]);
-    console.log(items);
 
     // edit form
     const [dataPelaksana, setDataPelaksana]: any = useState({
