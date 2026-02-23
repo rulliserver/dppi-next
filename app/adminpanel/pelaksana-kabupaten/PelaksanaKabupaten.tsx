@@ -18,7 +18,7 @@ import { useUser } from '@/app/components/UserContext';
 import * as XLSX from 'xlsx-js-style';
 type Pelaksana = {
     id: number;
-    id_pdp?: number;
+    id_pdp?: string;
     id_provinsi?: number;
     id_kabupaten?: number;
     nama_lengkap: string;
@@ -43,7 +43,7 @@ type ListResp = {
 };
 
 interface ExcelPdpData {
-    'ID PDP': number;
+    'ID PDP': string;
     'Nama Lengkap': string;
     'Jabatan': string;
     'Provinsi': string;
@@ -500,7 +500,7 @@ export default function PelaksanaKabupaten() {
             // Format data untuk Excel
             const excelData: ExcelPdpData[] = allData.map((item, index) => ({
                 'No.': index + 1,
-                'ID PDP': item.id,
+                'ID PDP': item.id_pdp || '-',
                 'Nama Lengkap': item.nama_lengkap,
                 'Jabatan': item.jabatan || '-',
                 'Provinsi': item.nama_provinsi || '-',
@@ -977,8 +977,6 @@ export default function PelaksanaKabupaten() {
                                         name='id_pdp'
                                         required
                                         tabIndex={2}
-                                        pattern="^[0-9]+$"
-                                        title="Hanya angka"
                                         autoComplete='id_pdp'
                                         onChange={handleChangeCreate}
                                         value={dataCreate.id_pdp}
@@ -1118,8 +1116,6 @@ export default function PelaksanaKabupaten() {
                                         name='id_pdp'
                                         required
                                         tabIndex={2}
-                                        pattern="^[0-9]+$"
-                                        title="Hanya angka"
                                         autoComplete='id_pdp'
                                         onChange={handleOnChange}
                                         value={dataPelaksana.id_pdp}
