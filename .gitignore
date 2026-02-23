@@ -23,6 +23,7 @@
 #url 
 /app/components/apiUrl.tsx
 /app/components/baseUrl.tsx
+/next.config.ts
 # misc
 .DS_Store
 *.pem
