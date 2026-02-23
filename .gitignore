@@ -20,6 +20,9 @@
 # production
 /build
 
+#url 
+/app/components/apiUrl.tsx
+/app/components/baseUrl.tsx
 # misc
 .DS_Store
 *.pem
