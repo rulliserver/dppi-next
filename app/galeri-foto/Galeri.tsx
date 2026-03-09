@@ -51,9 +51,6 @@ export default function Galeri() {
                 setLoading(false);
             });
     };
-    useEffect(() => {
-        getData(currentPage);
-    }, [currentPage]);
 
     const handlePageChange = (url: string, page: number) => {
         setCurrentPage(page);

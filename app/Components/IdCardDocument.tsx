@@ -123,11 +123,10 @@ const styles = StyleSheet.create({
     avatar: {
         width: 50,
         height: 65,
-        objectFit: 'contain', 
+        objectFit: 'contain', // GANTI dari 'cover' ke 'contain' agar tidak kepotong
         marginBottom: 4,
-        backgroundColor: '#fff',
+        backgroundColor: '#fff', // background fallback
     },
-
     printDate: {
         fontSize: 6,
         textAlign: 'center',
@@ -210,7 +209,7 @@ const styles = StyleSheet.create({
     capImg: {
         width: 35,
         height: 35,
-        left: -7, // adjust posisi horizontal
+         left: -7, // adjust posisi horizontal
         position: 'relative', // penting untuk zIndex
     },
     signImg: {
