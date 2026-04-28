@@ -50,7 +50,6 @@ export default function BeritaCreate() {
     console.log(data);
 
     const [body, setBody] = useState('');
-    console.log(body);
     const getCategory = async () => {
         try {
             const res = await axios.get(`${UrlApi}/adminpanel/kategori-berita`, {

@@ -1195,9 +1195,10 @@ function RegisterForm() {
                                     onChange={handleOnChange}
                                     required
                                     tabIndex={15}
-                                    placeholder='Nomor Piagam / SK / STTP PDP'
+                                    placeholder='Gunakan NIK jika tidak mengetahui No. Piagam/SK/STTP '
                                 />
                             </div>
+
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='Piagam'>File Piagam/SK/STTP PDP:</InputLabel>
                                 <input

@@ -373,7 +373,7 @@ export default function Dashboard() {
             {user?.role === "Administrator" || user?.role === "Superadmin" || user?.role === "Admin Kesbangpol" ? (
                 <div className='py-4'>
                     <div className='text-gray-900 '>
-                        <div className='grid grid-cols-1 mt-2 md:grid-cols-4 md:gap-4 xl:gap-8'>
+                        <div className='grid grid-cols-1 mt-2 md:grid-cols-3 md:gap-4 xl:gap-8'>
                             <div className='justify-center mt-2 shadow-md '>
                                 <a href="/adminpanel/pdp/belum-registrasi" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                     <i className='text-5xl mx-auto  mt-4 fas fa-users'></i>
@@ -391,18 +391,11 @@ export default function Dashboard() {
                             <div className='justify-center mt-2 shadow-md '>
                                 <a href="/adminpanel/pdp/verified" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
                                     <i className='text-5xl mx-auto  mt-4 fas fa-user-check'></i>
-                                    <p className='text-center text-2xl'>{pdpDiverifikasi && pdpDiverifikasi.length} PDP</p>
+                                    <p className='text-center text-2xl'>{pdpDiverifikasi && pdpDiverifikasi.length + (pdpSimental && pdpSimental.length)} PDP</p>
                                     <p className='text-center text-2xl'>TERVERIFIKASI</p>
                                 </a>
                             </div>
-                            <div className='justify-center mt-2 shadow-md '>
-                                <a href="/adminpanel/pdp/simental" className='flex flex-col w-full rounded-md text-white px-auto bg-primary'>
-                                    {/* <i className=' fas fa-users'></i> */}
-                                    <i className='text-5xl mx-auto  mt-4 fab fa-creative-commons-by'></i>
-                                    <p className='text-center text-2xl'>{pdpSimental && pdpSimental.length} PDP</p>
-                                    <p className='text-center text-2xl'>AKTIF</p>
-                                </a>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>) :
