@@ -39,6 +39,10 @@ interface PdpData {
     kabupaten: string | null;
     provinsi: string | null;
     thn_tugas: number | null;
+    id_hobi: string | null;
+    detail_bakat: string | null;  
+    detail_minat: string | null;
+    keterangan: string | null;
     status: string | null;
     photo: string | null;
 }
@@ -75,6 +79,10 @@ interface ExcelPdpData {
     'Kabupaten Penugasan': string;
     'Provinsi Penugasan': string;
     'Tahun Tugas': number | string;
+    'Hobi': string | null;
+    'Bakat': string | null;   
+    'Minat': string | null;
+    'Keterangan': string | null;
     'Status': string;
 }
 function PdpVerified() {
@@ -517,6 +525,10 @@ function PdpVerified() {
                 'Kabupaten Penugasan': item.kabupaten || '-',
                 'Provinsi Penugasan': item.provinsi || '-',
                 'Tahun Tugas': item.thn_tugas || '-',
+                'Hobi': item.id_hobi || '-',
+                'Minat': item.detail_minat || '-',
+                'Bakat': item.detail_bakat || '-',
+                'Keterangan': item.keterangan || '-',
                 'Status': item.status || '-'
             }));
 
@@ -719,6 +731,10 @@ function PdpVerified() {
                 { width: 20 },  // Kabupaten Penugasan
                 { width: 20 },  // Provinsi Penugasan
                 { width: 10 },  // Tahun Tugas
+                { width: 20 },  // HObi
+                { width: 20 },  // Minat
+                { width: 20 },  // Bakat
+                { width: 20 },  // Keterangan
                 { width: 15 }   // Status
             ];
 
@@ -1020,21 +1036,21 @@ function PdpVerified() {
                                                 >
                                                     Lihat
                                                 </a>
-                                             
-                                                    <button
-                                                        className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
-                                                        onClick={() => clickModalStatus(item)}
-                                                    >
-                                                        Update Status
-                                                    </button>
-                                               
+
+                                                <button
+                                                    className='bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-white text-xs'
+                                                    onClick={() => clickModalStatus(item)}
+                                                >
+                                                    Update Status
+                                                </button>
+
                                                 <a
                                                     href={`/adminpanel/pdp/${item.id}/edit`}
                                                     className='bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded text-black text-center text-xs'
                                                 >
                                                     Edit
                                                 </a>
-                                                {user?.role === 'Superadmin'  && (
+                                                {user?.role === 'Superadmin' && (
                                                     <button
                                                         className='text-white rounded-md hover:bg-red-700 bg-accent px-4 py-1'
                                                         onClick={() => openDelete(item)}
