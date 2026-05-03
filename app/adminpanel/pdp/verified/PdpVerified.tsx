@@ -39,8 +39,10 @@ interface PdpData {
     kabupaten: string | null;
     provinsi: string | null;
     thn_tugas: number | null;
+    pendidikan_terakhir: string | null;
+    jurusan: string | null;
     id_hobi: string | null;
-    detail_bakat: string | null;  
+    detail_bakat: string | null;
     detail_minat: string | null;
     keterangan: string | null;
     status: string | null;
@@ -79,8 +81,10 @@ interface ExcelPdpData {
     'Kabupaten Penugasan': string;
     'Provinsi Penugasan': string;
     'Tahun Tugas': number | string;
+    'Pendidikan Terakhir': string | null;
+    'Jurusan': string | null;
     'Hobi': string | null;
-    'Bakat': string | null;   
+    'Bakat': string | null;
     'Minat': string | null;
     'Keterangan': string | null;
     'Status': string;
@@ -525,6 +529,8 @@ function PdpVerified() {
                 'Kabupaten Penugasan': item.kabupaten || '-',
                 'Provinsi Penugasan': item.provinsi || '-',
                 'Tahun Tugas': item.thn_tugas || '-',
+                'Pendidikan Terakhir': item.pendidikan_terakhir || '-',
+                'Jurusan': item.jurusan || '-',
                 'Hobi': item.id_hobi || '-',
                 'Minat': item.detail_minat || '-',
                 'Bakat': item.detail_bakat || '-',
@@ -731,7 +737,9 @@ function PdpVerified() {
                 { width: 20 },  // Kabupaten Penugasan
                 { width: 20 },  // Provinsi Penugasan
                 { width: 10 },  // Tahun Tugas
-                { width: 20 },  // HObi
+                { width: 20 },  // Pendidikan Terakhir
+                { width: 20 },  // Jurusan
+                { width: 20 },  // Hobi
                 { width: 20 },  // Minat
                 { width: 20 },  // Bakat
                 { width: 20 },  // Keterangan
