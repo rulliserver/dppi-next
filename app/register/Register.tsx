@@ -220,10 +220,10 @@ function RegisterForm() {
         });
     };
 
-    const handleOnSelect = (selectedOptions: any) => {
+    const handleOnSelect = (e: any) => {
         setData((prevData: any) => ({
             ...prevData,
-            id_hobi: selectedOptions.map((option: any) => option.value),
+            id_hobi: e.value
         }));
     };
 
@@ -946,7 +946,7 @@ function RegisterForm() {
                             </div>
 
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='tingkat_penugasan'>Tingkat Penugasan:</InputLabel>
+                                <InputLabel htmlFor='tingkat_penugasan'>Tingkat Penugasan (SEBAGAI PASKIBRA):</InputLabel>
                                 <select
                                     name='tingkat_penugasan'
                                     id='tingkat_penugasan'
@@ -1007,7 +1007,7 @@ function RegisterForm() {
                                 ''
                             )}
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='thn_tugas'>Tahun Penugasan:</InputLabel>
+                                <InputLabel htmlFor='thn_tugas'>Tahun Penugasan (SEBAGAI PASKIBRA):</InputLabel>
                                 <select
                                     name='thn_tugas'
                                     id='thn_tugas'
@@ -1230,7 +1230,6 @@ function RegisterForm() {
                                         closeMenuOnSelect
                                         tabIndex={17}
                                         components={animatedComponents}
-                                        isMulti
                                         options={hobi}
                                         onChange={handleOnSelect}
                                         className="border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400"

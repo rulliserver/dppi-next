@@ -101,9 +101,14 @@ export default function Peta({ DataPdpProv, DataPdpKab, kab, prov }: any) {
     const handleClose = (e: any) => {
         setShowPopup(false);
     };
+    // Fungsi ini SUDAH ADA di kode Anda, pastikan tidak terhapus
+    const handleJumlahClick = (id: number) => {
+        const url = `/pdp-detail?id=${id}`;
+        window.location.href = url;
+    };
 
     return (
-        <div className='rounded-lg overflow-auto shadow-sm my-4 px-4 py-4 px-auto dark:text-slate-50 bg-white dark:bg-slate-600 mx-auto max-w-[1275px]'>
+        <div className='rounded-lg overflow-auto shadow-sm my-4 px-4 py-4 px-auto dark:text-slate-50 bg-white dark:bg-slate-600 mx-auto max-w-318.75'>
             <div className='my-5 relative'>
                 <div>
                     <p className='text-3xl my-8 text-center font-bold text-red-700'>
@@ -164,17 +169,22 @@ export default function Peta({ DataPdpProv, DataPdpKab, kab, prov }: any) {
                                     <div className='pr-2 text-right'>{totalPDP.provinsi}</div>
                                     <div className='col-span-1'>PDP</div>
                                 </div>
-                                <div className='grid grid-cols-11 font-semibold text-sm'>
+                                <div className='grid grid-cols-11 font-semibold text-sm '>
                                     <div className='col-span-8'>JUMLAH PDP TK. KABUPATEN & KOTA</div>
                                     <div className='px-2'>:</div>
-                                    <div className='pr-2 text-right'>{totalPDP.kabupaten}</div>
+                                    <div className='pr-2 text-right font-bold text-red-700'>
+                                        {totalPDP.kabupaten}
+                                    </div>
                                     <div className='col-span-1'>PDP</div>
                                 </div>
                                 <div className='border-t-2 border-red-700'></div>
-                                <div className='grid grid-cols-11 font-semibold text-sm'>
+                                <div className='grid grid-cols-11 font-semibold text-sm cursor-pointer hover:bg-red-50 transition-colors rounded' onClick={() => {
+                                    const provName = provinsi && provinsi.length > 0 ? provinsi[0].nama_provinsi : 'Provinsi';
+                                    handleJumlahClick(provinsi[0]?.id_provinsi);
+                                }}>
                                     <div className='col-span-8'>TOTAL KESELURUHAN</div>
                                     <div className='px-2'>:</div>
-                                    <div className='pr-2 text-right'>{totalPDP.keseluruhan}</div>
+                                    <div className='pr-2 text-right underline decoration-dotted'>{totalPDP.keseluruhan}</div>
                                     <div className='col-span-1'>PDP</div>
                                 </div>
                             </ul>

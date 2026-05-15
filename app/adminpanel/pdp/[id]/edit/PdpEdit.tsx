@@ -196,10 +196,10 @@ export default function PdpEdit() {
         });
     };
 
-    const handleOnSelect = (selectedOptions: any) => {
+    const handleOnSelect = (e: any) => {
         setData((prevData: any) => ({
             ...prevData,
-            id_hobi: selectedOptions.map((option: any) => option.value),
+            id_hobi: e.value
         }));
     };
 
@@ -1050,7 +1050,6 @@ export default function PdpEdit() {
 
                                 <Select
                                     instanceId="select-hobi"
-                                    isMulti
                                     options={hobi}
                                     value={hobi.filter(option =>
                                         data.id_hobi && data.id_hobi.includes(option.value)
