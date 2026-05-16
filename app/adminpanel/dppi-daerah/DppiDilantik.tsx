@@ -31,13 +31,17 @@ const DppiDaerah: React.FC = () => {
     const [kabupatenList, setKabupatenList] = useState<Kabupaten[]>([]);
     const [filteredKabupaten, setFilteredKabupaten] = useState<Kabupaten[]>([]);
 
+    // Search state
+    const [searchQuery, setSearchQuery] = useState('');
+
     // Modal states
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedDppi, setSelectedDppi] = useState<Dppi | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage, setItemPerPage] = useState(10);
+
     // Form states
     const [formData, setFormData] = useState({
         tingkat: '',
@@ -58,6 +62,11 @@ const DppiDaerah: React.FC = () => {
             setFilteredKabupaten([]);
         }
     }, [formData.id_provinsi, kabupatenList]);
+
+    // Reset halaman ke 1 kalau user mengetik sesuatu di kolom pencarian
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
 
     const fetchDppi = async () => {
         try {
@@ -96,7 +105,6 @@ const DppiDaerah: React.FC = () => {
             console.error('Error fetching kabupaten:', error);
         }
     };
-    console.log(formData);
 
     const handleProvinsiChange = (provinsiId: number | null) => {
         setFormData({ ...formData, id_provinsi: provinsiId, id_kabupaten: null });
@@ -206,17 +214,23 @@ const DppiDaerah: React.FC = () => {
         return '-';
     };
 
+    // FILTER LOGIC (SEARCH)
+    const filteredDppi = dppi.filter((item) => {
+        const namaDaerah = getNamaDaerah(item).toLowerCase();
+        const tingkat = item.tingkat.toLowerCase();
+        const query = searchQuery.toLowerCase();
 
-    // PAGINATION LOGIC
-    const totalItems = dppi.length;
+        return namaDaerah.includes(query) || tingkat.includes(query);
+    });
+
+    // PAGINATION LOGIC (Menggunakan hasil filter)
+    const totalItems = filteredDppi.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-    // Get current items
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = dppi.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = filteredDppi.slice(indexOfFirstItem, indexOfLastItem);
 
-    // Change page
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
     const goToPrevPage = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -225,7 +239,6 @@ const DppiDaerah: React.FC = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
-    // Generate page numbers
     const getPageNumbers = () => {
         const pageNumbers = [];
         const maxPagesToShow = 5;
@@ -264,17 +277,47 @@ const DppiDaerah: React.FC = () => {
 
     return (
         <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">DPPI DAERAH YANG SUDAH TERBENTUK</h1>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold">DPPI DAERAH YANG SUDAH TERBENTUK</h1>
+                </div>
                 <button
                     onClick={() => {
                         resetForm();
                         setIsCreateModalOpen(true);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
                 >
                     + Tambah DPPI
                 </button>
+            </div>
+
+            <div className="md:flex md:flex-row justify-between">
+                {/* BAR PENCARIAN */}
+                <div className="mb-4 md:w-md">
+                    <input
+                        type="text"
+                        placeholder="Cari berdasarkan tingkat atau nama daerah..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full border rounded-lg px-4 py-2 dark:bg-gray-700 text-sm"
+                    />
+                </div>
+                <div className="flex items-center mb-4 gap-2">
+                    <span className="text-sm text-gray-500">Tampilkan</span>
+                    <select
+                        value={itemsPerPage}
+                        className="border rounded px-2 py-1 text-sm"
+                        onChange={(e) => setItemPerPage(Number(e.target.value))}
+                    >
+                        <option value={10}>10</option>
+                        <option value={15}>15</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm text-gray-500">data</span>
+                </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -291,14 +334,13 @@ const DppiDaerah: React.FC = () => {
                         {currentItems.length === 0 ? (
                             <tr>
                                 <td colSpan={4} className="text-center py-8 text-gray-500">
-                                    Belum ada data DPPI
+                                    {searchQuery ? 'Data yang dicari tidak ditemukan' : 'Belum ada data DPPI'}
                                 </td>
                             </tr>
                         ) : (
                             currentItems.map((item, index) => (
                                 <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                                     <td className="py-3 px-4 border text-center">{indexOfFirstItem + index + 1}</td>
-
                                     <td className="py-3 px-4 border">{item.tingkat}</td>
                                     <td className="py-3 px-4 border">{getNamaDaerah(item)}</td>
                                     <td className="py-3 px-4 border text-center">
@@ -323,6 +365,7 @@ const DppiDaerah: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
             {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
                     <div className="text-sm text-gray-500">
@@ -330,7 +373,6 @@ const DppiDaerah: React.FC = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        {/* Tombol Previous */}
                         <button
                             onClick={goToPrevPage}
                             disabled={currentPage === 1}
@@ -342,7 +384,6 @@ const DppiDaerah: React.FC = () => {
                             &laquo; Sebelumnya
                         </button>
 
-                        {/* Nomor Halaman */}
                         <div className="flex space-x-1">
                             {getPageNumbers().map((page, idx) => (
                                 <button
@@ -359,7 +400,6 @@ const DppiDaerah: React.FC = () => {
                             ))}
                         </div>
 
-                        {/* Tombol Next */}
                         <button
                             onClick={goToNextPage}
                             disabled={currentPage === totalPages}
@@ -372,28 +412,10 @@ const DppiDaerah: React.FC = () => {
                         </button>
                     </div>
 
-                    {/* Dropdown untuk memilih jumlah item per halaman (opsional) */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500">Tampilkan</span>
-                        <select
-                            value={itemsPerPage}
-                            onChange={(e) => {
-                                // Kalau mau bisa ganti jumlah per halaman
-                                // Tapi karena itemsPerPage pakai useState, perlu ditambahkan setter
-                                // Contoh sederhana, skip dulu
-                            }}
-                            className="border rounded px-2 py-1 text-sm"
-                            disabled
-                        >
-                            <option value={10}>10</option>
-                            <option value={25}>25</option>
-                            <option value={50}>50</option>
-                            <option value={100}>100</option>
-                        </select>
-                        <span className="text-sm text-gray-500">data</span>
-                    </div>
+
                 </div>
             )}
+
             {/* Modal Create */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
