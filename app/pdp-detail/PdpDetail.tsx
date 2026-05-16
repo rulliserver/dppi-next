@@ -186,6 +186,7 @@ export default function PDPDetailPage() {
                                             <th className="px-4 py-3 text-left">Nama Lengkap</th>
                                             <th className="px-4 py-3 text-left">Tingkat Penugasan</th>
                                             <th className="px-4 py-3 text-left">Kabupaten/Kota Penugasan</th>
+                                            <th className="px-4 py-3 text-left">Asal SMA/SMK/MA</th>
                                             <th className="px-4 py-3 text-left">Tahun Tugas</th>
                                         </tr>
                                     </thead>
@@ -198,6 +199,7 @@ export default function PDPDetailPage() {
                                                 <td className="px-4 py-3 font-medium">{item.nama_lengkap.toUpperCase()}</td>
                                                 <td className="px-4 py-3">{item.tingkat_penugasan ? item.tingkat_penugasan : item.nama_kabupaten ? "Paskibraka Tingkat Kabupaten/Kota" : "Paskibraka Tingkat Provinsi"}</td>
                                                 <td className="px-4 py-3">{item.nama_kabupaten}</td>
+                                                <td className="px-4 py-3">{item.asal_sma}</td>
                                                 <td className="px-4 py-3">{item.tahun_tugas}</td>
 
                                             </tr>

@@ -13,6 +13,8 @@ export default function PelaksanaPusat() {
     const [waket1, setWaket1]: any = useState();
     const [waket2, setWaket2]: any = useState();
     const [kadep, setKadep]: any = useState();
+    const [selectedMember, setSelectedMember] = useState<any>(null);
+    const [showPopup, setShowPopup] = useState(false);
 
     const getPelaksana = () => {
         axios
@@ -33,6 +35,17 @@ export default function PelaksanaPusat() {
                 console.error('Error fetching data setting:', error);
             });
     };
+
+    const handleImageClick = (member: any) => {
+        setSelectedMember(member);
+        setShowPopup(true);
+    };
+
+    const closePopup = () => {
+        setShowPopup(false);
+        setSelectedMember(null);
+    };
+
     useEffect(() => {
         getPelaksana();
     }, []);
@@ -51,33 +64,53 @@ export default function PelaksanaPusat() {
 
                 <div className='px-2 max-w-318.75 mb-8 mx-auto'>
                     <div className='flex justify-center '>
-                        <div className='bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                            <Image src={BaseUrl + ketum.photo} alt='Photo Ketum Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
-                            <p className='text-center pt-2 font-semibold px-2'>{ketum.nama_lengkap}</p>
-                            <p className='text-sm text-center px-2'>{ketum.jabatan}</p>
+                        <div
+                            onClick={() => handleImageClick(ketum)}
+                            className='cursor-pointer'
+                        >
+                            <div className='bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
+                                <Image src={BaseUrl + ketum.photo} alt='Photo Ketum Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                <p className='text-center pt-2 font-semibold px-2'>{ketum.nama_lengkap}</p>
+                                <p className='text-sm text-center px-2'>{ketum.jabatan}</p>
+                            </div>
                         </div>
                     </div>
                     <div className='flex flex-col md:flex-row justify-center gap-5'>
                         <div className='flex justify-center '>
-                            <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                                <Image src={BaseUrl + waket1.photo} alt='Photo waket1 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
-                                <p className='text-center pt-2 font-semibold px-2'>{waket1.nama_lengkap}</p>
-                                <p className='text-sm text-center px-2'>{waket1.jabatan}</p>
+                            <div
+                                onClick={() => handleImageClick(waket1)}
+                                className='cursor-pointer'
+                            >
+                                <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
+                                    <Image src={BaseUrl + waket1.photo} alt='Photo waket1 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                    <p className='text-center pt-2 font-semibold px-2'>{waket1.nama_lengkap}</p>
+                                    <p className='text-sm text-center px-2'>{waket1.jabatan}</p>
+                                </div>
                             </div>
                         </div>
                         <div className='flex justify-center '>
-                            <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                                <Image src={BaseUrl + waket2.photo} alt='Photo waket2 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
-                                <p className='text-center pt-2 font-semibold px-2'>{waket2.nama_lengkap}</p>
-                                <p className='text-sm text-center px-2'>{waket2.jabatan}</p>
+                            <div
+                                onClick={() => handleImageClick(waket2)}
+                                className='cursor-pointer'
+                            >
+                                <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
+                                    <Image src={BaseUrl + waket2.photo} alt='Photo waket2 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                    <p className='text-center pt-2 font-semibold px-2'>{waket2.nama_lengkap}</p>
+                                    <p className='text-sm text-center px-2'>{waket2.jabatan}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div className='flex justify-center '>
-                        <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                            <Image src={BaseUrl + sekjen.photo} alt='Photo sekjen Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
-                            <p className='text-center pt-2 font-semibold px-2'>{sekjen.nama_lengkap}</p>
-                            <p className='text-sm text-center px-2'>{sekjen.jabatan}</p>
+                        <div
+                            onClick={() => handleImageClick(sekjen)}
+                            className='cursor-pointer'
+                        >
+                            <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
+                                <Image src={BaseUrl + sekjen.photo} alt='Photo sekjen Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                <p className='text-center pt-2 font-semibold px-2'>{sekjen.nama_lengkap}</p>
+                                <p className='text-sm text-center px-2'>{sekjen.jabatan}</p>
+                            </div>
                         </div>
                     </div>
 
@@ -87,14 +120,88 @@ export default function PelaksanaPusat() {
                                 key={item.nama_lengkap}
                                 className={`mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 mx-auto ${kadep.length % 4 === 1 && index === kadep.length - 1 ? 'md:col-span-2 lg:col-span-4 mx-auto' : ''
                                     }`}>
-                                <Image src={BaseUrl + item.photo} alt='Photo item Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
-                                <p className='text-center pt-2 font-semibold px-2'>{item.nama_lengkap}</p>
-                                <p className='text-sm text-center px-2'>{item.jabatan}</p>
+                                <div
+                                    onClick={() => handleImageClick(item)}
+                                    className='cursor-pointer'
+                                >
+                                    <Image src={BaseUrl + item.photo} alt='Photo item Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                    <p className='text-center pt-2 font-semibold px-2'>{item.nama_lengkap}</p>
+                                    <p className='text-sm text-center px-2'>{item.jabatan}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
                 : ''}
+            {/* Popup Modal */}
+            {
+                showPopup && selectedMember && (
+                    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+                        <div className='bg-white rounded-lg max-w-md w-full mx-4 relative'>
+                            {/* Tombol Close */}
+                            <button
+                                onClick={closePopup}
+                                className='absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl'
+                            >
+                                &times;
+                            </button>
+
+                            {/* Konten Popup */}
+                            <div className='p-6'>
+                                <div className='flex justify-center mb-4'>
+                                    <Image
+                                        src={BaseUrl + selectedMember.photo}
+                                        alt={selectedMember.nama_lengkap}
+                                        className='rounded-lg object-cover'
+                                        width={200}
+                                        height={200}
+                                    />
+                                </div>
+
+                                <h3 className='text-xl font-bold text-center mb-4'>
+                                    {selectedMember.nama_lengkap}
+                                </h3>
+
+                                <div className='space-y-3'>
+                                    <div className='border-b pb-2'>
+                                        <p className='text-sm text-gray-500'>Provinsi</p>
+                                        <p className='font-medium'>{selectedMember.nama_provinsi}</p>
+                                    </div>
+
+                                    {selectedMember.asal_sma ?
+                                        <div className='border-b pb-2'>
+                                            <p className='text-sm text-gray-500'>Asal SMA/SMK/MA</p>
+                                            <p className='font-medium'>{selectedMember.asal_sma}</p>
+                                        </div>
+                                        : <></>}
+
+                                    <div className='border-b pb-2'>
+                                        <p className='text-sm text-gray-500'>Tingkat Penugasan</p>
+                                        <p className='font-medium'>{selectedMember.tingkat_penugasan === "Paskibraka Tingkat Kabupaten/Kota" ? "Paskibraka Tingkat " + selectedMember.nama_kabupaten : selectedMember.tingkat_penugasan === "Paskibraka Tingkat Provinsi" ? "Paskibraka Tingkat Provinsi " + selectedMember.nama_provinsi : selectedMember.tingkat_penugasan === "Paskibraka Tingkat Pusat" ? selectedMember.tingkat_penugasan : ""}</p>
+                                    </div>
+
+                                    <div className='border-b pb-2'>
+                                        <p className='text-sm text-gray-500'>Tahun Tugas</p>
+                                        <p className='font-medium'>{selectedMember.thn_tugas}</p>
+                                    </div>
+
+                                    <div>
+                                        <p className='text-sm text-gray-500'>Jabatan</p>
+                                        <p className='font-medium'>{selectedMember.jabatan}</p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={closePopup}
+                                    className='mt-6 w-full bg-primary text-white py-2 rounded-lg hover:bg-opacity-90 transition-colors'
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
         </div>
     );
 }

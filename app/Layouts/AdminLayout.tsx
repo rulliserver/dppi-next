@@ -28,6 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         menuName3: useRef<HTMLParagraphElement>(null),
         menuName4: useRef<HTMLParagraphElement>(null),
         menuName5: useRef<HTMLParagraphElement>(null),
+        menuName6: useRef<HTMLParagraphElement>(null),
     };
 
     const hamburgerRefs = {
@@ -436,6 +437,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                                         </div>
                                     ) : ""}
+                                    {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Pendaftaran" ? (
+                                        <div className="">
+                                            <li className='px-3 mt-4 text-gray-500 text-sm'>--- DPPI Daerah yang Sudah Terbentuk</li>
+                                            <li>
+                                                <a
+                                                    href='/adminpanel/dppi-daerah'
+                                                    className={`block px-4 py-2 ${pathname === '/adminpanel/dppi-daerah'
+                                                        ? 'bg-violet-500 text-white rounded-md'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    DPPI Daerah
+                                                </a>
+                                            </li>
+
+                                        </div>
+                                    ) : ""}
                                 </ul>
                             </nav>
                         </div>
@@ -664,6 +682,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     </div>
                                 ) :
                                     ''}
+
+                                {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Pendaftaran" ? (
+                                    <a
+                                        href='/adminpanel/dppi-daerah'
+                                        className={
+                                            pathname === '/adminpanel/dppi-daerah'
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i
+                                            className={
+                                                pathname === '/adminpanel/dppi-daerah' ? 'mx-2 text-xl py-auto fas fa-users text-purple-600' : 'mx-2 text-xl py-auto fas fa-users text-accent'
+                                            }></i>
+
+                                        <p className='mx-1 menu-list' id='menu-name6'>
+                                            DPPI Daerah
+                                        </p>
+                                    </a>) : ''}
+
+
                                 {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Jurnalis" ? (
                                     <div>
                                         <div>

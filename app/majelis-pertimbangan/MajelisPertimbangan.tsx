@@ -104,10 +104,15 @@ export default function MajelisPertimbangan() {
                                     <p className='text-sm text-gray-500'>Provinsi</p>
                                     <p className='font-medium'>{selectedMember.nama_provinsi}</p>
                                 </div>
-
+                                {selectedMember.asal_sma ?
+                                    <div className='border-b pb-2'>
+                                        <p className='text-sm text-gray-500'>Asal SMA/SMK/MA</p>
+                                        <p className='font-medium'>{selectedMember.asal_sma}</p>
+                                    </div>
+                                    : <></>}
                                 <div className='border-b pb-2'>
                                     <p className='text-sm text-gray-500'>Tingkat Penugasan</p>
-                                    <p className='font-medium'>{selectedMember.tingkat_penugasan}</p>
+                                    <p className='font-medium'>{selectedMember.tingkat_penugasan === "Paskibraka Tingkat Kabupaten/Kota" ? "Paskibraka Tingkat " + selectedMember.nama_kabupaten : selectedMember.tingkat_penugasan === "Paskibraka Tingkat Provinsi" ? "Paskibraka Tingkat Provinsi " + selectedMember.nama_provinsi : selectedMember.tingkat_penugasan === "Paskibraka Tingkat Pusat" ? selectedMember.tingkat_penugasan : ""}</p>
                                 </div>
 
                                 <div className='border-b pb-2'>
