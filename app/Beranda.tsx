@@ -25,11 +25,11 @@ export default function Beranda() {
     const [dataProv, setDataProv] = useState();
     const [dataKab, setDataKab] = useState();
     const [sessionId, setSessionId] = useState<string>('');
-    
+
     // State untuk data daerah yang sudah dilantik
-    const [dilantikProv, setDilantikProv] = useState();
-    const [dilantikKab, setDilantikKab] = useState();
-    
+    const [dilantikProv, setDilantikProv]: any = useState();
+    const [dilantikKab, setDilantikKab]: any = useState();
+
     // State untuk tab aktif (default: 'peta')
     const [activeTab, setActiveTab] = useState<'peta' | 'dilantik'>('peta');
 
@@ -56,7 +56,7 @@ export default function Beranda() {
                 console.error('Error fetching data setting:', error);
             });
     };
-    
+
     const getBerita = () => {
         axios
             .get(`${UrlApi}/berita`)
@@ -67,7 +67,7 @@ export default function Beranda() {
                 console.error('Error fetching data setting:', error);
             });
     };
-    
+
     const getKegiatan = () => {
         axios
             .get(`${UrlApi}/kegiatan`)
@@ -78,7 +78,7 @@ export default function Beranda() {
                 console.error('Error fetching data setting:', error);
             });
     };
-    
+
     const getGallery = () => {
         axios
             .get(`${UrlApi}/all-gallery`)
@@ -100,7 +100,7 @@ export default function Beranda() {
                 console.error('Error fetching data setting:', error);
             });
     };
-    
+
     const getDataPDPKabupaten = () => {
         axios
             .get(`${UrlApi}/pdp-kabupaten`)
@@ -111,7 +111,7 @@ export default function Beranda() {
                 console.error('Error fetching data setting:', error);
             });
     };
-    
+
     const getDataProvinsi = () => {
         axios
             .get(`${UrlApi}/provinsi`)
@@ -133,11 +133,11 @@ export default function Beranda() {
                 console.error('Error fetching data setting:', error);
             });
     };
-    
+
     // API call untuk data daerah yang sudah dilantik (Provinsi)
     const getDilantikProvinsi = () => {
         axios
-            .get(`${UrlApi}/dppi-provinsi-dilantik`) 
+            .get(`${UrlApi}/dppi-provinsi-dilantik`)
             .then((response: any) => {
                 setDilantikProv(response.data);
             })
@@ -147,11 +147,11 @@ export default function Beranda() {
                 setDilantikProv([]);
             });
     };
-    
+
     // API call untuk data daerah yang sudah dilantik (Kabupaten)
     const getDilantikKabupaten = () => {
         axios
-            .get(`${UrlApi}/dppi-kabupaten-dilantik`) 
+            .get(`${UrlApi}/dppi-kabupaten-dilantik`)
             .then((response: any) => {
                 setDilantikKab(response.data);
             })
@@ -203,7 +203,7 @@ export default function Beranda() {
                     <Image src='/assets/images/capture.png' width='1980' height='800' alt="" />
                 }
             </div>
-            
+
             <div className='max-w-7xl mx-auto'>
                 <div className='grid grid-cols-1 lg:grid-cols-2'>
                     <div>
@@ -282,21 +282,19 @@ export default function Beranda() {
                     <div className="flex border-b border-gray-200">
                         <button
                             onClick={() => setActiveTab('peta')}
-                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${
-                                activeTab === 'peta'
+                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'peta'
                                     ? 'text-red-700 border-b-2 border-red-700'
                                     : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
+                                }`}
                         >
                             🗺️ Peta Sebaran PDP
                         </button>
                         <button
                             onClick={() => setActiveTab('dilantik')}
-                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${
-                                activeTab === 'dilantik'
+                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'dilantik'
                                     ? 'text-red-700 border-b-2 border-red-700'
                                     : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
+                                }`}
                         >
                             Sebaran DPPI Provinsi
                         </button>
@@ -305,11 +303,11 @@ export default function Beranda() {
                     {/* Tab Content - Peta */}
                     {activeTab === 'peta' && (
                         <div className="pt-6">
-                            <Peta 
-                                DataPdpProv={dataPDPProv} 
-                                DataPdpKab={dataPDPKab} 
-                                kab={dataKab} 
-                                prov={dataProv} 
+                            <Peta
+                                DataPdpProv={dataPDPProv}
+                                DataPdpKab={dataPDPKab}
+                                kab={dataKab}
+                                prov={dataProv}
                             />
                         </div>
                     )}
@@ -321,7 +319,7 @@ export default function Beranda() {
                                 <h3 className="text-2xl font-bold text-center mb-8">
                                     Daftar Daerah yang <span className="text-green-600">Telah Dilantik</span>
                                 </h3>
-                                
+
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                     {/* Data Provinsi */}
                                     <div>
@@ -332,7 +330,7 @@ export default function Beranda() {
                                                 {dilantikProv && Array.isArray(dilantikProv) ? dilantikProv.length : 0} Provinsi
                                             </span>
                                         </div>
-                                        
+
                                         {dilantikProv && Array.isArray(dilantikProv) && dilantikProv.length > 0 ? (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-2">
                                                 {dilantikProv.map((prov: any, index: number) => (
@@ -361,7 +359,7 @@ export default function Beranda() {
                                                 {dilantikKab && Array.isArray(dilantikKab) ? dilantikKab.length : 0} Kab/Kota
                                             </span>
                                         </div>
-                                        
+
                                         {dilantikKab && Array.isArray(dilantikKab) && dilantikKab.length > 0 ? (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-2">
                                                 {dilantikKab.map((kab: any, index: number) => (
@@ -381,14 +379,14 @@ export default function Beranda() {
                                         )}
                                     </div>
                                 </div>
-                                
+
                                 {/* Catatan jika menggunakan data dummy */}
-                                {(!dilantikProv || (Array.isArray(dilantikProv) && dilantikProv.length === 0)) && 
-                                 (!dilantikKab || (Array.isArray(dilantikKab) && dilantikKab.length === 0)) && (
-                                    <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center text-yellow-800 text-sm">
-                                        <p>💡 Menampilkan data contoh. Silakan sesuaikan endpoint API untuk data daerah yang sudah dilantik.</p>
-                                    </div>
-                                )}
+                                {(!dilantikProv || (Array.isArray(dilantikProv) && dilantikProv.length === 0)) &&
+                                    (!dilantikKab || (Array.isArray(dilantikKab) && dilantikKab.length === 0)) && (
+                                        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center text-yellow-800 text-sm">
+                                            <p>💡 Menampilkan data contoh. Silakan sesuaikan endpoint API untuk data daerah yang sudah dilantik.</p>
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     )}
@@ -479,7 +477,7 @@ export default function Beranda() {
                         <div className="text-white bg-accent rounded-b-xl p-2 mt-3">ISI FORM</div>
                     </button>
                 </div>
-                
+
                 <div className='max-w-7xl  text-white justify-center mx-auto'>
                     <div className=' mt-6'>
                         <p className='text-3xl text-center font-bold text-red-700'>
@@ -529,7 +527,7 @@ export default function Beranda() {
                         </div>
                     </div>
                 </div>
-                
+
                 <div className='col-span-2 mt-6'>
                     <p className='text-3xl text-center font-bold text-red-700'>
                         Kegiatan <span className='text-black dark:text-white'> Terbaru</span>
@@ -557,7 +555,7 @@ export default function Beranda() {
                         })}
                     </div>
                 </div>
-                
+
                 <div className="bg-gray-50 py-8 px-4">
                     <div className="max-w-6xl mx-auto">
                         {/* Header */}
