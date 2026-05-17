@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { UrlApi } from '../components/apiUrl';
 import { useSearchParams } from "next/navigation";
-
+import { Suspense } from "react";
 export default function PDPDetailPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
@@ -58,6 +58,34 @@ export default function PDPDetailPage() {
         }
     }, [fetchData, id]);
 
+    // Generate pagination dengan ellipsis
+    const generatePagination = useCallback(() => {
+        const delta = 2; // Jumlah halaman di kiri dan kanan halaman aktif
+        const range = [];
+        const rangeWithDots = [];
+        let l;
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+                range.push(i);
+            }
+        }
+
+        for (let i of range) {
+            if (l) {
+                if (i - l === 2) {
+                    rangeWithDots.push(l + 1);
+                } else if (i - l !== 1) {
+                    rangeWithDots.push('...');
+                }
+            }
+            rangeWithDots.push(i);
+            l = i;
+        }
+
+        return rangeWithDots;
+    }, [currentPage, totalPages]);
+
     // Handle change items per page
     const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setItemsPerPage(Number(e.target.value));
@@ -88,24 +116,28 @@ export default function PDPDetailPage() {
                     </p>
                 </div>
                 <div className="bg-white p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    {/* Filter & Search Bar */}
-                    <div className="relative w-full sm:w-80">
-                        <input
-                            type="text"
-                            placeholder="Cari PDP..."
-                            value={searchKeyword}
-                            onChange={handleSearchChange}
-                            className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        />
-                        {searchKeyword && (
-                            <button
-                                onClick={clearSearch}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                ✕
-                            </button>
-                        )}
-                    </div>
+                    <Suspense>
+                        {/* Filter & Search Bar */}
+                        {/* Search Input */}
+                        <div className="relative w-full sm:w-80">
+                            <input
+                                type="text"
+                                placeholder="Cari PDP..."
+                                value={searchKeyword}
+                                onChange={handleSearchChange}
+                                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            />
+                            {searchKeyword && (
+                                <button
+                                    onClick={clearSearch}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    ✕
+                                </button>
+                            )}
+
+                        </div>
+                    </Suspense>
                     {/* Items per page selector */}
                     <div className="flex items-center gap-2">
                         <label className="text-sm text-gray-600">Tampilkan:</label>
@@ -145,31 +177,107 @@ export default function PDPDetailPage() {
                             )}
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full">
-                                <thead className="bg-red-800 text-white sticky top-0">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left">No</th>
-                                        <th className="px-4 py-3 text-left">Nama Lengkap</th>
-                                        <th className="px-4 py-3 text-left">Tingkat Penugasan</th>
-                                        <th className="px-4 py-3 text-left">Kabupaten/Kota Penugasan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.map((item: any, index) => (
-                                        <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                                            <td className="px-4 py-3">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                                            <td className="px-4 py-3 font-medium text-gray-900">{item.nama}</td>
-                                            <td className="px-4 py-3">{item.tingkat}</td>
-                                            <td className="px-4 py-3">{item.kabupaten_kota}</td>
+                        <>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full">
+                                    <thead className="bg-red-800 text-white sticky top-0">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left">No</th>
+                                            <th className="px-4 py-3 text-left">Nama Lengkap</th>
+                                            <th className="px-4 py-3 text-left">Tingkat Penugasan</th>
+                                            <th className="px-4 py-3 text-left">Kabupaten/Kota Penugasan</th>
+                                            <th className="px-4 py-3 text-left">Asal SMA/SMK/MA</th>
+                                            <th className="px-4 py-3 text-left">Tahun Tugas</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {data.map((item: any, index: any) => (
+                                            <tr key={item.id} className="border-b hover:bg-red-50">
+                                                <td className="px-4 py-3">
+                                                    {(currentPage - 1) * itemsPerPage + index + 1}
+                                                </td>
+                                                <td className="px-4 py-3 font-medium">{item.nama_lengkap.toUpperCase()}</td>
+                                                <td className="px-4 py-3">{item.tingkat_penugasan ? item.tingkat_penugasan : item.nama_kabupaten ? "Paskibraka Tingkat Kabupaten/Kota" : "Paskibraka Tingkat Provinsi"}</td>
+                                                <td className="px-4 py-3">{item.nama_kabupaten}</td>
+                                                <td className="px-4 py-3">{item.asal_sma}</td>
+                                                <td className="px-4 py-3">{item.tahun_tugas}</td>
+
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination dengan Ellipsis */}
+                            {totalPages > 1 && (
+                                <div className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-50 gap-4">
+                                    <div className="text-sm text-gray-600">
+                                        Menampilkan {(currentPage - 1) * itemsPerPage + 1} -{' '}
+                                        {Math.min(currentPage * itemsPerPage, totalData)} dari {totalData} data
+                                    </div>
+
+                                    <div className="flex items-center gap-1 flex-wrap justify-center">
+                                        {/* Tombol First */}
+                                        <button
+                                            onClick={() => setCurrentPage(1)}
+                                            disabled={currentPage === 1}
+                                            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            «
+                                        </button>
+
+                                        {/* Tombol Previous */}
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            ‹
+                                        </button>
+
+                                        {/* Nomor Halaman dengan Ellipsis */}
+                                        {generatePagination().map((page, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => typeof page === 'number' && setCurrentPage(page)}
+                                                disabled={page === '...'}
+                                                className={`min-w-9 h-9 px-2 rounded border transition-colors ${currentPage === page
+                                                    ? 'bg-red-700 text-white border-red-700'
+                                                    : page === '...'
+                                                        ? 'border-transparent bg-transparent cursor-default'
+                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+
+                                        {/* Tombol Next */}
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            ›
+                                        </button>
+
+                                        {/* Tombol Last */}
+                                        <button
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            disabled={currentPage === totalPages}
+                                            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            »
+                                        </button>
+                                    </div>
+
+
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
