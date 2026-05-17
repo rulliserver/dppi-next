@@ -10,7 +10,6 @@ import axios from 'axios';
 import { useDebounceEffect } from '@/app/components/useDebounceEffect';
 import { canvasPreview } from '@/app/components/CanvasPreview';
 import { UrlApi } from '@/app/components/apiUrl';
-import Link from 'next/link';
 import InputLabel from '@/app/components/InputLabel';
 import TextInput from '@/app/components/TextInput';
 import { useUser } from '@/app/components/UserContext';
@@ -19,6 +18,7 @@ interface HobiOption {
     value: string;
     label: string;
 }
+
 function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {
     return centerCrop(
         makeAspectCrop(
@@ -36,6 +36,7 @@ function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {
 }
 
 const animatedComponents = makeAnimated();
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export default function Biodata() {
     const { user } = useUser();
@@ -54,7 +55,7 @@ export default function Biodata() {
         pendidikan_terakhir: '',
         jurusan: '',
         nama_instansi_pendidikan: '',
-        id_hobi: [],
+        id_hobi: '',
         posisi: '',
         tingkat_kepengurusan: '',
         jabatan: '',
@@ -72,10 +73,9 @@ export default function Biodata() {
         detail_bakat: '',
         keterangan: '',
         agreement: '',
-        status: 'Belum Diverifikasi',
+        status: 'Diverifikasi',
         no_piagam: '',
     });
-
     const [kabupaten, setKabupaten] = useState<any[]>([]);
     const [minat, setMinat] = useState<any[]>([]);
     const [bakat, setBakat] = useState<any[]>([]);
@@ -83,13 +83,17 @@ export default function Biodata() {
     const [detailMinat, setDetailMinat] = useState<any[]>([]);
     const [provinsi, setProvinsi] = useState<any[]>([]);
     const [hobi, setHobi] = useState<HobiOption[]>([]);
-
+    const [photoError, setPhotoError] = useState<string>('');
+    const [piagamError, setPiagamError] = useState<string>('');
 
     const [jabatan, setJabatan] = useState<any[]>([]);
     const [jabatanProvinsi, setJabatanProvinsi] = useState<any[]>([]);
     const [jabatanKabupaten, setJabatanKabupaten] = useState<any[]>([]);
     const [selectedProvinsiDomisili, setSelectedProvinsiDomisili] = useState<string>('');
     const filteredKabupatenDomisili = kabupaten.filter((kabupaten: any) => kabupaten.id_provinsi === Number(selectedProvinsiDomisili ? selectedProvinsiDomisili : data.id_provinsi_domisili));
+
+    // Selected hobi for react-select
+    const [selectedHobi, setSelectedHobi] = useState<HobiOption | null>(null);
 
     const fetchPdp = async () => {
         setLoading(true)
@@ -99,22 +103,66 @@ export default function Biodata() {
             });
             setData(response.data);
 
+            // Set selected hobi for react-select if exists
+            if (response.data.id_hobi && hobi.length > 0) {
+                const foundHobi = hobi.find(h => h.value === response.data.id_hobi);
+                if (foundHobi) {
+                    setSelectedHobi(foundHobi);
+                }
+            }
+
+            // Set selected provinsi for domisili
+            if (response.data.id_provinsi_domisili) {
+                setSelectedProvinsiDomisili(response.data.id_provinsi_domisili);
+            }
+
+            // Set selected provinsi for penugasan
+            if (response.data.id_provinsi) {
+                setSelectedProvinsi(response.data.id_provinsi);
+            }
+
+            // Set selected minat
+            if (response.data.id_minat) {
+                setSelectedMinat(response.data.id_minat);
+            }
+
+            // Set selected minat kedua
+            if (response.data.id_minat_2) {
+                setSelectedMinatKedua(response.data.id_minat_2);
+                setMinatKedua(true);
+            }
+
+            // Set selected bakat
+            if (response.data.id_bakat) {
+                setSelectedBakat(response.data.id_bakat);
+            }
 
         } catch (err) {
             console.error(err);
         }
         setLoading(false)
     };
-    useEffect(() => {
 
+    useEffect(() => {
         if (user) fetchPdp();
     }, [user, setData]);
+
+    // Update selected hobi when hobi data loads
+    useEffect(() => {
+        if (data.id_hobi && hobi.length > 0 && !selectedHobi) {
+            const foundHobi = hobi.find(h => h.value === data.id_hobi);
+            if (foundHobi) {
+                setSelectedHobi(foundHobi);
+            }
+        }
+    }, [hobi, data.id_hobi, selectedHobi]);
+
     const handleProvinsiChangeDoimisili = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setData((prev: any) => ({
             ...prev,
             id_provinsi_domisili: value,
-            id_kabupaten_domisili: '', // Reset kabupaten saat provinsi berubah
+            id_kabupaten_domisili: '',
         }));
         setSelectedProvinsiDomisili(value);
     };
@@ -125,8 +173,8 @@ export default function Biodata() {
         setData((prev: any) => ({
             ...prev,
             tingkat_penugasan: value,
-            id_provinsi: '', // Reset provinsi saat penugasan berubah
-            id_kabupaten: '', // Reset kabupaten saat provinsi berubah
+            id_provinsi: '',
+            id_kabupaten: '',
         }));
     };
 
@@ -142,7 +190,7 @@ export default function Biodata() {
         setData((prev: any) => ({
             ...prev,
             id_provinsi: value,
-            id_kabupaten: '', // Reset kabupaten saat provinsi berubah
+            id_kabupaten: '',
         }));
         setSelectedProvinsi(value);
     };
@@ -196,10 +244,12 @@ export default function Biodata() {
         });
     };
 
-    const handleOnSelect = (selectedOptions: any) => {
+    // Hobi selection - only one
+    const handleHobiChange = (selectedOption: HobiOption | null) => {
+        setSelectedHobi(selectedOption);
         setData((prevData: any) => ({
             ...prevData,
-            id_hobi: selectedOptions.map((option: any) => option.value),
+            id_hobi: selectedOption ? selectedOption.value : '',
         }));
     };
 
@@ -210,6 +260,7 @@ export default function Biodata() {
             ...prev,
             posisi: value,
             tingkat_kepengurusan: '',
+            jabatan: '',
         }));
     };
 
@@ -218,6 +269,7 @@ export default function Biodata() {
         setData((prev: any) => ({
             ...prev,
             tingkat_kepengurusan: value,
+            jabatan: '',
         }));
     };
 
@@ -230,12 +282,12 @@ export default function Biodata() {
         setData((prev: any) => ({
             ...prev,
             id_minat: value,
-            detail_minat: '', // Reset detail_minat saat minat berubah
+            detail_minat: '',
         }));
         setSelectedMinat(value);
     };
 
-    const filteredSecondMinat = minat.filter((minatKedua: any) => minatKedua.id !== Number(selectedMinat ? selectedMinat : data.id_minat2));
+    const filteredSecondMinat = minat.filter((minatKedua: any) => minatKedua.id !== Number(selectedMinat ? selectedMinat : data.id_minat));
     const [selectedMinatKedua, setSelectedMinatKedua] = useState<string>('');
 
     const handleSecondMinatChange = (e: any) => {
@@ -243,7 +295,7 @@ export default function Biodata() {
         setData((prev: any) => ({
             ...prev,
             id_minat_2: value,
-            detail_minat_2: '', // Reset detail_minat saat minat berubah
+            detail_minat_2: '',
         }));
         setSelectedMinatKedua(value);
     };
@@ -262,6 +314,7 @@ export default function Biodata() {
             id_minat_2: '',
             detail_minat_2: '',
         }));
+        setSelectedMinatKedua('');
     };
 
     //bakat
@@ -290,7 +343,6 @@ export default function Biodata() {
         setSelectedFilePiagam(e);
     };
 
-
     //submit 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -300,11 +352,7 @@ export default function Biodata() {
         setErrorMessage('');
         try {
             const formData = new FormData();
-            const cleanHobi = Array.isArray(data.id_hobi)
-                ? data.id_hobi
-                : typeof data.id_hobi === 'string'
-                    ? JSON.parse(data.id_hobi) // Parse jika masih string JSON
-                    : [];
+
             // Handle photo upload
             if (previewCanvasRef.current) {
                 const canvas = previewCanvasRef.current;
@@ -318,24 +366,17 @@ export default function Biodata() {
             }
 
             const payloadData: any = {
-                // Data pribadi
                 nik: data.nik || '',
                 nama_lengkap: data.nama_lengkap || '',
                 jk: data.jk || '',
                 tempat_lahir: data.tempat_lahir || '',
                 tgl_lahir: data.tgl_lahir || '',
                 alamat: data.alamat || '',
-
-                // Pendidikan
                 pendidikan_terakhir: data.pendidikan_terakhir || '',
                 jurusan: data.jurusan || '',
                 nama_instansi_pendidikan: data.nama_instansi_pendidikan || '',
-
-                // Kontak
                 email: data.email || '',
                 telepon: data.telepon || '',
-
-                // Penugasan
                 no_simental: data.no_simental || '',
                 no_piagam: data.no_piagam || '',
                 posisi: data.posisi || '',
@@ -344,17 +385,11 @@ export default function Biodata() {
                 tingkat_penugasan: data.tingkat_penugasan || '',
                 thn_tugas: data.thn_tugas ? parseInt(String(data.thn_tugas), 10) : null,
                 status: data.status || '',
-
-                // Domisili
                 id_kabupaten_domisili: data.id_kabupaten_domisili ? parseInt(data.id_kabupaten_domisili) : null,
                 id_provinsi_domisili: data.id_provinsi_domisili ? parseInt(data.id_provinsi_domisili) : null,
-
-                // Penugasan wilayah
                 id_kabupaten: data.id_kabupaten ? parseInt(data.id_kabupaten) : null,
                 id_provinsi: data.id_provinsi ? parseInt(data.id_provinsi) : null,
-
-                id_hobi: cleanHobi,
-                // Minat, bakat
+                id_hobi: data.id_hobi || null, 
                 id_bakat: data.id_bakat ? parseInt(data.id_bakat) : null,
                 detail_bakat: data.detail_bakat || '',
                 id_minat: data.id_minat ? parseInt(data.id_minat) : null,
@@ -372,8 +407,6 @@ export default function Biodata() {
                 },
                 withCredentials: true
             });
-
-            console.log('Response dari server:', response.data); // Untuk debugging
 
             Swal.fire({
                 icon: 'success',
@@ -414,32 +447,28 @@ export default function Biodata() {
     };
 
     // Fetch initial data
-    //provinsi
     const getProvinsi = () => {
         axios
             .get(`${UrlApi}/provinsi`)
-
             .then((response: any) => {
                 setProvinsi(response.data);
-
             })
             .catch((error) => {
                 console.error('Error fetching data setting:', error);
             });
     };
-    //kabupaten
+
     const getKabupaten = () => {
         axios
             .get(`${UrlApi}/kabupaten`)
-
             .then((response: any) => {
                 setKabupaten(response.data);
-
             })
             .catch((error) => {
                 console.error('Error fetching data setting:', error);
             });
     };
+
     const getJabatan = () => {
         axios
             .get(`${UrlApi}/jabatan`)
@@ -451,13 +480,12 @@ export default function Biodata() {
             .catch((error) => {
                 console.error('Error fetching data setting:', error);
             });
-
     }
+
     const getHobi = () => {
         axios
             .get(`${UrlApi}/hobi`)
             .then((response: any) => {
-
                 if (Array.isArray(response.data)) {
                     const hobiData: HobiOption[] = response.data.map((item: any) => ({
                         value: item.kategori_hobi,
@@ -472,25 +500,23 @@ export default function Biodata() {
                 console.error('Error fetching data setting:', error);
             });
     }
+
     const getMinat = () => {
         axios
             .get(`${UrlApi}/minat`)
-
             .then((response: any) => {
                 setMinat(response.data);
-
             })
             .catch((error) => {
                 console.error('Error fetching data setting:', error);
             });
     };
+
     const getDetailMinat = () => {
         axios
             .get(`${UrlApi}/detail-minat`)
-
             .then((response: any) => {
                 setDetailMinat(response.data);
-
             })
             .catch((error) => {
                 console.error('Error fetching data setting:', error);
@@ -500,39 +526,35 @@ export default function Biodata() {
     const getBakat = () => {
         axios
             .get(`${UrlApi}/bakat`)
-
             .then((response: any) => {
                 setBakat(response.data);
-
             })
             .catch((error) => {
                 console.error('Error fetching data setting:', error);
             });
     };
+
     const getDetailBakat = () => {
         axios
             .get(`${UrlApi}/detail-bakat`)
-
             .then((response: any) => {
                 setDetailBakat(response.data);
-
             })
             .catch((error) => {
                 console.error('Error fetching data setting:', error);
             });
     };
+
     useEffect(() => {
         getProvinsi();
         getKabupaten();
         getJabatan();
-        getHobi()
-        getMinat()
-        getDetailMinat()
-        getBakat()
-        getDetailBakat()
+        getHobi();
+        getMinat();
+        getDetailMinat();
+        getBakat();
+        getDetailBakat();
     }, []);
-
-    console.log(data);
 
     return (
         <div className='bg-gray-50 pb-28 dark:bg-gray-700'>
@@ -565,7 +587,6 @@ export default function Biodata() {
                                 />
                             </div>
 
-
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='photo'>Foto Diri:</InputLabel>
                                 <input
@@ -574,6 +595,10 @@ export default function Biodata() {
                                     accept='image/*'
                                     onChange={onSelectFile}
                                 />
+                                <p className="text-xs text-gray-600">Maksimal ukuran file: 5MB</p>
+                                {photoError && (
+                                    <p className="text-xs text-red-600">{photoError}</p>
+                                )}
                             </div>
 
                             <div className='grid grid-cols-2 gap-4 my-2'>
@@ -607,7 +632,6 @@ export default function Biodata() {
                                     )}
                                 </div>
                             </div>
-
 
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='nama_lengkap'>Nama Lengkap:</InputLabel>
@@ -676,8 +700,23 @@ export default function Biodata() {
 
                             <div className='border-t-2 my-4'>
                                 <p className='font-semibold'>DOMISILI</p>
+                                <p className="text-sm text-gray-600">Tempat tinggal saat ini</p>
                             </div>
-
+                            <div className='grid gap-2 mt-4'>
+                                <InputLabel htmlFor='alamat'>Alamat:</InputLabel>
+                                <TextInput
+                                    className='text-sm'
+                                    id='alamat'
+                                    type='text'
+                                    name='alamat'
+                                    required
+                                    tabIndex={8}
+                                    autoComplete='alamat'
+                                    value={data.alamat}
+                                    onChange={handleOnChange}
+                                    placeholder='Alamat (nama jalan, no. rumah, RT/RW, Desa, Kecamatan)'
+                                />
+                            </div>
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='id_provinsi_domisili'>Provinsi:</InputLabel>
                                 <select
@@ -718,18 +757,6 @@ export default function Biodata() {
                                     ))}
                                 </select>
                             </div>
-                            <TextInput
-                                className='text-sm'
-                                id='alamat'
-                                type='text'
-                                name='alamat'
-                                required
-                                tabIndex={8}
-                                autoComplete='alamat'
-                                value={data.alamat || ''}
-                                onChange={handleOnChange}
-                                placeholder='Alamat (nama jalan, no. rumah, RT/RW, Desa, Kecamatan)'
-                            />
 
                             <div className='border-t-2 my-4'>
                                 <p className='font-semibold'>PENDIDIKAN</p>
@@ -762,7 +789,7 @@ export default function Biodata() {
                                     required
                                     tabIndex={10}
                                     autoComplete='jurusan'
-                                    defaultValue={data.jurusan}
+                                    value={data.jurusan}
                                     onChange={handleOnChange}
                                     placeholder='Jurusan'
                                 />
@@ -777,7 +804,7 @@ export default function Biodata() {
                                     required
                                     tabIndex={11}
                                     autoComplete='nama_instansi_pendidikan'
-                                    defaultValue={data.nama_instansi_pendidikan}
+                                    value={data.nama_instansi_pendidikan}
                                     onChange={handleOnChange}
                                     placeholder='Nama Instansi Pendidikan'
                                 />
@@ -801,158 +828,29 @@ export default function Biodata() {
                                 />
                             </div>
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='email'>Telepon/Whatsapp:</InputLabel>
+                                <InputLabel htmlFor='telepon'>Telepon/Whatsapp:</InputLabel>
                                 <TextInput
                                     id='telepon'
                                     type='number'
                                     tabIndex={27}
                                     step={0}
                                     name='telepon'
-                                    defaultValue={data.telepon}
+                                    value={data.telepon}
                                     className='block w-full mt-1 text-sm'
                                     autoComplete='telepon'
                                     onChange={handleOnChange}
                                     required
                                 />
                             </div>
-
                         </div>
 
                         <div className='md:pl-2 pl-0'>
                             <div className='border-t-2 md:border-t-0 mt-4 md:mt-0'>
-                                <p className='font-semibold'>PENUGASAN</p>
+                                <p className='font-semibold'>PENUGASAN DAN KEPENGURUSAN</p>
                             </div>
+
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='tingkat_penugasan'>Status Kepengurusan di DPPI:</InputLabel>
-                                <div className='flex flex-row gap-12'>
-                                    <label>
-                                        <input
-                                            type='radio'
-                                            className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent  ring-accent text-accent '
-                                            name='posisi'
-                                            value='Anggota'
-                                            checked={data.posisi === 'Anggota'}
-                                            onChange={handleChangePosisi}
-                                        />
-                                        <span className='text-sm'>Anggota</span>
-                                    </label>
-                                    <label>
-                                        <input
-                                            type='radio'
-                                            className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent  ring-accent text-accent '
-                                            name='posisi'
-                                            value='Pelaksana'
-                                            checked={data.posisi === 'Pelaksana'}
-                                            onChange={handleChangePosisi}
-                                        />
-                                        <span className='text-sm'>Pelaksana</span>
-                                    </label>
-                                </div>
-                            </div>
-                            {data.posisi === 'Pelaksana' ? (
-                                <div className='grid gap-2 my-6'>
-                                    <InputLabel htmlFor='tingkat_kepengurusan'>Tingkat Kepengurusan:</InputLabel>
-                                    <div className='flex flex-col 2xl:flex-row 2xl:gap-6'>
-                                        <label>
-                                            <input
-                                                type='radio'
-                                                className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent  ring-accent text-accent '
-                                                name='tingkat_kepengurusan'
-                                                value='Pelaksana Tingkat Kabupaten/Kota'
-                                                checked={data.tingkat_kepengurusan === 'Pelaksana Tingkat Kabupaten/Kota'}
-                                                onChange={handleChangeKepengurusan}
-                                            />
-                                            <span className='text-sm'>Pelaksana Tk. Kabupaten/Kota</span>
-                                        </label>
-                                        <label>
-                                            <input
-                                                type='radio'
-                                                className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent  ring-accent text-accent '
-                                                name='tingkat_kepengurusan'
-                                                value='Pelaksana Tingkat Provinsi'
-                                                checked={data.tingkat_kepengurusan === 'Pelaksana Tingkat Provinsi'}
-                                                onChange={handleChangeKepengurusan}
-                                            />
-                                            <span className='text-sm'>Pelaksana Tk. Provinsi</span>
-                                        </label>
-                                        <label>
-                                            <input
-                                                type='radio'
-                                                className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent  ring-accent text-accent '
-                                                name='tingkat_kepengurusan'
-                                                value='Pelaksana Tingkat Pusat'
-                                                checked={data.tingkat_kepengurusan === 'Pelaksana Tingkat Pusat'}
-                                                onChange={handleChangeKepengurusan}
-                                            />
-                                            <span className='text-sm'>Pelaksana Tk. Pusat</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            ) : (
-                                ''
-                            )}
-                            {data.tingkat_kepengurusan === 'Pelaksana Tingkat Kabupaten/Kota' ? (
-                                <div className='grid gap-2 mt-4'>
-                                    <InputLabel htmlFor='jabatan'>Jabatan:</InputLabel>
-                                    <select
-                                        name='jabatan'
-                                        id='jabatan'
-                                        onChange={handleOnChange}
-                                        value={data.jabatan}
-                                        tabIndex={12}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
-                                        <option value=''>--Pilih Pilih Jabatan--</option>
-                                        {jabatanKabupaten.map((item: any) => (
-                                            <option key={item.id} value={item.nama_jabatan}>
-                                                {item.nama_jabatan}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            ) : data.tingkat_kepengurusan === 'Pelaksana Tingkat Provinsi' ? (
-                                <div className='grid gap-2 mt-4'>
-                                    <InputLabel htmlFor='jabatan'>Jabatan:</InputLabel>
-                                    <select
-                                        name='jabatan'
-                                        id='jabatan'
-                                        onChange={handleOnChange}
-                                        value={data.jabatan}
-                                        tabIndex={12}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
-                                        <option value=''>--Pilih Pilih Jabatan--</option>
-                                        {jabatanProvinsi.map((item: any) => (
-                                            <option key={item.id} value={item.nama_jabatan}>
-                                                {item.nama_jabatan}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            ) : data.tingkat_kepengurusan === 'Pelaksana Tingkat Pusat' ? (
-                                <div className='grid gap-2 mt-4'>
-                                    <InputLabel htmlFor='jabatan'>Jabatan:</InputLabel>
-                                    <select
-                                        name='jabatan'
-                                        id='jabatan'
-                                        onChange={handleOnChange}
-                                        value={data.jabatan}
-                                        tabIndex={12}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
-                                        <option value=''>--Pilih Pilih Jabatan--</option>
-                                        {jabatan.map((item: any) => (
-                                            <option key={item.id} value={item.nama_jabatan}>
-                                                {item.nama_jabatan}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            ) : (
-                                ''
-                            )}
-                            <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='tingkat_penugasan'>Tingkat Penugasan:</InputLabel>
+                                <InputLabel htmlFor='tingkat_penugasan'>Tingkat Penugasan (SEBAGAI PASKIBRA):</InputLabel>
                                 <select
                                     name='tingkat_penugasan'
                                     id='tingkat_penugasan'
@@ -1013,7 +911,7 @@ export default function Biodata() {
                                 ''
                             )}
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='thn_tugas'>Tahun Penugasan:</InputLabel>
+                                <InputLabel htmlFor='thn_tugas'>Tahun Penugasan (SEBAGAI PASKIBRA):</InputLabel>
                                 <select
                                     name='thn_tugas'
                                     id='thn_tugas'
@@ -1031,7 +929,137 @@ export default function Biodata() {
                                 </select>
                             </div>
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='no_piagam'>Nomor Piagam:</InputLabel>
+                                <InputLabel htmlFor='posisi'>Status Kepengurusan di DPPI:</InputLabel>
+                                <div className='flex flex-row gap-12'>
+                                    <label>
+                                        <input
+                                            type='radio'
+                                            className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent ring-accent text-accent'
+                                            name='posisi'
+                                            value='Anggota'
+                                            checked={data.posisi === 'Anggota'}
+                                            onChange={handleChangePosisi}
+                                        />
+                                        <span className='text-sm'>Anggota</span>
+                                    </label>
+                                    <label>
+                                        <input
+                                            type='radio'
+                                            className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent ring-accent text-accent'
+                                            name='posisi'
+                                            value='Pelaksana'
+                                            checked={data.posisi === 'Pelaksana'}
+                                            onChange={handleChangePosisi}
+                                        />
+                                        <span className='text-sm'>Pelaksana</span>
+                                    </label>
+                                </div>
+                            </div>
+                            {data.posisi === 'Pelaksana' ? (
+                                <div className='grid gap-2 my-6'>
+                                    <InputLabel htmlFor='tingkat_kepengurusan'>Tingkat Kepengurusan:</InputLabel>
+                                    <div className='flex flex-col 2xl:flex-row 2xl:gap-6'>
+                                        <label>
+                                            <input
+                                                type='radio'
+                                                className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent ring-accent text-accent'
+                                                name='tingkat_kepengurusan'
+                                                value='Pelaksana Tingkat Kabupaten/Kota'
+                                                checked={data.tingkat_kepengurusan === 'Pelaksana Tingkat Kabupaten/Kota'}
+                                                onChange={handleChangeKepengurusan}
+                                            />
+                                            <span className='text-sm'>Pelaksana Tk. Kabupaten/Kota</span>
+                                        </label>
+                                        <label>
+                                            <input
+                                                type='radio'
+                                                className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent ring-accent text-accent'
+                                                name='tingkat_kepengurusan'
+                                                value='Pelaksana Tingkat Provinsi'
+                                                checked={data.tingkat_kepengurusan === 'Pelaksana Tingkat Provinsi'}
+                                                onChange={handleChangeKepengurusan}
+                                            />
+                                            <span className='text-sm'>Pelaksana Tk. Provinsi</span>
+                                        </label>
+                                        <label>
+                                            <input
+                                                type='radio'
+                                                className='mr-2 checked:bg-accent hover:ring-accent focus:ring-accent ring-accent text-accent'
+                                                name='tingkat_kepengurusan'
+                                                value='Pelaksana Tingkat Pusat'
+                                                checked={data.tingkat_kepengurusan === 'Pelaksana Tingkat Pusat'}
+                                                onChange={handleChangeKepengurusan}
+                                            />
+                                            <span className='text-sm'>Pelaksana Tk. Pusat</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            ) : (
+                                ''
+                            )}
+                            {data.tingkat_kepengurusan === 'Pelaksana Tingkat Kabupaten/Kota' ? (
+                                <div className='grid gap-2 mt-4'>
+                                    <InputLabel htmlFor='jabatan'>Jabatan:</InputLabel>
+                                    <select
+                                        name='jabatan'
+                                        id='jabatan'
+                                        onChange={handleOnChange}
+                                        value={data.jabatan}
+                                        tabIndex={16}
+                                        required
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        <option value=''>--Pilih Pilih Jabatan--</option>
+                                        {jabatanKabupaten.map((item: any) => (
+                                            <option key={item.nama_jabatan} value={item.nama_jabatan}>
+                                                {item.nama_jabatan}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : data.tingkat_kepengurusan === 'Pelaksana Tingkat Provinsi' ? (
+                                <div className='grid gap-2 mt-4'>
+                                    <InputLabel htmlFor='jabatan'>Jabatan:</InputLabel>
+                                    <select
+                                        name='jabatan'
+                                        id='jabatan'
+                                        onChange={handleOnChange}
+                                        value={data.jabatan}
+                                        tabIndex={16}
+                                        required
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        <option value=''>--Pilih Pilih Jabatan--</option>
+                                        {jabatanProvinsi.map((item: any) => (
+                                            <option key={item.nama_jabatan} value={item.nama_jabatan}>
+                                                {item.nama_jabatan}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : data.tingkat_kepengurusan === 'Pelaksana Tingkat Pusat' ? (
+                                <div className='grid gap-2 mt-4'>
+                                    <InputLabel htmlFor='jabatan'>Jabatan:</InputLabel>
+                                    <select
+                                        name='jabatan'
+                                        id='jabatan'
+                                        onChange={handleOnChange}
+                                        value={data.jabatan}
+                                        tabIndex={16}
+                                        required
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        <option value=''>--Pilih Pilih Jabatan--</option>
+                                        {jabatan.map((item: any) => (
+                                            <option key={item.nama_jabatan} value={item.nama_jabatan}>
+                                                {item.nama_jabatan}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                ''
+                            )}
+
+                            <div className='grid gap-2 mt-4'>
+                                <InputLabel htmlFor='no_piagam'>Nomor Piagam / SK / STTP PDP:</InputLabel>
                                 <TextInput
                                     id='no_piagam'
                                     type='text'
@@ -1040,38 +1068,51 @@ export default function Biodata() {
                                     autoComplete='no_piagam'
                                     value={data.no_piagam}
                                     onChange={handleOnChange}
+                                    required
+                                    tabIndex={17}
+                                    placeholder='Gunakan NIK jika tidak mengetahui No. Piagam/SK/STTP '
                                 />
                             </div>
+
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='Piagam'>File Piagam Purnapaskibraka Duta Pancasila:</InputLabel>
+                                <InputLabel htmlFor='Piagam'>File Piagam/SK/STTP PDP:</InputLabel>
                                 <input
                                     className='text-sm border-2 w-full rounded-md'
-                                    tabIndex={16}
+                                    tabIndex={18}
                                     type='file'
                                     accept='image/jpeg, image/jpg, image/png, application/pdf'
                                     onChange={handleFilePiagamChange}
                                 />
+                                <p className="text-xs text-gray-600">Maksimal ukuran file: 5MB</p>
+                                {piagamError && (
+                                    <p className="text-xs text-red-600">{piagamError}</p>
+                                )}
                             </div>
 
                             <div className='border-t-2 md:border-t-2 mt-4'>
                                 <p className='font-semibold'>HOBI, MINAT, DAN BAKAT</p>
                             </div>
-                            <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='id_hobi'>Pilih Hobi (1 atau lebih):</InputLabel>
 
-                                <Select
-                                    instanceId="select-hobi"
-                                    isMulti
-                                    options={hobi}
-                                    value={hobi.filter(option =>
-                                        data.id_hobi && data.id_hobi.includes(option.value)
-                                    )}
-                                    onChange={handleOnSelect}
-                                    className="basic-multi-select"
-                                    classNamePrefix="select"
-                                    placeholder="Pilih hobi..."
-                                />
+                            <div className='grid gap-2 mt-4'>
+                                <InputLabel htmlFor='id_hobi'>Pilih Hobi (1 pilihan):</InputLabel>
+                                {hobi && (
+                                    <Select
+                                        instanceId="select-hobi"
+                                        inputId="hobi-select"
+                                        name="id_hobi"
+                                        value={selectedHobi}
+                                        onChange={handleHobiChange}
+                                        options={hobi}
+                                        isClearable
+                                        isSearchable
+                                        className="border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400"
+                                        menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+                                        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                                        placeholder="Pilih hobi..."
+                                    />
+                                )}
                             </div>
+
                             <div className='grid gap-2 mt-4'>
                                 <InputLabel htmlFor='id_minat'>Kategori Minat:</InputLabel>
                                 <select
@@ -1079,7 +1120,7 @@ export default function Biodata() {
                                     id='id_minat'
                                     onChange={handleFirstMinatChange}
                                     value={data.id_minat}
-                                    tabIndex={18}
+                                    tabIndex={19}
                                     required
                                     className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
                                     <option value=''>--Pilih Minat--</option>
@@ -1097,7 +1138,7 @@ export default function Biodata() {
                                     id='detail_minat'
                                     onChange={handleOnChange}
                                     value={data.detail_minat}
-                                    tabIndex={19}
+                                    tabIndex={20}
                                     required
                                     className='border-gray-300 focus:border-red-500 w-full text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
                                     <option value=''>--Pilih Detail Minat--</option>
@@ -1115,7 +1156,7 @@ export default function Biodata() {
                                         className={`bg-green-700 text-white font-semibold py-1 text-sm px-2 rounded-lg mx-1`}
                                         onClick={handleClickTambahMinat}
                                         disabled={!data.detail_minat}
-                                        tabIndex={20}>
+                                        tabIndex={21}>
                                         Tambah Minat
                                     </button>
                                 )}
@@ -1129,7 +1170,7 @@ export default function Biodata() {
                                             id='id_minat_2'
                                             onChange={handleSecondMinatChange}
                                             value={data.id_minat_2}
-                                            tabIndex={20}
+                                            tabIndex={22}
                                             className='border-gray-300 focus:border-red-500 w-fulltext-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
                                             <option value=''>--Pilih Minat--</option>
                                             {filteredSecondMinat.map((item: any) => (
@@ -1146,7 +1187,7 @@ export default function Biodata() {
                                             id='detail_minat_2'
                                             onChange={handleOnChange}
                                             value={data.detail_minat_2}
-                                            tabIndex={21}
+                                            tabIndex={23}
                                             className='border-gray-300 focus:border-red-500 text-sm w-full focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
                                             <option value=''>--Pilih Minat--</option>
                                             {filteredDetailSecondMinat.map((item: any) => (
@@ -1164,7 +1205,7 @@ export default function Biodata() {
                                 type='button'
                                 className={data.detail_minat_2 ? `bg-red-700 mt-2 text-white font-semibold py-1 text-sm px-2 rounded-lg mx-1` : `hidden`}
                                 onClick={hanleClikHapusMinatKedua}
-                                tabIndex={22}
+                                tabIndex={24}
                                 disabled={!data.detail_minat_2}>
                                 Hapus Minat
                             </button>
@@ -1175,7 +1216,7 @@ export default function Biodata() {
                                     id='id_bakat'
                                     onChange={handleFirstBakatChange}
                                     value={data.id_bakat}
-                                    tabIndex={23}
+                                    tabIndex={25}
                                     required
                                     className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
                                     <option value=''>--Pilih Bakat--</option>
@@ -1193,7 +1234,7 @@ export default function Biodata() {
                                     id='detail_bakat'
                                     onChange={handleOnChange}
                                     value={data.detail_bakat}
-                                    tabIndex={24}
+                                    tabIndex={26}
                                     required
                                     className='border-gray-300 focus:border-red-500 w-full text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
                                     <option value=''>--Pilih Detail Bakat--</option>
@@ -1210,7 +1251,7 @@ export default function Biodata() {
                                     id='keterangan'
                                     name='keterangan'
                                     rows={2}
-                                    tabIndex={25}
+                                    tabIndex={27}
                                     value={data.keterangan ? data.keterangan : ''}
                                     autoComplete='keterangan'
                                     className='border-gray-300 focus:border-red-500 text-sm p-2 focus:ring-red-500 rounded-md shadow-sm ring-gray-400'
@@ -1218,11 +1259,10 @@ export default function Biodata() {
                                     placeholder='Kekurangan/Kelebihan yang dimiliki'
                                 />
                             </div>
-
                             <div className='border-t-2 mt-4'></div>
                             <div className='flex justify-end mt-4'>
-                                <button type='submit' tabIndex={29} className={`bg-blue-600 text-white font-semibold text-sm px-4 py-2 rounded-lg mx-1`}>
-                                    Simpan
+                                <button type='submit' tabIndex={28} className={`bg-blue-600 text-white font-semibold text-sm px-4 py-2 rounded-lg mx-1`}>
+                                    SIMPAN
                                 </button>
                             </div>
                         </div>

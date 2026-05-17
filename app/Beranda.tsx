@@ -31,7 +31,7 @@ export default function Beranda() {
     const [dilantikKab, setDilantikKab]: any = useState();
 
     // State untuk tab aktif (default: 'peta')
-    const [activeTab, setActiveTab] = useState<'peta' | 'dilantik'>('peta');
+    const [activeTab, setActiveTab] = useState<'peta' | 'provinsi' | 'kabupaten'>('peta');
 
     useEffect(() => {
         // Ambil sessionId dari localStorage
@@ -137,7 +137,7 @@ export default function Beranda() {
     // API call untuk data daerah yang sudah dilantik (Provinsi)
     const getDilantikProvinsi = () => {
         axios
-            .get(`${UrlApi}/dppi-provinsi-dilantik`)
+            .get(`${UrlApi}/dppi-dilantik/provinsi`)
             .then((response: any) => {
                 setDilantikProv(response.data);
             })
@@ -151,7 +151,7 @@ export default function Beranda() {
     // API call untuk data daerah yang sudah dilantik (Kabupaten)
     const getDilantikKabupaten = () => {
         axios
-            .get(`${UrlApi}/dppi-kabupaten-dilantik`)
+            .get(`${UrlApi}/dppi-dilantik/kabupaten`)
             .then((response: any) => {
                 setDilantikKab(response.data);
             })
@@ -283,20 +283,29 @@ export default function Beranda() {
                         <button
                             onClick={() => setActiveTab('peta')}
                             className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'peta'
-                                    ? 'text-red-700 border-b-2 border-red-700'
-                                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'text-red-700 border-b-2 border-red-700'
+                                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             🗺️ Peta Sebaran PDP
                         </button>
                         <button
-                            onClick={() => setActiveTab('dilantik')}
-                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'dilantik'
-                                    ? 'text-red-700 border-b-2 border-red-700'
-                                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            onClick={() => setActiveTab('provinsi')}
+                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'provinsi'
+                                ? 'text-red-700 border-b-2 border-red-700'
+                                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             Sebaran DPPI Provinsi
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('kabupaten')}
+                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'kabupaten'
+                                ? 'text-red-700 border-b-2 border-red-700'
+                                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
+                        >
+                            Sebaran DPPI Kabupaten
                         </button>
                     </div>
 
@@ -313,80 +322,93 @@ export default function Beranda() {
                     )}
 
                     {/* Tab Content - Data Daerah Yang Sudah Dilantik */}
-                    {activeTab === 'dilantik' && (
+                    {activeTab === 'provinsi' && (
                         <div className="pt-6">
                             <div className="bg-white rounded-lg shadow-md p-6">
                                 <h3 className="text-2xl font-bold text-center mb-8">
-                                    Daftar Daerah yang <span className="text-green-600">Telah Dilantik</span>
+                                    Sebaran DPPI Provinsi <span className="text-red-600">Yang Terbentuk</span>
                                 </h3>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                    {/* Data Provinsi */}
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <div className="w-1 h-8 bg-red-700 rounded"></div>
-                                            <h4 className="text-xl font-semibold">Provinsi</h4>
-                                            <span className="bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full">
-                                                {dilantikProv && Array.isArray(dilantikProv) ? dilantikProv.length : 0} Provinsi
-                                            </span>
-                                        </div>
 
-                                        {dilantikProv && Array.isArray(dilantikProv) && dilantikProv.length > 0 ? (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-2">
-                                                {dilantikProv.map((prov: any, index: number) => (
-                                                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-green-50 transition-colors">
-                                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                        <span className="text-gray-700">{prov.nama_provinsi || prov.name || prov.nama}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
-                                                <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <p>Belum ada data provinsi yang dilantik</p>
-                                            </div>
-                                        )}
+                                {/* Data Provinsi */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="w-1 h-8 bg-red-700 rounded"></div>
+                                        <h4 className="text-xl font-semibold">Provinsi</h4>
+                                        <span className="bg-green-100 text-red-800 text-sm px-2 py-1 rounded-full">
+                                            {dilantikProv && Array.isArray(dilantikProv) ? dilantikProv.length : 0} Provinsi
+                                        </span>
                                     </div>
 
-                                    {/* Data Kabupaten/Kota */}
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <div className="w-1 h-8 bg-red-700 rounded"></div>
-                                            <h4 className="text-xl font-semibold">Kabupaten / Kota</h4>
-                                            <span className="bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full">
-                                                {dilantikKab && Array.isArray(dilantikKab) ? dilantikKab.length : 0} Kab/Kota
-                                            </span>
+                                    {dilantikProv && Array.isArray(dilantikProv) && dilantikProv.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-2">
+                                            {dilantikProv.map((prov: any, index: number) => (
+                                                <div key={index} className="flex items-center gap-2 cursor-pointer p-2 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors"
+                                                    onClick={() => window.location.href = `/pelaksana-provinsi/${prov.id_provinsi}`}
+                                                >
+                                                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                                    <span className="text-gray-700">{prov.nama_provinsi || prov.name || prov.nama}</span>
+                                                </div>
+                                            ))}
                                         </div>
-
-                                        {dilantikKab && Array.isArray(dilantikKab) && dilantikKab.length > 0 ? (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-2">
-                                                {dilantikKab.map((kab: any, index: number) => (
-                                                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-green-50 transition-colors">
-                                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                        <span className="text-gray-700">{kab.nama_kabupaten || kab.name || kab.nama}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
-                                                <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <p>Belum ada data kabupaten/kota yang dilantik</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Catatan jika menggunakan data dummy */}
-                                {(!dilantikProv || (Array.isArray(dilantikProv) && dilantikProv.length === 0)) &&
-                                    (!dilantikKab || (Array.isArray(dilantikKab) && dilantikKab.length === 0)) && (
-                                        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center text-yellow-800 text-sm">
-                                            <p>💡 Menampilkan data contoh. Silakan sesuaikan endpoint API untuk data daerah yang sudah dilantik.</p>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+                                            <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <p>Belum ada data dppi provinsi yang terbentuk</p>
                                         </div>
                                     )}
+                                </div>
+
+
+
+
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'kabupaten' && (
+                        <div className="pt-6">
+                            <div className="bg-white rounded-lg shadow-md p-6">
+                                <h3 className="text-2xl font-bold text-center mb-8">
+                                    Sebaran DPPI Kabupaten <span className="text-red-600">Yang Terbentuk</span>
+                                </h3>
+
+
+                                {/* Data Kabupaten */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="w-1 h-8 bg-red-700 rounded"></div>
+                                        <h4 className="text-xl font-semibold">Kabupaten</h4>
+                                        <span className="bg-green-100 text-red-800 text-sm px-2 py-1 rounded-full">
+                                            {dilantikKab && Array.isArray(dilantikKab) ? dilantikKab.length : 0} kabupaten
+                                        </span>
+                                    </div>
+
+                                    {dilantikKab && Array.isArray(dilantikKab) && dilantikKab.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-2">
+                                            {dilantikKab.map((kab: any, index: number) => (
+                                                <div key={index} className="flex items-center gap-2 cursor-pointer p-2 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors"
+                                                    onClick={() => window.location.href = `/pelaksana-kabupaten/kabupaten/${kab.id_kabupaten}`}
+                                                >
+                                                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                                    <span className="text-gray-700">{kab.nama_kabupaten || kab.name || kab.nama}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+                                            <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <p>Belum ada data dppi kabupaten yang terbentuk</p>
+                                        </div>
+                                    )}
+                                </div>
+
+
+
+
                             </div>
                         </div>
                     )}

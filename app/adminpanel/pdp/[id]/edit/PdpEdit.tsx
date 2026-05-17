@@ -310,25 +310,19 @@ export default function PdpEdit() {
                 formData.append('file_piagam', selectedFilePiagam.target.files[0]);
             }
 
+
             const payloadData: any = {
-                // Data pribadi
                 nik: data.nik || '',
                 nama_lengkap: data.nama_lengkap || '',
                 jk: data.jk || '',
                 tempat_lahir: data.tempat_lahir || '',
                 tgl_lahir: data.tgl_lahir || '',
                 alamat: data.alamat || '',
-
-                // Pendidikan
                 pendidikan_terakhir: data.pendidikan_terakhir || '',
                 jurusan: data.jurusan || '',
                 nama_instansi_pendidikan: data.nama_instansi_pendidikan || '',
-
-                // Kontak
                 email: data.email || '',
                 telepon: data.telepon || '',
-
-                // Penugasan
                 no_simental: data.no_simental || '',
                 no_piagam: data.no_piagam || '',
                 posisi: data.posisi || '',
@@ -337,17 +331,11 @@ export default function PdpEdit() {
                 tingkat_penugasan: data.tingkat_penugasan || '',
                 thn_tugas: data.thn_tugas ? parseInt(String(data.thn_tugas), 10) : null,
                 status: data.status || '',
-
-                // Domisili
                 id_kabupaten_domisili: data.id_kabupaten_domisili ? parseInt(data.id_kabupaten_domisili) : null,
                 id_provinsi_domisili: data.id_provinsi_domisili ? parseInt(data.id_provinsi_domisili) : null,
-
-                // Penugasan wilayah
                 id_kabupaten: data.id_kabupaten ? parseInt(data.id_kabupaten) : null,
                 id_provinsi: data.id_provinsi ? parseInt(data.id_provinsi) : null,
-
-                id_hobi: cleanHobi,
-                // Minat, bakat
+                id_hobi: data.id_hobi || null,
                 id_bakat: data.id_bakat ? parseInt(data.id_bakat) : null,
                 detail_bakat: data.detail_bakat || '',
                 id_minat: data.id_minat ? parseInt(data.id_minat) : null,

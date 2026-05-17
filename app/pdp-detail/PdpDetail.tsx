@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { UrlApi } from '../components/apiUrl';
-
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 export default function PDPDetailPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
@@ -115,29 +115,29 @@ export default function PDPDetailPage() {
                         Total Data: {totalData} PDP
                     </p>
                 </div>
-
-                {/* Filter & Search Bar */}
                 <div className="bg-white p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    {/* Search Input */}
-                    <div className="relative w-full sm:w-80">
-                        <input
-                            type="text"
-                            placeholder="Cari PDP..."
-                            value={searchKeyword}
-                            onChange={handleSearchChange}
-                            className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        />
-                        {searchKeyword && (
-                            <button
-                                onClick={clearSearch}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                ✕
-                            </button>
-                        )}
+                    <Suspense>
+                        {/* Filter & Search Bar */}
+                        {/* Search Input */}
+                        <div className="relative w-full sm:w-80">
+                            <input
+                                type="text"
+                                placeholder="Cari PDP..."
+                                value={searchKeyword}
+                                onChange={handleSearchChange}
+                                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            />
+                            {searchKeyword && (
+                                <button
+                                    onClick={clearSearch}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    ✕
+                                </button>
+                            )}
 
-                    </div>
-
+                        </div>
+                    </Suspense>
                     {/* Items per page selector */}
                     <div className="flex items-center gap-2">
                         <label className="text-sm text-gray-600">Tampilkan:</label>
@@ -278,6 +278,6 @@ export default function PDPDetailPage() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

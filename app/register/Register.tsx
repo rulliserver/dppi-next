@@ -15,36 +15,6 @@ import InputLabel from '../components/InputLabel';
 import TextInput from '../components/TextInput';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
-interface Pdp {
-    id: number;
-    no_piagam: string;
-    photo: string;
-    nik: number;
-    nama_lengkap: string;
-    tempat_lahir: string;
-    tgl_lahir: Date;
-    jk: string;
-    id_provinsi_domisili: any;
-    id_kabupaten_domisili: any;
-    id_provinsi: any;
-    id_kabupaten: 0;
-    tingkat_penugasan: string;
-    thn_tugas: Date;
-    pendidikan_terakhir: string;
-    jurusan: string;
-    nama_instansi_pendidikan: string;
-    id_hobi: string;
-    provinsi: any;
-    kabupaten: any;
-    hobi: any;
-    minat: any;
-    detailMinat: any;
-    bakat: any;
-    detailBakat: any;
-    jabatan: any;
-    jabatanProvinsi: any;
-    jabatanKabupaten: any;
-}
 interface HobiOption {
     value: string;
     label: string;
@@ -66,7 +36,7 @@ function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {
 }
 
 const animatedComponents = makeAnimated();
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB dalam bytes
+const MAX_FILE_SIZE = 5 * 1024 * 1024; 
 
 function RegisterForm() {
     const { executeRecaptcha } = useGoogleReCaptcha();
