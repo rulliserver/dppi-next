@@ -160,13 +160,13 @@ export default function IdPelaksanaKabupaten() {
                                     </button>
 
                                     {/* Konten Popup */}
-                                    <div className='p-6'>
+                                    <div className='p-4'>
                                         <div className='flex justify-center mb-4'>
                                             <Image
                                                 src={BaseUrl + selectedMember.photo}
                                                 alt={selectedMember.nama_lengkap}
                                                 className='rounded-lg object-cover'
-                                                width={200}
+                                                width={150}
                                                 height={200}
                                             />
                                         </div>

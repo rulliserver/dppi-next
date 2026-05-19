@@ -292,12 +292,7 @@ export default function PdpEdit() {
         setIsSubmitting(true);
         setErrorMessage('');
         try {
-            const formData = new FormData();
-            const cleanHobi = Array.isArray(data.id_hobi)
-                ? data.id_hobi
-                : typeof data.id_hobi === 'string'
-                    ? JSON.parse(data.id_hobi) // Parse jika masih string JSON
-                    : [];
+            const formData = new FormData();           
             // Handle photo upload
             if (previewCanvasRef.current) {
                 const canvas = previewCanvasRef.current;
@@ -309,7 +304,6 @@ export default function PdpEdit() {
             if (selectedFilePiagam && selectedFilePiagam.target.files[0]) {
                 formData.append('file_piagam', selectedFilePiagam.target.files[0]);
             }
-
 
             const payloadData: any = {
                 nik: data.nik || '',

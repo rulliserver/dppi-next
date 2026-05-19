@@ -101,7 +101,7 @@ export default function Peta({ DataPdpProv, DataPdpKab, kab, prov }: any) {
     const handleClose = (e: any) => {
         setShowPopup(false);
     };
-    // Fungsi ini SUDAH ADA di kode Anda, pastikan tidak terhapus
+
     const handleJumlahClick = (id: number) => {
         const url = `/pdp-detail?id=${id}`;
         window.location.href = url;
@@ -178,15 +178,20 @@ export default function Peta({ DataPdpProv, DataPdpKab, kab, prov }: any) {
                                     <div className='col-span-1'>PDP</div>
                                 </div>
                                 <div className='border-t-2 border-red-700'></div>
-                                <div className='grid grid-cols-11 font-semibold text-sm cursor-pointer hover:bg-red-50 transition-colors rounded' onClick={() => {
-                                    const provName = provinsi && provinsi.length > 0 ? provinsi[0].nama_provinsi : 'Provinsi';
-                                    handleJumlahClick(provinsi[0]?.id_provinsi);
-                                }}>
+                                <div className='grid grid-cols-11 font-semibold text-sm cursor-pointer hover:bg-red-50  rounded' >
                                     <div className='col-span-8'>TOTAL KESELURUHAN</div>
                                     <div className='px-2'>:</div>
                                     <div className='pr-2 text-right underline decoration-dotted'>{totalPDP.keseluruhan}</div>
                                     <div className='col-span-1'>PDP</div>
                                 </div>
+                                <div className="py-2 flex justify-end w-full hover:text-accent rounded-md hover:transition-colors hover:bg-accent/20">
+                                    <button className='hover:space-x-3.5 px-2' onClick={() => {
+                                        provinsi.length > 0 ? provinsi[0].nama_provinsi : 'Provinsi';
+                                        handleJumlahClick(provinsi[0]?.id_provinsi);
+                                    }}>Selengkapnya <i className='fas fa-chevron-right'></i>
+                                    </button>
+                                </div>
+
                             </ul>
                         </div>
                     </div>

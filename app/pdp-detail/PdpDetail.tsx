@@ -4,10 +4,12 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { UrlApi } from '../components/apiUrl';
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import axios from 'axios';
+
 export default function PDPDetailPage() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
-    const nama = searchParams.get('nama');
+    const [namaProvinsi, setNamaProvinsi] = useState('');
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,6 +20,17 @@ export default function PDPDetailPage() {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [debouncedKeyword, setDebouncedKeyword] = useState('');
 
+    const [kabupaten, setKabupaten] = useState<any[]>([]);
+    const [provinsi, setProvinsi] = useState<any[]>([]);
+
+    const selectedProvinsi = id;
+    const filteredKabupaten = useMemo(() => {
+        if (!selectedProvinsi) return [];
+        return kabupaten.filter((kabupaten: any) => kabupaten.id_provinsi === Number(selectedProvinsi));
+    }, [kabupaten, selectedProvinsi]);
+
+    const [selectedKabupaten, setSelectedKabupaten] = useState('');
+
     // Debounce search keyword
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -26,41 +39,100 @@ export default function PDPDetailPage() {
         return () => clearTimeout(timer);
     }, [searchKeyword]);
 
-    // Reset ke halaman pertama saat keyword berubah
+    // Reset ke halaman pertama saat keyword atau kabupaten berubah
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedKeyword]);
+    }, [debouncedKeyword, selectedKabupaten]);
+
+    // Reset selectedKabupaten saat ganti provinsi
+    useEffect(() => {
+        setSelectedKabupaten('');
+    }, [id]);
 
     // Fetch data
     const fetchData = useCallback(async () => {
+        if (!id) return;
+
         setLoading(true);
         try {
+
             let url = `${UrlApi}/pdp-detail?id=${id}&page=${currentPage}&limit=${itemsPerPage}`;
+
+            if (selectedKabupaten) {
+                url += `&kab=${selectedKabupaten}`;
+            }
+
             if (debouncedKeyword.trim()) {
                 url += `&q=${encodeURIComponent(debouncedKeyword.trim())}`;
             }
 
             const response = await fetch(url);
             const result = await response.json();
-            setData(result.data);
-            setTotalPages(result.total_pages);
-            setTotalData(result.total);
+
+            setData(result.data || []);
+            setTotalPages(result.total_pages || 0);
+            setTotalData(result.total || 0);
+
+
+            if (result.data && result.data.length > 0 && result.data[0].nama_provinsi) {
+                setNamaProvinsi(result.data[0].nama_provinsi);
+            } else {
+                // Cari dari list provinsi
+                const prov = provinsi.find(p => p.id === Number(id));
+                if (prov) setNamaProvinsi(prov.nama_provinsi);
+            }
         } catch (error) {
             console.error('Error:', error);
+            setData([]);
+            setTotalPages(0);
+            setTotalData(0);
         } finally {
             setLoading(false);
         }
-    }, [id, currentPage, itemsPerPage, debouncedKeyword]);
+    }, [id, currentPage, itemsPerPage, debouncedKeyword, selectedKabupaten, provinsi]);
+
+    const getProvinsi = useCallback(() => {
+        axios
+            .get(`${UrlApi}/provinsi`) 
+            .then((response: any) => {
+                setProvinsi(response.data);
+                // Set nama provinsi dari data yang didapat
+                const prov = response.data.find((p: any) => p.id === Number(id));
+                if (prov) setNamaProvinsi(prov.nama_provinsi);
+            })
+            .catch((error) => {
+                console.error('Error fetching provinsi:', error);
+            });
+    }, [id]);
+
+    const getKabupaten = useCallback(() => {
+        axios
+            .get(`${UrlApi}/kabupaten`) 
+            .then((response: any) => {
+                setKabupaten(response.data);
+            })
+            .catch((error) => {
+                console.error('Error fetching kabupaten:', error);
+            });
+    }, []);
+
+
+    useEffect(() => {
+        if (id) {
+            getProvinsi();
+            getKabupaten();
+        }
+    }, [id, getProvinsi, getKabupaten]);
+
 
     useEffect(() => {
         if (id) {
             fetchData();
         }
-    }, [fetchData, id]);
+    }, [id, fetchData]);
 
-    // Generate pagination dengan ellipsis
     const generatePagination = useCallback(() => {
-        const delta = 2; // Jumlah halaman di kiri dan kanan halaman aktif
+        const delta = 2;
         const range = [];
         const rangeWithDots = [];
         let l;
@@ -86,21 +158,38 @@ export default function PDPDetailPage() {
         return rangeWithDots;
     }, [currentPage, totalPages]);
 
-    // Handle change items per page
     const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setItemsPerPage(Number(e.target.value));
         setCurrentPage(1);
     };
 
-    // Handle search
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchKeyword(e.target.value);
     };
 
-    // Clear search
     const clearSearch = () => {
         setSearchKeyword('');
         setDebouncedKeyword('');
+    };
+
+    const handleProvinsiChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        if (value) {
+            window.location.href = `/pdp-detail?id=${value}`;
+        }
+    };
+
+    const handleKabChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedKabupaten(value);
+
+    };
+
+
+    const getTingkatPenugasan = (item: any) => {
+        if (item.tingkat_penugasan) return item.tingkat_penugasan;
+        if (item.nama_kabupaten) return "Paskibraka Tingkat Kabupaten/Kota";
+        return "Paskibraka Tingkat Provinsi";
     };
 
     return (
@@ -109,49 +198,88 @@ export default function PDPDetailPage() {
                 {/* Header */}
                 <div className="bg-white rounded-t-2xl border-b-4 border-red-800 p-6">
                     <h1 className="text-2xl font-bold text-red-800">
-                        Detail PDP - {nama ? decodeURIComponent(nama) : 'Provinsi'}
+                        Detail PDP - {namaProvinsi || (provinsi.find(p => p.id === Number(id))?.nama_provinsi || 'Provinsi')}
                     </h1>
                     <p className="text-gray-600 mt-1">
                         Total Data: {totalData} PDP
                     </p>
                 </div>
-                <div className="bg-white p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <Suspense>
-                        {/* Filter & Search Bar */}
-                        {/* Search Input */}
-                        <div className="relative w-full sm:w-80">
-                            <input
-                                type="text"
-                                placeholder="Cari PDP..."
-                                value={searchKeyword}
-                                onChange={handleSearchChange}
-                                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            />
-                            {searchKeyword && (
-                                <button
-                                    onClick={clearSearch}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                    ✕
-                                </button>
-                            )}
 
+                <div className="bg-white p-4 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <Suspense fallback={<div>Loading...</div>}>
+                            {/* Search Input */}
+                            <div className="relative w-full sm:w-80">
+                                <input
+                                    type="text"
+                                    placeholder="Cari PDP..."
+                                    value={searchKeyword}
+                                    onChange={handleSearchChange}
+                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                />
+                                {searchKeyword && (
+                                    <button
+                                        onClick={clearSearch}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Provinsi Select */}
+                            <div className='w-full sm:w-auto'>
+                                <select
+                                    name='id_provinsi'
+                                    id='id_provinsi'
+                                    onChange={handleProvinsiChange}
+                                    value={id || ''}
+                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                >
+                                    <option value=''>--Pilih Provinsi--</option>
+                                    {provinsi && provinsi.map((item: any) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.nama_provinsi}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Kabupaten Select */}
+                            <div className='w-full sm:w-auto'>
+                                <select
+                                    name='id_kabupaten'
+                                    id='id_kabupaten'
+                                    disabled={!selectedProvinsi}
+                                    onChange={handleKabChange}
+                                    value={selectedKabupaten}
+                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                >
+                                    <option value=''>--Pilih Kabupaten--</option>
+                                    {filteredKabupaten.map((item: any) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.nama_kabupaten}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </Suspense>
+
+                        {/* Items per page selector */}
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm text-gray-600">Tampilkan:</label>
+                            <select
+                                value={itemsPerPage}
+                                onChange={handleItemsPerPageChange}
+                                className='w-full border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                            </select>
+                            <span className="text-sm text-gray-600">data</span>
                         </div>
-                    </Suspense>
-                    {/* Items per page selector */}
-                    <div className="flex items-center gap-2">
-                        <label className="text-sm text-gray-600">Tampilkan:</label>
-                        <select
-                            value={itemsPerPage}
-                            onChange={handleItemsPerPageChange}
-                            className="px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                            <option value={100}>100</option>
-                        </select>
-                        <span className="text-sm text-gray-600">data</span>
                     </div>
                 </div>
 
@@ -172,7 +300,7 @@ export default function PDPDetailPage() {
                                     onClick={clearSearch}
                                     className="mt-2 text-red-600 hover:text-red-700"
                                 >
-                                    Hapus pencarian &quot;{searchKeyword}&quot;
+                                    Hapus pencarian "{searchKeyword}"
                                 </button>
                             )}
                         </div>
@@ -191,24 +319,33 @@ export default function PDPDetailPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {data.map((item: any, index: any) => (
+                                        {data.map((item: any, index: number) => (
                                             <tr key={item.id} className="border-b hover:bg-red-50">
                                                 <td className="px-4 py-3">
                                                     {(currentPage - 1) * itemsPerPage + index + 1}
                                                 </td>
-                                                <td className="px-4 py-3 font-medium">{item.nama_lengkap.toUpperCase()}</td>
-                                                <td className="px-4 py-3">{item.tingkat_penugasan ? item.tingkat_penugasan : item.nama_kabupaten ? "Paskibraka Tingkat Kabupaten/Kota" : "Paskibraka Tingkat Provinsi"}</td>
-                                                <td className="px-4 py-3">{item.nama_kabupaten}</td>
-                                                <td className="px-4 py-3">{item.asal_sma}</td>
-                                                <td className="px-4 py-3">{item.tahun_tugas}</td>
-
+                                                <td className="px-4 py-3 font-medium">
+                                                    {item.nama_lengkap?.toUpperCase() || '-'}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {getTingkatPenugasan(item)}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {item.nama_kabupaten || '-'}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {item.asal_sma || '-'}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {item.tahun_tugas || '-'}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
 
-                            {/* Pagination dengan Ellipsis */}
+                            {/* Pagination */}
                             {totalPages > 1 && (
                                 <div className="flex flex-col sm:flex-row justify-between items-center p-4 bg-gray-50 gap-4">
                                     <div className="text-sm text-gray-600">
@@ -217,7 +354,6 @@ export default function PDPDetailPage() {
                                     </div>
 
                                     <div className="flex items-center gap-1 flex-wrap justify-center">
-                                        {/* Tombol First */}
                                         <button
                                             onClick={() => setCurrentPage(1)}
                                             disabled={currentPage === 1}
@@ -226,7 +362,6 @@ export default function PDPDetailPage() {
                                             «
                                         </button>
 
-                                        {/* Tombol Previous */}
                                         <button
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
@@ -235,7 +370,6 @@ export default function PDPDetailPage() {
                                             ‹
                                         </button>
 
-                                        {/* Nomor Halaman dengan Ellipsis */}
                                         {generatePagination().map((page, idx) => (
                                             <button
                                                 key={idx}
@@ -252,7 +386,6 @@ export default function PDPDetailPage() {
                                             </button>
                                         ))}
 
-                                        {/* Tombol Next */}
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
@@ -261,7 +394,6 @@ export default function PDPDetailPage() {
                                             ›
                                         </button>
 
-                                        {/* Tombol Last */}
                                         <button
                                             onClick={() => setCurrentPage(totalPages)}
                                             disabled={currentPage === totalPages}
@@ -270,14 +402,12 @@ export default function PDPDetailPage() {
                                             »
                                         </button>
                                     </div>
-
-
                                 </div>
                             )}
                         </>
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 }

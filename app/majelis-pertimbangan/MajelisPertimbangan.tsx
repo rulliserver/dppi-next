@@ -84,13 +84,13 @@ export default function MajelisPertimbangan() {
                         </button>
 
                         {/* Konten Popup */}
-                        <div className='p-6'>
+                        <div className='p-4'>
                             <div className='flex justify-center mb-4'>
                                 <Image
                                     src={BaseUrl + selectedMember.photo}
                                     alt={selectedMember.nama_lengkap}
                                     className='rounded-lg object-cover'
-                                    width={200}
+                                    width={150}
                                     height={200}
                                 />
                             </div>
@@ -99,7 +99,7 @@ export default function MajelisPertimbangan() {
                                 {selectedMember.nama_lengkap}
                             </h3>
 
-                            <div className='space-y-3'>
+                            <div className='space-y-1'>
                                 <div className='border-b pb-2'>
                                     <p className='text-sm text-gray-500'>Provinsi</p>
                                     <p className='font-medium'>{selectedMember.nama_provinsi}</p>

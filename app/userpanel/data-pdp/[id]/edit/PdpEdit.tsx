@@ -292,12 +292,7 @@ export default function PdpEdit() {
         setIsSubmitting(true);
         setErrorMessage('');
         try {
-            const formData = new FormData();
-            const cleanHobi = Array.isArray(data.id_hobi)
-                ? data.id_hobi
-                : typeof data.id_hobi === 'string'
-                    ? JSON.parse(data.id_hobi) // Parse jika masih string JSON
-                    : [];
+            const formData = new FormData();           
             // Handle photo upload
             if (previewCanvasRef.current) {
                 const canvas = previewCanvasRef.current;
@@ -311,24 +306,17 @@ export default function PdpEdit() {
             }
 
             const payloadData: any = {
-                // Data pribadi
                 nik: data.nik || '',
                 nama_lengkap: data.nama_lengkap || '',
                 jk: data.jk || '',
                 tempat_lahir: data.tempat_lahir || '',
                 tgl_lahir: data.tgl_lahir || '',
                 alamat: data.alamat || '',
-
-                // Pendidikan
                 pendidikan_terakhir: data.pendidikan_terakhir || '',
                 jurusan: data.jurusan || '',
                 nama_instansi_pendidikan: data.nama_instansi_pendidikan || '',
-
-                // Kontak
                 email: data.email || '',
                 telepon: data.telepon || '',
-
-                // Penugasan
                 no_simental: data.no_simental || '',
                 no_piagam: data.no_piagam || '',
                 posisi: data.posisi || '',
@@ -337,17 +325,11 @@ export default function PdpEdit() {
                 tingkat_penugasan: data.tingkat_penugasan || '',
                 thn_tugas: data.thn_tugas ? parseInt(String(data.thn_tugas), 10) : null,
                 status: data.status || '',
-
-                // Domisili
                 id_kabupaten_domisili: data.id_kabupaten_domisili ? parseInt(data.id_kabupaten_domisili) : null,
                 id_provinsi_domisili: data.id_provinsi_domisili ? parseInt(data.id_provinsi_domisili) : null,
-
-                // Penugasan wilayah
                 id_kabupaten: data.id_kabupaten ? parseInt(data.id_kabupaten) : null,
                 id_provinsi: data.id_provinsi ? parseInt(data.id_provinsi) : null,
-
-                id_hobi: cleanHobi,
-                // Minat, bakat
+                id_hobi: data.id_hobi || null,
                 id_bakat: data.id_bakat ? parseInt(data.id_bakat) : null,
                 detail_bakat: data.detail_bakat || '',
                 id_minat: data.id_minat ? parseInt(data.id_minat) : null,
@@ -374,7 +356,7 @@ export default function PdpEdit() {
                 confirmButtonColor: '#2563eb',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    router.back()
+                    window.location.href = '/userpanel/data-pdp/verified'
                 }
             });
         } catch (error: any) {
@@ -1046,7 +1028,8 @@ export default function PdpEdit() {
                                 <p className='font-semibold'>HOBI, MINAT, DAN BAKAT</p>
                             </div>
                             <div className='grid gap-2 mt-4'>
-                                <InputLabel htmlFor='id_hobi'>Pilih Hobi:</InputLabel>
+                                <InputLabel htmlFor='id_hobi'>Pilih Hobi (1 atau lebih):</InputLabel>
+
                                 <Select
                                     instanceId="select-hobi"
                                     options={hobi}
