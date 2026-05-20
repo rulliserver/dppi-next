@@ -206,7 +206,7 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                                     </li>
                                                 </a>
                                                 <div className='flex flex-row pl-5'>
-                                                    <div className='w-6 -translate-y-[0.6em] border-gray-400 border-b'></div>
+                                                    <div className='w-6 translate-y-[-0.6em] border-gray-400 border-b'></div>
                                                     <p className='text-gray-400'>&nbsp; Pelaksana</p>
                                                 </div>
                                                 <ul className='ml-5'>
@@ -237,7 +237,7 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                                     </li>
                                                 </Link>
                                                 <div className='flex flex-row pl-5'>
-                                                    <div className='w-6 -translate-y-[0.6em] border-gray-400 border-b'></div>
+                                                    <div className='w-6 translate-y-[-0.6em] border-gray-400 border-b'></div>
                                                     <p className='text-gray-500'>&nbsp; Informasi</p>
                                                 </div>
                                                 <ul className='ml-5'>

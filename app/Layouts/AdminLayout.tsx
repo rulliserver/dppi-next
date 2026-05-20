@@ -372,6 +372,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                     Video
                                                 </a>
                                             </li>
+                                            <li>
+                                                <a
+                                                    href='/adminpanel/paskibraka-nasional'
+                                                    className={`block px-4 py-2 ${pathname === '/adminpanel/paskibraka-nasional'
+                                                        ? 'bg-violet-500 text-white rounded-md'
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    Paskibraka Nasional
+                                                </a>
+                                            </li>
                                         </div>
                                     ) : ''}
 
@@ -850,6 +861,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 ) : ''}
                                 {user.role === "Administrator" || user.role === "Superadmin" ? (
                                     <>
+                                        <a
+                                            href='/adminpanel/paskibraka-nasional'
+                                            className={
+                                                pathname === '/adminpanel/paskibraka-nasional'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/paskibraka-nasional'
+                                                        ? 'ml-2 mr-1 text-xl py-auto fas fa-flag text-purple-600'
+                                                        : 'ml-2 mr-1 text-xl py-auto fas fa-flag text-accent'
+                                                }></i>
+
+                                            <p className='mx-1 menu-list' id='menu-name3'>
+                                                Paskibraka Nasional
+                                            </p>
+                                        </a>
                                         <a
                                             href='/adminpanel/galeri-foto'
                                             className={

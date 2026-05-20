@@ -93,7 +93,7 @@ export default function PDPDetailPage() {
 
     const getProvinsi = useCallback(() => {
         axios
-            .get(`${UrlApi}/provinsi`) 
+            .get(`${UrlApi}/provinsi`)
             .then((response: any) => {
                 setProvinsi(response.data);
                 // Set nama provinsi dari data yang didapat
@@ -107,7 +107,7 @@ export default function PDPDetailPage() {
 
     const getKabupaten = useCallback(() => {
         axios
-            .get(`${UrlApi}/kabupaten`) 
+            .get(`${UrlApi}/kabupaten`)
             .then((response: any) => {
                 setKabupaten(response.data);
             })
@@ -193,12 +193,12 @@ export default function PDPDetailPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8">
+        <div className="min-h-screen bg-gray-100 p-4">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-t-2xl border-b-4 border-red-800 p-6">
                     <h1 className="text-2xl font-bold text-red-800">
-                        Detail PDP - {namaProvinsi || (provinsi.find(p => p.id === Number(id))?.nama_provinsi || 'Provinsi')}
+                        PDP Provinsi {namaProvinsi ? namaProvinsi : ''} {selectedKabupaten ? " - " + kabupaten.find(k => k.id === Number(selectedKabupaten))?.nama_kabupaten : ''}
                     </h1>
                     <p className="text-gray-600 mt-1">
                         Total Data: {totalData} PDP
@@ -334,7 +334,7 @@ export default function PDPDetailPage() {
                                                     {item.nama_kabupaten || '-'}
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    {item.asal_sma || '-'}
+                                                    {item.asal_sma.toUpperCase() || '-'}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     {item.tahun_tugas || '-'}
