@@ -82,7 +82,20 @@ export default function PaskibrakaNasional() {
 
         }
     };
-
+    const fetchProvinsi = async () => {
+        try {
+          
+                const res = await axios.get(`${UrlApi}/provinsi`, {
+                    withCredentials: true,
+                    headers: { Accept: 'application/json' },
+                });
+                setProvinsi(res.data);
+           
+        } catch (e) {
+            console.error(e);
+           
+        }
+    };
     // Fetch data
     const fetchData = async () => {
         setLoading(true);
@@ -130,6 +143,7 @@ export default function PaskibrakaNasional() {
     useEffect(() => {
         fetchTahunList();
         fetchKabupaten();
+        fetchProvinsi();
     }, []);
 
     useEffect(() => {

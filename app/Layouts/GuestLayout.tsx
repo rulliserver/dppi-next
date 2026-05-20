@@ -258,6 +258,11 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                                             <span className='link link-underline link-underline-primary'> &#x2022; Regulasi</span>
                                                         </li>
                                                     </Link>
+                                                    <Link href='/paskibraka-nasional'>
+                                                        <li className={pathname === '/paskibraka-nasional' ? 'py-1 text-yellow-500' : 'py-1 text-white'}>
+                                                            <span className='link link-underline link-underline-primary'> &#x2022; Paskibraka Nasional</span>
+                                                        </li>
+                                                    </Link>
                                                 </ul>
 
                                                 <Link href='/kontak'>
@@ -379,6 +384,11 @@ export default function GuestLayout({ children }: Readonly<{ children: React.Rea
                                         <Link href='/regulasi'>
                                             <li className='py-1 text-primary'>
                                                 <span className='link link-underline link-underline-primary'>Regulasi</span>
+                                            </li>
+                                        </Link>
+                                        <Link href='/paskibraka-nasional'>
+                                            <li className='py-1 text-primary'>
+                                                <span className='link link-underline link-underline-primary'>Paskibraka Nasional</span>
                                             </li>
                                         </Link>
                                     </ul>
