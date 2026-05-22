@@ -9,6 +9,7 @@ import { UrlApi } from "@/app/components/apiUrl";
 import axios from "axios";
 import { BaseUrl } from "@/app/components/baseUrl";
 import Pagination2 from "@/app/components/Pagination2";
+import * as XLSX from 'xlsx-js-style';
 
 interface PaskibrakaNasional {
     id: number;
@@ -55,11 +56,11 @@ export default function PaskibrakaNasional() {
         photo: null as File | null,
     });
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-    const [filterTahun, setFilterTahun] = useState("");
+    const [filterTahun, setFilterTahun] = useState("2025");
     const [tahunList, setTahunList] = useState<number[]>([]); // State untuk daftar tahun
     const [kabupaten, setKabupaten]: any = useState([]);
     const [provinsi, setProvinsi]: any = useState([]);
-
+    const [exporting, setExporting] = useState(false);
     const filteredKabupaten = kabupaten.filter((kabupaten: any) =>
         kabupaten.id_provinsi === Number(formData.id_provinsi)
     );
@@ -84,16 +85,16 @@ export default function PaskibrakaNasional() {
     };
     const fetchProvinsi = async () => {
         try {
-          
-                const res = await axios.get(`${UrlApi}/provinsi`, {
-                    withCredentials: true,
-                    headers: { Accept: 'application/json' },
-                });
-                setProvinsi(res.data);
-           
+
+            const res = await axios.get(`${UrlApi}/provinsi`, {
+                withCredentials: true,
+                headers: { Accept: 'application/json' },
+            });
+            setProvinsi(res.data);
+
         } catch (e) {
             console.error(e);
-           
+
         }
     };
     // Fetch data
@@ -267,6 +268,100 @@ export default function PaskibrakaNasional() {
             setPhotoPreview(URL.createObjectURL(file));
         }
     };
+    const exportToExcel = async () => {
+        setExporting(true);
+        toast.loading("Mengambil semua data...", { id: "export" });
+
+        try {
+            // 1. Dapatkan total data tanpa filter tahun
+            const firstRes = await fetch(
+                `${UrlApi}/adminpanel/paskibraka-nasional?per_page=1`,
+                { credentials: "include" }
+            );
+            const firstData: PaginatedResponse = await firstRes.json();
+            const totalItems = firstData.total_items;
+            const perPage = 500; // ambil 500 data per request
+            const totalPages = Math.ceil(totalItems / perPage);
+
+            let allData: PaskibrakaNasional[] = [];
+
+            // 2. Ambil semua halaman secara paralel (batasi并发)
+            for (let page = 1; page <= totalPages; page++) {
+                const res = await fetch(
+                    `${UrlApi}/adminpanel/paskibraka-nasional?page=${page}&per_page=${perPage}`,
+                    { credentials: "include" }
+                );
+                const result: PaginatedResponse = await res.json();
+                allData = [...allData, ...result.data];
+                toast.loading(`Mengambil data... ${Math.round((page / totalPages) * 100)}%`, {
+                    id: "export",
+                });
+            }
+
+            if (allData.length === 0) {
+                toast.error("Tidak ada data untuk diekspor", { id: "export" });
+                return;
+            }
+
+            // 3. Kelompokkan berdasarkan tahun_tugas
+            const groupedByYear: Record<string, PaskibrakaNasional[]> = {};
+            allData.forEach((item) => {
+                const year = item.tahun_tugas?.toString() || "Tanpa Tahun";
+                if (!groupedByYear[year]) groupedByYear[year] = [];
+                groupedByYear[year].push(item);
+            });
+
+            // 4. Buat workbook baru
+            const workbook = XLSX.utils.book_new();
+
+            // 5. Untuk setiap tahun, buat sheet
+            for (const [year, items] of Object.entries(groupedByYear)) {
+                // Urutkan data berdasarkan nama (opsional)
+                const sorted = [...items].sort((a, b) =>
+                    a.nama_lengkap.localeCompare(b.nama_lengkap)
+                );
+
+                // Mapping ke format yang rapi untuk excel
+                const sheetData = sorted.map((item, idx) => ({
+                    No: idx + 1,
+                    "Nama Lengkap": item.nama_lengkap,
+                    "Jenis Kelamin": item.jk === "Putra" ? "Laki-laki" : item.jk === "Putri" ? "Perempuan" : item.jk,
+                    Provinsi: item.nama_provinsi || "-",
+                    Kabupaten: item.nama_kabupaten || "-",
+                    "Asal SMA": item.asal_sma || "-",
+                    "Tahun Tugas": item.tahun_tugas || "-",
+                }));
+
+                // Konversi ke sheet
+                const worksheet = XLSX.utils.json_to_sheet(sheetData);
+
+                // (Opsional) styling sederhana: lebar kolom
+                worksheet["!cols"] = [
+                    { wch: 6 },  // No
+                    { wch: 35 }, // Nama Lengkap
+                    { wch: 15 }, // Jenis Kelamin
+                    { wch: 25 }, // Provinsi
+                    { wch: 25 }, // Kabupaten
+                    { wch: 30 }, // Asal SMA
+                    { wch: 12 }, // Tahun Tugas
+                ];
+
+                // Nama sheet (tidak boleh lebih dari 31 karakter dan tidak boleh karakter khusus)
+                let sheetName = year === "Tanpa Tahun" ? "Tanpa Tahun" : `Tahun ${year}`;
+                sheetName = sheetName.slice(0, 31);
+                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+            }
+
+            // 6. Generate file dan download
+            XLSX.writeFile(workbook, `Paskibraka_Nasional.xlsx`);
+            toast.success(`Berhasil export ${allData.length} data ke Excel`, { id: "export" });
+        } catch (error) {
+            console.error(error);
+            toast.error("Gagal mengekspor data", { id: "export" });
+        } finally {
+            setExporting(false);
+        }
+    };
 
     return (
         <div className="min-h-screen">
@@ -274,15 +369,36 @@ export default function PaskibrakaNasional() {
 
             <div className="mx-auto">
                 {/* Header */}
-                <div className="bg-white dark:bg-dark rounded-lg shadow mb-6 p-6">
-                    <h1 className="text-3xl font-bold dark:text-accent text-gray-800 mb-2">
-                        Paskibraka Nasional
-                    </h1>
+                <div className="bg-white dark:bg-dark rounded-lg shadow mb-6 p-6 ">
+                    <div className="flex flex-row justify-between">
+
+                        <h1 className="text-3xl font-bold dark:text-accent text-gray-800 mb-2">
+                            Paskibraka Nasional
+                        </h1>
+                        <button
+                            onClick={exportToExcel}
+                            disabled={exporting}
+                            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                        >
+                            {exporting ? (
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m-6 4h6M4 4h16v16H4z" />
+                                </svg>
+                            )}
+                            Export Excel
+                        </button>
+
+                    </div>
+
                     <p className="text-gray-600 dark:text-white">
                         Kelola data anggota Paskibraka Nasional
                     </p>
                 </div>
-
                 {/* Filter & Search */}
                 <div className="mb-6">
                     <div className="flex flex-wrap gap-4 justify-between items-end">
@@ -380,7 +496,7 @@ export default function PaskibrakaNasional() {
                             <tbody className="bg-white divide-y dark:bg-dark divide-gray-200">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={9} className="px-6 py-4 text-center">
+                                        <td colSpan={9} className="px-6 py-2 text-center">
                                             <div className="flex justify-center">
                                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
                                             </div>
@@ -388,17 +504,17 @@ export default function PaskibrakaNasional() {
                                     </tr>
                                 ) : data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={9} className="px-6 py-4 text-center dark:text-white">
+                                        <td colSpan={9} className="px-6 py-2 text-center dark:text-white">
                                             Tidak ada data
                                         </td>
                                     </tr>
                                 ) : (
                                     data.map((item, index) => (
                                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                                 {index + ((currentPage - 1) * 10) + 1}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-6 py-2 whitespace-nowrap">
                                                 {item.photo ? (
                                                     <img
                                                         src={`${BaseUrl}/${item.photo}`}
@@ -416,25 +532,25 @@ export default function PaskibrakaNasional() {
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                                 {item.nama_lengkap}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-white">
+                                            <td className="px-6 py-2 whitespace-nowrap text-sm dark:text-white">
                                                 {item.jk}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-white">
+                                            <td className="px-6 py-2 whitespace-nowrap text-sm dark:text-white">
                                                 {item.nama_provinsi || '-'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-white">
+                                            <td className="px-6 py-2 whitespace-nowrap text-sm dark:text-white">
                                                 {item.nama_kabupaten || '-'}
                                             </td>
-                                            <td className="px-6 py-4 text-sm dark:text-white">
+                                            <td className="px-6 py-2 text-sm dark:text-white">
                                                 {item.asal_sma || '-'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-white">
+                                            <td className="px-6 py-2 whitespace-nowrap text-sm dark:text-white">
                                                 {item.tahun_tugas || '-'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium">
                                                 <button
                                                     onClick={() => handleEdit(item)}
                                                     className="text-blue-600 hover:text-blue-900 mr-3"
