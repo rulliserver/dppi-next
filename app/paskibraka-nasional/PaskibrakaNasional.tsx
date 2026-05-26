@@ -275,88 +275,143 @@ export default function PublicPaskibraka() {
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {data.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1"
-                                >
-                                    {/* Photo Section */}
-                                    <div className="relative h-64 bg-linear-to-br from-gray-100 to-gray-200">
-                                        {item.photo ? (
-                                            <img
-                                                src={`${BaseUrl}/${item.photo}`}
-                                                alt={item.nama_lengkap}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = '/placeholder-avatar.png';
-                                                }}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <div className="text-center">
-                                                    <svg className="w-20 h-20 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                    </svg>
-                                                    <p className="mt-2 text-sm text-gray-400">No Photo</p>
-                                                </div>
-                                            </div>
-                                        )}
 
-                                        {/* Year Badge */}
-                                        {item.tahun_tugas && (
-                                            <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
-                                                {item.tahun_tugas}
-                                            </div>
-                                        )}
+                        {/* Pisahkan data berdasarkan tahun */}
+                        {(() => {
+                            const latestData = data.filter(item => item.tahun_tugas && item.tahun_tugas >= 2022);
+                            const oldData = data.filter(item => item.tahun_tugas && item.tahun_tugas < 2022);
 
-                                        {/* Gender Badge */}
-                                        <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm text-white px-2 py-1 rounded-md text-xs">
-                                            {item.jk === 'Putra' ? '👨 Putra' : item.jk === 'Putri' ? '👩 Putri' : item.jk}
+                            return (
+                                <>
+                                    {/* Grid Cards untuk tahun >= 2022 */}
+                                    {latestData.length > 0 && (
+                                        <div className="mb-12">
+                                            {/* <h2 className="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-red-600 pl-4">
+                                                    Paskibraka Tahun {Math.min(...latestData.map(d => d.tahun_tugas!))} - {Math.max(...latestData.map(d => d.tahun_tugas!))}
+                                                </h2> */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                                {latestData.map((item) => (
+                                                    <div
+                                                        key={item.id}
+                                                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1"
+                                                    >
+                                                        {/* Photo Section */}
+                                                        <div className="relative h-64 bg-linear-to-br from-gray-100 to-gray-200">
+                                                            {item.photo ? (
+                                                                <img
+                                                                    src={`${BaseUrl}/${item.photo}`}
+                                                                    alt={item.nama_lengkap}
+                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                    onError={(e) => {
+                                                                        (e.target as HTMLImageElement).src = '/placeholder-avatar.png';
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center">
+                                                                    <div className="text-center">
+                                                                        <svg className="w-20 h-20 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                        </svg>
+                                                                        <p className="mt-2 text-sm text-gray-400">No Photo</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {/* Year Badge */}
+                                                            {item.tahun_tugas && (
+                                                                <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
+                                                                    {item.tahun_tugas}
+                                                                </div>
+                                                            )}
+                                                            {/* Gender Badge */}
+                                                            <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm text-white px-2 py-1 rounded-md text-xs">
+                                                                {item.jk === 'Putra' ? '👨 Putra' : item.jk === 'Putri' ? '👩 Putri' : item.jk}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Info Section */}
+                                                        <div className="p-4">
+                                                            <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">
+                                                                {item.nama_lengkap}
+                                                            </h3>
+                                                            <div className="space-y-1.5 text-sm">
+                                                                {/* Provinsi */}
+                                                                <div className="flex items-start gap-2 text-gray-600">
+                                                                    <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    </svg>
+                                                                    <span className="line-clamp-1">{item.nama_provinsi || '-'}</span>
+                                                                </div>
+                                                                {/* Kabupaten */}
+                                                                {item.nama_kabupaten && (
+                                                                    <div className="flex items-start gap-2 text-gray-600">
+                                                                        <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                                        </svg>
+                                                                        <span className="line-clamp-1">{item.nama_kabupaten}</span>
+                                                                    </div>
+                                                                )}
+                                                                {/* Asal SMA */}
+                                                                {item.asal_sma && (
+                                                                    <div className="flex items-start gap-2 text-gray-600">
+                                                                        <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                                                        </svg>
+                                                                        <span className="line-clamp-2">{item.asal_sma}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    {/* Info Section */}
-                                    <div className="p-4">
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">
-                                            {item.nama_lengkap}
-                                        </h3>
-
-                                        <div className="space-y-1.5 text-sm">
-                                            {/* Provinsi */}
-                                            <div className="flex items-start gap-2 text-gray-600">
-                                                <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                                <span className="line-clamp-1">{item.nama_provinsi || '-'}</span>
-                                            </div>
-
-                                            {/* Kabupaten */}
-                                            {item.nama_kabupaten && (
-                                                <div className="flex items-start gap-2 text-gray-600">
-                                                    <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                                    </svg>
-                                                    <span className="line-clamp-1">{item.nama_kabupaten}</span>
-                                                </div>
-                                            )}
-
-                                            {/* Asal SMA */}
-                                            {item.asal_sma && (
-                                                <div className="flex items-start gap-2 text-gray-600">
-                                                    <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                                    </svg>
-                                                    <span className="line-clamp-2">{item.asal_sma}</span>
-                                                </div>
-                                            )}
+                                    {/* Tabel untuk tahun < 2022 */}
+                                    {oldData.length > 0 && (
+                                        <div className="overflow-x-auto shadow-md rounded-lg">
+                                            {/* <h2 className="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-red-600 pl-4">
+                                                    Paskibraka Tahun Sebelum 2022
+                                                </h2> */}
+                                            <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                                                <thead className="bg-gray-100 border-b">
+                                                    <tr>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provinsi</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kabupaten/Kota</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal SMA</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun Tugas</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-200">
+                                                    {oldData.map((item, index) => (
+                                                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{item.nama_lengkap}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.jk}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.nama_provinsi || '-'}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.nama_kabupaten || '-'}</td>
+                                                            <td className="px-6 py-4 text-sm text-gray-500">{item.asal_sma || '-'}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.tahun_tugas}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                    )}
+
+                                    {/* Jika kedua kelompok kosong */}
+                                    {latestData.length === 0 && oldData.length === 0 && (
+                                        <div className="text-center py-12">Tidak ada data</div>
+                                    )}
+                                </>
+                            );
+                        })()}
+
 
                         {/* Pagination */}
                         {totalPages > 1 && (
