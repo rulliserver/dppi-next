@@ -232,7 +232,7 @@ export default function PaskibrakaNasional() {
         });
         if (item.photo) {
             setPhotoPreview(
-                `${BaseUrl}/${item.photo}`
+                `${BaseUrl}${item.photo}`
             );
         }
         setIsModalOpen(true);
@@ -517,7 +517,7 @@ export default function PaskibrakaNasional() {
                                             <td className="px-6 py-2 whitespace-nowrap">
                                                 {item.photo ? (
                                                     <img
-                                                        src={`${BaseUrl}/${item.photo}`}
+                                                        src={`${BaseUrl}${item.photo}`}
                                                         alt={item.nama_lengkap}
                                                         className="w-10 h-10 rounded-full object-cover"
                                                         onError={(e) => {
@@ -648,6 +648,22 @@ export default function PaskibrakaNasional() {
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Foto
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png"
+                                    onChange={handleFileChange}
+                                    className="w-full border border-gray-300 rounded-lg"
+                                />
+                                {photoPreview && (
+                                    <div className="mt-2">
+                                        <img src={photoPreview} alt="Preview" className="w-32 h-32 object-cover rounded-lg" />
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Nama Lengkap *
                                 </label>
                                 <input
@@ -749,22 +765,7 @@ export default function PaskibrakaNasional() {
                                 </select>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Foto
-                                </label>
-                                <input
-                                    type="file"
-                                    accept="image/jpeg,image/png"
-                                    onChange={handleFileChange}
-                                    className="w-full border border-gray-300 rounded-lg"
-                                />
-                                {photoPreview && (
-                                    <div className="mt-2">
-                                        <img src={photoPreview} alt="Preview" className="w-32 h-32 object-cover rounded-lg" />
-                                    </div>
-                                )}
-                            </div>
+
 
                             <div className="flex gap-3 pt-4">
                                 <button

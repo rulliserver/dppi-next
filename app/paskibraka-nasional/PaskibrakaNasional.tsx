@@ -299,7 +299,7 @@ export default function PublicPaskibraka() {
                                                         <div className="relative h-64 bg-linear-to-br from-gray-100 to-gray-200">
                                                             {item.photo ? (
                                                                 <img
-                                                                    src={`${BaseUrl}/${item.photo}`}
+                                                                    src={`${BaseUrl}${item.photo}`}
                                                                     alt={item.nama_lengkap}
                                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                                     onError={(e) => {
