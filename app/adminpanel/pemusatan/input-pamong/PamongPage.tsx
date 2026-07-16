@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UrlApi } from '@/app/components/apiUrl';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
@@ -9,7 +9,6 @@ interface Candidate {
     id: number;
     nama_lengkap: string;
     jk: string;
-    nomor_dada: string | null;
 }
 
 const sikapFields = [
@@ -56,46 +55,19 @@ const penampilanFields = [
     { key: 'nilai_bersih_rapih_wangi', label: '7. Bersih, Rapih, Wangi' },
 ];
 
-const initialScores: Record<string, number> = {
-    nilai_ketaqwaan: 80,
-    nilai_niat_kemauan: 80,
-    nilai_keberanian: 80,
-    nilai_komunikasi: 80,
-    nilai_keterbukaan: 80,
-    nilai_ketelitian: 80,
-    nilai_kesadaran: 80,
-    nilai_toleransi: 80,
-    nilai_keikhlasan: 80,
-    nilai_mempercayai: 80,
-    nilai_jiwa_korsa: 80,
-    nilai_kekeluargaan: 80,
-    nilai_persatuan_kesatuan: 80,
-    nilai_ketahanan: 80,
-    nilai_kekompakan_keseragaman: 80,
-    nilai_ketertiban: 80,
-    nilai_kesopanan: 80,
-    nilai_kesigapan: 80,
-    nilai_kewajaran: 80,
-    nilai_ketanggapan: 80,
-    nilai_ketenangan: 80,
-    nilai_menyimak: 80,
-    nilai_kebiasaan: 80,
-    nilai_mengelola_stres: 80,
-    nilai_menghargai_waktu: 80,
-    nilai_berbicara: 80,
-    nilai_berjalan: 80,
-    nilai_makan_minum: 80,
-    nilai_kehadiran: 80,
-    nilai_hubungan_interpersonal: 80,
-    nilai_ketaatan: 80,
-    nilai_istirahat_malam: 80,
-    nilai_keindahan: 80,
-    nilai_kerapihan: 80,
-    nilai_kebersihan: 80,
-    nilai_berpakaian: 80,
-    nilai_penampilan_rambut: 80,
-    nilai_bersih_rapih_wangi: 80,
-};
+// Kriteria penilaian
+const scoreOptions = [
+    { value: 60, label: 'Jelek' },
+    { value: 70, label: 'Kurang' },
+    { value: 80, label: 'Baik' },
+    { value: 90, label: 'Baik Sekali' },
+];
+
+// Inisialisasi dengan null (tidak ada nilai default)
+const initialScores: Record<string, number | null> = {};
+[...sikapFields, ...penampilanFields].forEach(field => {
+    initialScores[field.key] = null;
+});
 
 export default function PamongPage() {
     const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -145,16 +117,20 @@ export default function PamongPage() {
 
     const candidateOptions = candidates.map(c => ({
         value: c.id,
-        label: `${c.nama_lengkap} ${c.nomor_dada ? `(${c.nomor_dada})` : ''}`
+        label: `${c.nama_lengkap} (${c.jk.toUpperCase()})}`
     }));
 
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
+    const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
     // Form States
     const [selectedCandidate, setSelectedCandidate] = useState<number | ''>('');
     const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
-    const [scores, setScores] = useState<Record<string, number>>(initialScores);
+    const [scores, setScores] = useState<Record<string, number | null>>(initialScores);
     const [catatan, setCatatan] = useState('');
 
     useEffect(() => {
@@ -175,31 +151,82 @@ export default function PamongPage() {
         fetchCandidates();
     }, []);
 
+    // Auto-save effect dengan debounce
+    useEffect(() => {
+        if (!selectedCandidate || !tanggal) return;
+        if (!isDataLoaded) return;
+        
+        // Clear timeout sebelumnya
+        if (autoSaveTimeoutRef.current) {
+            clearTimeout(autoSaveTimeoutRef.current);
+        }
+        
+        // Set timeout baru
+        autoSaveTimeoutRef.current = setTimeout(() => {
+            handleAutoSave();
+        }, 2000);
+
+        return () => {
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+        };
+    }, [scores, catatan, selectedCandidate, tanggal, isDataLoaded]);
+
     const handleScoreChange = (key: string, val: number) => {
         setScores(prev => ({ ...prev, [key]: val }));
     };
 
-    // Calculate averages dynamically
+    // Calculate averages - hanya hitung yang sudah dinilai
     const getAverage = (fields: { key: string }[]) => {
-        const sum = fields.reduce((acc, f) => acc + (scores[f.key] || 0), 0);
-        return (sum / fields.length).toFixed(1);
+        const values = fields
+            .map(f => scores[f.key])
+            .filter((val): val is number => val !== null && val !== undefined);
+        
+        if (values.length === 0) return '0';
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        return (sum / values.length).toFixed(1);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Hitung jumlah yang sudah dinilai
+    const getFilledCount = (fields: { key: string }[]) => {
+        return fields.filter(f => scores[f.key] !== null && scores[f.key] !== undefined).length;
+    };
+
+    // Fungsi untuk menyimpan data
+    const saveData = async (showNotification: boolean = false) => {
         if (!selectedCandidate) {
-            Swal.fire('Peringatan', 'Silakan pilih peserta terlebih dahulu', 'warning');
-            return;
+            if (showNotification) {
+                Swal.fire('Peringatan', 'Silakan pilih peserta terlebih dahulu', 'warning');
+            }
+            return false;
         }
 
-        setSubmitLoading(true);
+        // Cek apakah ada nilai yang diisi
+        const hasAnyScore = Object.values(scores).some(val => val !== null && val !== undefined);
+        if (!hasAnyScore && !catatan.trim()) {
+            if (showNotification) {
+                Swal.fire('Peringatan', 'Silakan isi minimal satu penilaian atau catatan', 'warning');
+            }
+            return false;
+        }
+
         try {
-            const payload = {
+            // Buat payload hanya dengan field yang memiliki nilai
+            const payload: any = {
                 id_paskibraka: Number(selectedCandidate),
                 tanggal,
-                ...scores,
-                catatan: catatan.trim() || null
             };
+            
+            Object.entries(scores).forEach(([key, val]) => {
+                if (val !== null && val !== undefined) {
+                    payload[key] = val;
+                }
+            });
+            
+            if (catatan.trim()) {
+                payload.catatan = catatan.trim();
+            }
 
             const res = await fetch(`${UrlApi}/pemusatan/pamong`, {
                 method: 'POST',
@@ -213,22 +240,111 @@ export default function PamongPage() {
             const result = await res.json();
             if (!res.ok) throw new Error(result.message || 'Gagal menyimpan jurnal');
 
-            Swal.fire({
-                title: 'Berhasil!',
-                text: 'Jurnal harian Pamong berhasil disimpan.',
-                icon: 'success',
-                confirmButtonColor: '#7c3aed'
-            });
-
-            // Reset form except candidate and date for convenience
-            setScores(initialScores);
-            setCatatan('');
+            setLastSaved(new Date());
+            
+            if (showNotification) {
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Jurnal harian Pamong berhasil disimpan.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c3aed'
+                });
+            }
+            
+            return true;
         } catch (err: any) {
-            Swal.fire('Gagal', err.message || 'Terjadi kesalahan server', 'error');
-        } finally {
-            setSubmitLoading(false);
+            if (showNotification) {
+                Swal.fire('Gagal', err.message || 'Terjadi kesalahan server', 'error');
+            }
+            return false;
         }
     };
+
+    // Auto-save function (tanpa notifikasi)
+    const handleAutoSave = async () => {
+        if (!selectedCandidate) return;
+        
+        const hasAnyScore = Object.values(scores).some(val => val !== null && val !== undefined);
+        if (!hasAnyScore && !catatan.trim()) return;
+        
+        setSaveLoading(true);
+        await saveData(false);
+        setSaveLoading(false);
+    };
+
+    // Submit manual dengan notifikasi
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitLoading(true);
+        await saveData(true);
+        setSubmitLoading(false);
+    };
+
+    // Submit untuk tab tertentu
+    const handleTabSubmit = async (tab: 'sikap' | 'penampilan') => {
+        setSubmitLoading(true);
+        
+        // Validasi apakah ada nilai di tab tersebut
+        const fields = tab === 'sikap' ? sikapFields : penampilanFields;
+        const hasAnyScore = fields.some(f => scores[f.key] !== null && scores[f.key] !== undefined);
+        
+        if (!hasAnyScore && !catatan.trim()) {
+            Swal.fire('Peringatan', `Silakan isi minimal satu penilaian di tab ${tab === 'sikap' ? 'SIKAP' : 'PENAMPILAN'} atau catatan`, 'warning');
+            setSubmitLoading(false);
+            return;
+        }
+
+        await saveData(true);
+        setSubmitLoading(false);
+    };
+
+    // Load existing data when candidate/date changes
+    useEffect(() => {
+        const loadExistingData = async () => {
+            if (!selectedCandidate || !tanggal) {
+                setIsDataLoaded(false);
+                return;
+            }
+            
+            setIsDataLoaded(false);
+            try {
+                const res = await fetch(`${UrlApi}/pemusatan/pamong/${selectedCandidate}/${tanggal}`, {
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.id) {
+                        const newScores: Record<string, number | null> = { ...initialScores };
+                        Object.keys(initialScores).forEach(key => {
+                            if (data[key] !== undefined && data[key] !== null) {
+                                newScores[key] = data[key];
+                            }
+                        });
+                        setScores(newScores);
+                        setCatatan(data.catatan || '');
+                        setLastSaved(new Date());
+                    } else {
+                        setScores({ ...initialScores });
+                        setCatatan('');
+                        setLastSaved(null);
+                    }
+                } else {
+                    setScores({ ...initialScores });
+                    setCatatan('');
+                    setLastSaved(null);
+                }
+            } catch (err) {
+                setScores({ ...initialScores });
+                setCatatan('');
+                setLastSaved(null);
+            } finally {
+                setIsDataLoaded(true);
+            }
+        };
+        
+        loadExistingData();
+    }, [selectedCandidate, tanggal]);
 
     if (loading) {
         return (
@@ -240,7 +356,7 @@ export default function PamongPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto mb-20">
+        <div className="mx-auto mb-20">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jurnal Harian Pamong (Pengasuh)</h1>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">Input evaluasi sikap (31 indikator) & penampilan (7 indikator) harian Capaska</p>
@@ -273,6 +389,28 @@ export default function PamongPage() {
                     </div>
                 </div>
 
+                {/* Auto-save indicator */}
+                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                    <span>
+                        {isDataLoaded && selectedCandidate && (
+                            `Total Terisi: ${getFilledCount([...sikapFields, ...penampilanFields])}/${sikapFields.length + penampilanFields.length}`
+                        )}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        {saveLoading ? (
+                            <>
+                                <div className="w-3 h-3 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Menyimpan otomatis...</span>
+                            </>
+                        ) : lastSaved ? (
+                            <>
+                                <span className="text-green-500">✓</span>
+                                <span>Terakhir disimpan: {lastSaved.toLocaleTimeString()}</span>
+                            </>
+                        ) : null}
+                    </div>
+                </div>
+
                 <hr className="border-gray-150 dark:border-gray-800" />
 
                 {/* Tab selector */}
@@ -290,6 +428,9 @@ export default function PamongPage() {
                         <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 font-mono">
                             {getAverage(sikapFields)}
                         </span>
+                        <span className="text-xs text-gray-400">
+                            ({getFilledCount(sikapFields)}/{sikapFields.length})
+                        </span>
                     </button>
                     <button
                         type="button"
@@ -304,29 +445,55 @@ export default function PamongPage() {
                         <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 font-mono">
                             {getAverage(penampilanFields)}
                         </span>
+                        <span className="text-xs text-gray-400">
+                            ({getFilledCount(penampilanFields)}/{penampilanFields.length})
+                        </span>
                     </button>
                 </div>
 
-                {/* Score Sliders in active Tab */}
+                {/* Radio Buttons in active Tab */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {activeTab === 'sikap' &&
                         sikapFields.map((field) => (
                             <div
                                 key={field.key}
-                                className="flex flex-col gap-1.5 bg-gray-50 dark:bg-gray-950 p-4 rounded-md border border-gray-100 dark:border-gray-850"
+                                className="flex flex-col gap-2 bg-gray-50 dark:bg-gray-950 p-4 rounded-md border border-gray-100 dark:border-gray-850"
                             >
-                                <div className="flex justify-between items-center text-xs font-bold">
-                                    <span className="text-gray-700 dark:text-gray-300">{field.label}</span>
-                                    <span className="text-violet-650 dark:text-violet-400 text-sm">{scores[field.key]}</span>
+                                <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{field.label}</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {scoreOptions.map((option) => (
+                                        <label
+                                            key={option.value}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${
+                                                scores[field.key] === option.value
+                                                    ? 'bg-violet-600 text-white'
+                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name={field.key}
+                                                value={option.value}
+                                                checked={scores[field.key] === option.value}
+                                                onChange={() => handleScoreChange(field.key, option.value)}
+                                                className="sr-only"
+                                            />
+                                            {option.label}
+                                        </label>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleScoreChange(field.key, null as any)}
+                                        className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                            scores[field.key] === null || scores[field.key] === undefined
+                                                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
+                                                : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                                        }`}
+                                        disabled={scores[field.key] === null || scores[field.key] === undefined}
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    value={scores[field.key]}
-                                    onChange={(e) => handleScoreChange(field.key, Number(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-violet-600"
-                                />
                             </div>
                         ))}
 
@@ -334,22 +501,79 @@ export default function PamongPage() {
                         penampilanFields.map((field) => (
                             <div
                                 key={field.key}
-                                className="flex flex-col gap-1.5 bg-gray-50 dark:bg-gray-950 p-4 rounded-md border border-gray-100 dark:border-gray-850"
+                                className="flex flex-col gap-2 bg-gray-50 dark:bg-gray-950 p-4 rounded-md border border-gray-100 dark:border-gray-850"
                             >
-                                <div className="flex justify-between items-center text-xs font-bold">
-                                    <span className="text-gray-700 dark:text-gray-300">{field.label}</span>
-                                    <span className="text-violet-650 dark:text-violet-400 text-sm">{scores[field.key]}</span>
+                                <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{field.label}</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {scoreOptions.map((option) => (
+                                        <label
+                                            key={option.value}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${
+                                                scores[field.key] === option.value
+                                                    ? 'bg-violet-600 text-white'
+                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name={field.key}
+                                                value={option.value}
+                                                checked={scores[field.key] === option.value}
+                                                onChange={() => handleScoreChange(field.key, option.value)}
+                                                className="sr-only"
+                                            />
+                                            {option.label}
+                                        </label>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleScoreChange(field.key, null as any)}
+                                        className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                            scores[field.key] === null || scores[field.key] === undefined
+                                                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
+                                                : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                                        }`}
+                                        disabled={scores[field.key] === null || scores[field.key] === undefined}
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    value={scores[field.key]}
-                                    onChange={(e) => handleScoreChange(field.key, Number(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-violet-600"
-                                />
                             </div>
                         ))}
+                </div>
+
+                {/* Tombol Submit per Tab */}
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={() => handleTabSubmit('sikap')}
+                        disabled={submitLoading}
+                        className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+                    >
+                        {submitLoading ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>Menyimpan...</span>
+                            </>
+                        ) : (
+                            <span>💾 Simpan SIKAP</span>
+                        )}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleTabSubmit('penampilan')}
+                        disabled={submitLoading}
+                        className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+                    >
+                        {submitLoading ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>Menyimpan...</span>
+                            </>
+                        ) : (
+                            <span>💾 Simpan PENAMPILAN</span>
+                        )}
+                    </button>
                 </div>
 
                 <hr className="border-gray-150 dark:border-gray-800" />
@@ -366,7 +590,7 @@ export default function PamongPage() {
                     />
                 </div>
 
-                {/* Submit button */}
+                {/* Submit All button */}
                 <button
                     type="submit"
                     disabled={submitLoading}
@@ -378,7 +602,7 @@ export default function PamongPage() {
                             <span>Menyimpan Jurnal...</span>
                         </>
                     ) : (
-                        <span>Simpan Jurnal Harian</span>
+                        <span>📋 Simpan Semua Jurnal</span>
                     )}
                 </button>
             </form>

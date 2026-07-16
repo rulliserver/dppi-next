@@ -1096,6 +1096,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 ) : ''}
                                 {user.role === "Superadmin" ? (
                                     <>
+                                    
+                                        <a
+                                            href='/adminpanel/pamong-assign'
+                                            className={
+                                                pathname === '/adminpanel/pamong-assign'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/pamong-assign' ? 'mx-2 text-xl py-auto fas fa-users-cog text-purple-600' : 'mx-2 text-xl py-auto fas fa-users-cog text-accent'
+                                                }></i>
+
+                                            <p className='mx-1 menu-list' id='menu-name6'>
+                                                Penugasan Pamong
+                                            </p>
+                                        </a>
                                         <a
                                             href='/adminpanel/user'
                                             className={
