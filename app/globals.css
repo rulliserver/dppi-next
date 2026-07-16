@@ -839,15 +839,25 @@ ol>li {
 }
 
 .sidebar {
-    @apply hidden lg:block z-30 lg:fixed top-0 left-0 h-screen bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-default md:w-65;
+    @apply hidden lg:block z-30 lg:fixed top-0 left-0 h-screen overflow-y-auto bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-default md:w-65;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.sidebar::-webkit-scrollbar {
+    display: none;
 }
 
 .sidebar.colaps {
-    @apply hidden lg:block lg:fixed top-0 left-0 h-screen bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-default md:w-20;
+    @apply hidden lg:block lg:fixed top-0 left-0 h-screen overflow-y-auto bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-default md:w-20;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.sidebar.colaps::-webkit-scrollbar {
+    display: none;
 }
 
 .sidebar:hover {
-    @apply hidden lg:block z-30 lg:fixed top-0 left-0 h-screen bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-default md:w-65;
+    @apply hidden lg:block z-30 lg:fixed top-0 left-0 h-screen overflow-y-auto bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-default md:w-65;
 }
 
 .app-name {

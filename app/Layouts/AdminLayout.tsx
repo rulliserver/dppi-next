@@ -60,7 +60,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 const data = await res.json();
                 setUser(data);
 
-                if (data.role === 'Superadmin' || data.role === 'Administrator' || data.role === 'Admin Kesbangpol' || data.role === 'Admin Pendaftaran' || data.role === 'Jurnalis') {
+                const allowedRoles = [
+                    'Superadmin', 'Administrator', 'Admin Kesbangpol', 'Admin Pendaftaran', 'Jurnalis',
+                    'Admin Penilaian', 'Admin Pemusatan', 'Pamong', 'Pelatih', 'Dokter',
+                    'Juri PBB', 'Juri Minat Bakat', 'Pewawancara', 'Dokter Penilai'
+                ];
+                if (allowedRoles.includes(data.role)) {
                     return;
                 } else {
                     window.location.href = '/userpanel';
@@ -472,7 +477,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                     {/* Sidebar */}
                     <div className='relative'>
-                        <div className={`sidebar ${isColaps == true ? 'colaps' : ''}`} id='sidebar'>
+                        <div className={`sidebar ${isColaps == true ? 'colaps' : ''}`} id='sidebar' style={{ overflowY: 'visible', maxHeight: '100vh' }}>
+                            <button className={`btn-colaps ${isColaps == true ? 'colaps' : ''}`} id='btn-colaps' onClick={btnColaps}>
+                                <i className='px-1 py-1 fas fa-chevron-left'></i>
+                            </button>
+                            <div className="h-full w-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             <div className='flex'>
                                 <a href='/adminpanel'>
                                     <img className='w-10 h-10 my-2 ml-4' src='/assets/images/simental.png' alt='Logo Simental Perkasa DPPI RI' />
@@ -480,10 +489,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 <p className={`app-name ${isColaps == true ? 'colaps' : ''}`} id='app-name'>
                                     SIMENTAL PERKASA
                                 </p>
-
-                                <button className={`btn-colaps ${isColaps == true ? 'colaps' : ''}`} id='btn-colaps' onClick={btnColaps}>
-                                    <i className='px-1 py-1 fas fa-chevron-left'></i>
-                                </button>
                             </div>
                             <button className={pathname === '/adminpanel' ? 'active bg-violet-500 flex py-2 mx-2 mt-4 ' : 'text-white flex py-2 mx-2 mt-4'} disabled={isButtonClicked}>
                                 <a className='flex' href='/adminpanel'>
@@ -756,6 +761,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     </div>
                                 ) : ''}
 
+                                {user.role === "Administrator" || user.role === "Superadmin" ? (
+                                    <div>
+                                        <a href='/adminpanel/sipena'
+                                            className={
+                                                pathname === '/adminpanel/sipena'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/sipena'
+                                                        ? 'mx-2 text-xl py-auto fas fa-robot text-purple-600'
+                                                        : 'mx-2 text-xl py-auto fas fa-robot text-accent'
+                                                }></i>
+
+                                            <p className='mx-1 menu-list'>
+                                                SiPena Modul
+                                            </p>
+                                        </a>
+                                    </div>
+                                ) : ''}
+
                                 {/* pelaksana */}
                                 {user.role === "Administrator" || user.role === "Superadmin" || user.role === "Admin Kesbangpol" ? (
                                     <div
@@ -926,31 +953,187 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 className={
                                                     pathname === '/adminpanel/regulasi' ? 'mx-2 text-xl py-auto fas fa-file-alt text-purple-600' : 'mx-2 text-xl py-auto fas fa-file-alt text-accent'
                                                 }></i>
+                                                <p className='mx-1 menu-list' id='menu-name5'>
+                                                    Regulasi
+                                                </p>
+                                            </a>
+                                        </>) : ''}
+                                {["Pamong", "Pelatih", "Dokter", "Admin Pemusatan", "Superadmin"].includes(user.role) ? (
+                                    <div className="mt-4 border-t border-gray-200/30 pt-4">
+                                        <p className="px-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Pemusatan 2026</p>
+                                        
+                                        {/* Pamong */}
+                                        {["Pamong", "Admin Pemusatan", "Superadmin"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/pemusatan/input-pamong'
+                                                className={
+                                                    pathname === '/adminpanel/pemusatan/input-pamong'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/pemusatan/input-pamong' ? 'mx-2 text-xl py-auto fas fa-user-shield text-purple-600' : 'mx-2 text-xl py-auto fas fa-user-shield text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Jurnal Pamong</p>
+                                            </a>
+                                        )}
 
-                                            <p className='mx-1 menu-list' id='menu-name5'>
-                                                Regulasi
+                                        {/* Pelatih */}
+                                        {["Pelatih", "Admin Pemusatan", "Superadmin"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/pemusatan/input-pelatih'
+                                                className={
+                                                    pathname === '/adminpanel/pemusatan/input-pelatih'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/pemusatan/input-pelatih' ? 'mx-2 text-xl py-auto fas fa-running text-purple-600' : 'mx-2 text-xl py-auto fas fa-running text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Jurnal Pelatih</p>
+                                            </a>
+                                        )}
+
+                                        {/* Dokter */}
+                                        {["Dokter", "Admin Pemusatan", "Superadmin"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/pemusatan/input-dokter'
+                                                className={
+                                                    pathname === '/adminpanel/pemusatan/input-dokter'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/pemusatan/input-dokter' ? 'mx-2 text-xl py-auto fas fa-user-md text-purple-600' : 'mx-2 text-xl py-auto fas fa-user-md text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Jurnal Dokter</p>
+                                            </a>
+                                        )}
+
+                                        {/* Profiling */}
+                                        {["Admin Pemusatan", "Superadmin"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/pemusatan/jurnal-profiling'
+                                                className={
+                                                    pathname === '/adminpanel/pemusatan/jurnal-profiling'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/pemusatan/jurnal-profiling' ? 'mx-2 text-xl py-auto fas fa-id-card text-purple-600' : 'mx-2 text-xl py-auto fas fa-id-card text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Jurnal Profiling</p>
+                                            </a>
+                                        )}
+                                    </div>
+                                ) : ''}
+                                {["Superadmin", "Admin Penilaian", "Juri PBB", "Juri Minat Bakat", "Pewawancara", "Dokter Penilai"].includes(user.role) ? (
+                                    <div className="mt-4 border-t border-gray-200/30 pt-4">
+                                        <p className="px-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Penilaian Seleksi</p>
+                                        
+                                        {/* Input PBB */}
+                                        {["Superadmin", "Admin Penilaian", "Juri PBB"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/seleksi/input-pbb'
+                                                className={
+                                                    pathname === '/adminpanel/seleksi/input-pbb'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/seleksi/input-pbb' ? 'mx-2 text-xl py-auto fas fa-award text-purple-600' : 'mx-2 text-xl py-auto fas fa-award text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Penilaian PBB</p>
+                                            </a>
+                                        )}
+
+                                        {/* Input Wawancara */}
+                                        {["Superadmin", "Admin Penilaian", "Pewawancara"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/seleksi/input-wawancara'
+                                                className={
+                                                    pathname === '/adminpanel/seleksi/input-wawancara'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/seleksi/input-wawancara' ? 'mx-2 text-xl py-auto fas fa-comments text-purple-600' : 'mx-2 text-xl py-auto fas fa-comments text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Penilaian Wawancara</p>
+                                            </a>
+                                        )}
+
+                                        {/* Input Kesehatan */}
+                                        {["Superadmin", "Admin Penilaian", "Dokter Penilai"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/seleksi/input-kesehatan'
+                                                className={
+                                                    pathname === '/adminpanel/seleksi/input-kesehatan'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/seleksi/input-kesehatan' ? 'mx-2 text-xl py-auto fas fa-heartbeat text-purple-600' : 'mx-2 text-xl py-auto fas fa-heartbeat text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Penilaian Kesehatan</p>
+                                            </a>
+                                        )}
+
+                                        {/* Input Psikotes */}
+                                        {["Superadmin", "Admin Penilaian"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/seleksi/input-psikotes'
+                                                className={
+                                                    pathname === '/adminpanel/seleksi/input-psikotes'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/seleksi/input-psikotes' ? 'mx-2 text-xl py-auto fas fa-brain text-purple-600' : 'mx-2 text-xl py-auto fas fa-brain text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Penilaian Psikotes</p>
+                                            </a>
+                                        )}
+
+                                        {/* Input Minat Bakat */}
+                                        {["Superadmin", "Admin Penilaian", "Juri Minat Bakat"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/seleksi/input-minat-bakat'
+                                                className={
+                                                    pathname === '/adminpanel/seleksi/input-minat-bakat'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/seleksi/input-minat-bakat' ? 'mx-2 text-xl py-auto fas fa-star text-purple-600' : 'mx-2 text-xl py-auto fas fa-star text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Penilaian Minat Bakat</p>
+                                            </a>
+                                        )}
+                                    </div>
+                                ) : ''}
+                                {user.role === "Superadmin" ? (
+                                    <>
+                                        <a
+                                            href='/adminpanel/user'
+                                            className={
+                                                pathname === '/adminpanel/user'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/user' ? 'mx-2 text-xl py-auto fas fa-users-cog text-purple-600' : 'mx-2 text-xl py-auto fas fa-users-cog text-accent'
+                                                }></i>
+
+                                            <p className='mx-1 menu-list' id='menu-name6'>
+                                                Users
                                             </p>
                                         </a>
-                                    </>) : ''}
-                                {user.role === "Superadmin" ? (
-                                    <a
-                                        href='/adminpanel/user'
-                                        className={
-                                            pathname === '/adminpanel/user'
-                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
-                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
-                                        }>
-                                        <i
+                                        <a
+                                            href='/adminpanel/audit-logs'
                                             className={
-                                                pathname === '/adminpanel/user' ? 'mx-2 text-xl py-auto fas fa-users-cog text-purple-600' : 'mx-2 text-xl py-auto fas fa-users-cog text-accent'
-                                            }></i>
+                                                pathname === '/adminpanel/audit-logs'
+                                                    ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                    : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                            }>
+                                            <i
+                                                className={
+                                                    pathname === '/adminpanel/audit-logs' ? 'mx-2 text-xl py-auto fas fa-history text-purple-600' : 'mx-2 text-xl py-auto fas fa-history text-accent'
+                                                }></i>
 
-                                        <p className='mx-1 menu-list' id='menu-name6'>
-                                            Users
-                                        </p>
-                                    </a>) : ''}
+                                            <p className='mx-1 menu-list' id='menu-name-audit-logs'>
+                                                Log Aktivitas
+                                            </p>
+                                        </a>
+                                    </>
+                                ) : ''}
+                                <div className="pb-24"></div>
                             </div>
                         </div>
+                    </div>
 
                         {/* Main Content */}
                         <main

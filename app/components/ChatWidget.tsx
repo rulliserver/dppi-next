@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { UrlApi } from './apiUrl';
 
 declare global {
     interface Window {
@@ -125,8 +126,10 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
         stopSpeech();
 
         try {
-            const response = await axios.post(`https://dppi.bpip.go.id/sila/chat`, {
+            const response = await axios.post(`${UrlApi}/sipena/chat`, {
                 message: userMessage,
+            }, {
+                withCredentials: true
             });
             if (response.data && response.data.answer) {
                 const aiAnswer = response.data.answer;

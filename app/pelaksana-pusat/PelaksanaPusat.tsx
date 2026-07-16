@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { UrlApi } from "../components/apiUrl";
 import axios from "axios";
-import { BaseUrl } from "../components/baseUrl";
+import { BaseUrl, getImageUrl } from "../components/baseUrl";
 import Image from "next/image";
 
 export default function PelaksanaPusat() {
@@ -69,7 +69,7 @@ export default function PelaksanaPusat() {
                             className='cursor-pointer'
                         >
                             <div className='bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                                <Image src={BaseUrl + ketum.photo} alt='Photo Ketum Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                <Image src={getImageUrl(ketum.photo)} alt='Photo Ketum Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
                                 <p className='text-center pt-2 font-semibold px-2'>{ketum.nama_lengkap}</p>
                                 <p className='text-sm text-center px-2'>{ketum.jabatan}</p>
                             </div>
@@ -82,7 +82,7 @@ export default function PelaksanaPusat() {
                                 className='cursor-pointer'
                             >
                                 <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                                    <Image src={BaseUrl + waket1.photo} alt='Photo waket1 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                    <Image src={getImageUrl(waket1.photo)} alt='Photo waket1 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
                                     <p className='text-center pt-2 font-semibold px-2'>{waket1.nama_lengkap}</p>
                                     <p className='text-sm text-center px-2'>{waket1.jabatan}</p>
                                 </div>
@@ -94,7 +94,7 @@ export default function PelaksanaPusat() {
                                 className='cursor-pointer'
                             >
                                 <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                                    <Image src={BaseUrl + waket2.photo} alt='Photo waket2 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                    <Image src={getImageUrl(waket2.photo)} alt='Photo waket2 Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
                                     <p className='text-center pt-2 font-semibold px-2'>{waket2.nama_lengkap}</p>
                                     <p className='text-sm text-center px-2'>{waket2.jabatan}</p>
                                 </div>
@@ -107,7 +107,7 @@ export default function PelaksanaPusat() {
                             className='cursor-pointer'
                         >
                             <div className='mt-8 bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                                <Image src={BaseUrl + sekjen.photo} alt='Photo sekjen Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                <Image src={getImageUrl(sekjen.photo)} alt='Photo sekjen Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
                                 <p className='text-center pt-2 font-semibold px-2'>{sekjen.nama_lengkap}</p>
                                 <p className='text-sm text-center px-2'>{sekjen.jabatan}</p>
                             </div>
@@ -124,7 +124,7 @@ export default function PelaksanaPusat() {
                                     onClick={() => handleImageClick(item)}
                                     className='cursor-pointer'
                                 >
-                                    <Image src={BaseUrl + item.photo} alt='Photo item Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
+                                    <Image src={getImageUrl(item.photo)} alt='Photo item Pusat' className='max-w-75 rounded-t-md' width={300} height={100} />
                                     <p className='text-center pt-2 font-semibold px-2'>{item.nama_lengkap}</p>
                                     <p className='text-sm text-center px-2'>{item.jabatan}</p>
                                 </div>
@@ -149,7 +149,7 @@ export default function PelaksanaPusat() {
                             <div className='p-4'>
                                 <div className='flex justify-center mb-4'>
                                     <Image
-                                        src={BaseUrl + selectedMember.photo}
+                                        src={getImageUrl(selectedMember.photo)}
                                         alt={selectedMember.nama_lengkap}
                                         className='rounded-lg object-cover'
                                         width={150}

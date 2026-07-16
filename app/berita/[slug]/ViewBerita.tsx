@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import { BaseUrl } from '@/app/components/baseUrl';
+import { BaseUrl, getImageUrl } from '@/app/components/baseUrl';
 import Pagination from '@/app/components/Pagination';
 import TextEditor from '@/app/components/TextEditor';
 import Image from 'next/image';
@@ -147,7 +147,7 @@ export default function ViewBerita() {
                             {FormatLongDate(berita.tanggal)}
                             <span className='ml-2'>👁️ {berita.view}</span>
                         </p>
-                        <Image src={`${BaseUrl}/${berita.photo}`} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
+                        <Image src={getImageUrl(berita.photo)} alt='Foto berita' height={400} width={1360} onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} className='my-4' />
                         {berita.caption == 'null' || berita.caption == '-' ? '' : <p className='mb-4 text-sm'>{berita.caption}</p>}
                         <TextEditor data={berita.body} />
                     </div>
@@ -209,7 +209,7 @@ export default function ViewBerita() {
 
                                         </p>
                                         <a href={`/berita/${slug}`}>
-                                            <Image src={`${BaseUrl}/${photo}`} width={800} height={400} alt='Photo Berita' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
+                                            <Image src={getImageUrl(photo)} width={800} height={400} alt='Photo Berita' onError={(e: any) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/757575/000000?text=Gagal+Memuat+gambar" }} />
                                             <TextEditor data={preview} />
                                         </a>
                                         <a href={`/berita/${slug}`} className='text-accent'>

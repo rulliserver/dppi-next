@@ -513,7 +513,11 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
                     {/* Sidebar */}
                     <div className='relative'>
-                        <div className={`sidebar ${isColaps == true ? 'colaps' : ''}`} id='sidebar'>
+                        <div className={`sidebar ${isColaps == true ? 'colaps' : ''}`} id='sidebar' style={{ overflowY: 'visible' }}>
+                            <button className={`btn-colaps ${isColaps == true ? 'colaps' : ''}`} id='btn-colaps' onClick={btnColaps}>
+                                <i className='px-1 py-1 fas fa-chevron-left'></i>
+                            </button>
+                            <div className="h-full w-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             <div className='flex'>
                                 <a href='/adminpanel'>
                                     <img className='w-10 h-10 my-2 ml-4' src='/assets/images/simental.png' alt='Logo Simental Perkasa DPPI RI' />
@@ -521,10 +525,6 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                                 <p className={`app-name ${isColaps == true ? 'colaps' : ''}`} id='app-name'>
                                     SIMENTAL PERKASA
                                 </p>
-
-                                <button className={`btn-colaps ${isColaps == true ? 'colaps' : ''}`} id='btn-colaps' onClick={btnColaps}>
-                                    <i className='px-1 py-1 fas fa-chevron-left'></i>
-                                </button>
                             </div>
 
                             <button className={pathname === '/userpanel' ? 'active bg-violet-500 flex py-2 mx-2 mt-4 ' : 'text-white flex py-2 mx-2 mt-4'}>
@@ -777,6 +777,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                             )}
                         </div>
                     </div>
+                </div>
 
                     {/* Main Content */}
                     <main

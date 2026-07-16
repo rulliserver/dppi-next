@@ -529,12 +529,21 @@ export default function User() {
                                         className='text-sm col-span-3 border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm py-2 bg-white dark:bg-gray-700 dark:text-gray-200 px-2 dark:px-2 dark:border-red-500'>
                                         <option value=''>Pilih Role</option>
                                         <option value='Administrator'>Administrator</option>
+                                        <option value='Admin Penilaian'>Admin Penilaian</option>
                                         <option value='Jurnalis'>Jurnalis</option>
                                         <option value='Admin Pendaftaran'>Admin Pendaftaran</option>
                                         <option value='Admin Kesbangpol'>Admin Kesbangpol</option>
                                         <option value='Pelaksana'>Pelaksana</option>
                                         <option value='Anggota'>Anggota</option>
                                         <option value='Majelis Pertimbangan DPPI'>Majelis Pertimbangan DPPI</option>
+                                        <option value='Admin Pemusatan'>Admin Pemusatan</option>
+                                        <option value='Pamong'>Pamong</option>
+                                        <option value='Pelatih'>Pelatih</option>
+                                        <option value='Dokter'>Dokter</option>
+                                        <option value='Juri PBB'>Juri PBB</option>
+                                        <option value='Juri Minat Bakat'>Juri Minat Bakat</option>
+                                        <option value='Pewawancara'>Pewawancara</option>
+                                        <option value='Dokter Penilai'>Dokter Penilai</option>
                                     </select>
                                 </div>
                                 <div className='grid grid-cols-4 gap-2 mt-4'>
@@ -681,12 +690,21 @@ export default function User() {
                                         className='text-sm col-span-3 border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm py-2 bg-white dark:bg-gray-700 dark:text-gray-200 px-2 dark:px-2 dark:border-red-500'>
                                         <option value=''>Pilih Role</option>
                                         <option value='Administrator'>Administrator</option>
+                                        <option value='Admin Penilaian'>Admin Penilaian</option>
                                         <option value='Jurnalis'>Jurnalis</option>
                                         <option value='Admin Pendaftaran'>Admin Pendaftaran</option>
                                         <option value='Admin Kesbangpol'>Admin Kesbangpol</option>
                                         <option value='Pelaksana'>Pelaksana</option>
                                         <option value='Anggota'>Anggota</option>
                                         <option value='Majelis Pertimbangan DPPI'>Majelis Pertimbangan DPPI</option>
+                                        <option value='Admin Pemusatan'>Admin Pemusatan</option>
+                                        <option value='Pamong'>Pamong</option>
+                                        <option value='Pelatih'>Pelatih</option>
+                                        <option value='Dokter'>Dokter</option>
+                                        <option value='Juri PBB'>Juri PBB</option>
+                                        <option value='Juri Minat Bakat'>Juri Minat Bakat</option>
+                                        <option value='Pewawancara'>Pewawancara</option>
+                                        <option value='Dokter Penilai'>Dokter Penilai</option>
                                     </select>
                                 </div>
                                 <div className='grid grid-cols-4 gap-2 mt-4'>

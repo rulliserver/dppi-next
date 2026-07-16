@@ -157,8 +157,7 @@ export default function PaskibrakaNasional() {
         formDataToSend.append("nama_lengkap", formData.nama_lengkap);
         formDataToSend.append("jk", formData.jk);
         formDataToSend.append("id_provinsi", formData.id_provinsi);
-        if (formData.id_kabupaten)
-            formDataToSend.append("id_kabupaten", formData.id_kabupaten);
+        formDataToSend.append("id_kabupaten", formData.id_kabupaten);
         if (formData.asal_sma)
             formDataToSend.append("asal_sma", formData.asal_sma);
         if (formData.tahun_tugas)

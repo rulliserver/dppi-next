@@ -4,7 +4,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { UrlApi } from "./components/apiUrl";
-import { BaseUrl } from "./components/baseUrl";
+import { BaseUrl, getImageUrl } from "./components/baseUrl";
 import SlideBerita from "./components/SlideBerita";
 import Peta from "./components/Peta";
 import Image from "next/image";
@@ -583,7 +583,7 @@ export default function Beranda() {
                                 }
 
                                 const imageUrl = firstFoto
-                                    ? BaseUrl + `uploads/assets/images/gallery/${firstFoto}`
+                                    ? getImageUrl(`uploads/assets/images/gallery/${firstFoto}`)
                                     : 'https://placehold.co/600x400/CCCCCC/333333?text=Tidak+Ada+Foto';
 
                                 return (
@@ -613,6 +613,36 @@ export default function Beranda() {
                     </div>
                 </div>
 
+                {/* Banner Direktori Paskibraka Nasional */}
+                <div className="mx-2 lg:mx-4 my-8">
+                    <div className="relative bg-gradient-to-r from-red-800 via-red-700 to-amber-600 rounded-2xl p-6 md:p-8 shadow-lg overflow-hidden border border-amber-500/30 flex flex-col md:flex-row justify-between items-center gap-6">
+                        {/* Decorative Background Elements */}
+                        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+                        <div className="absolute left-10 top-0 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+                        
+                        <div className="flex items-center gap-4 md:gap-6">
+                            <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center p-2 shadow-inner shrink-0 border border-white/15">
+                                <img src="/assets/images/logo-paskibraka.png" alt="Logo Paskibraka" className="w-full h-full object-contain" />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-xl md:text-2xl font-extrabold text-white tracking-wide">
+                                    Direktori Paskibraka Nasional
+                                </h3>
+                                <p className="text-gray-100 text-xs md:text-sm max-w-xl leading-relaxed">
+                                    Database Purnapaskibraka tingkat Nasional dari berbagai angkatan dan daerah asal.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <Link 
+                            href="/paskibraka-nasional" 
+                            className="w-full md:w-auto px-6 py-3.5 bg-white hover:bg-amber-50 text-red-800 hover:text-red-900 font-extrabold text-sm rounded-xl transition-all duration-200 text-center shadow-md hover:shadow-lg whitespace-nowrap shrink-0 hover:scale-105 active:scale-95"
+                        >
+                            Lihat Paskibraka Nasional <i className="fas fa-arrow-right ml-2"></i>
+                        </Link>
+                    </div>
+                </div>
+
                 <div className='col-span-2 mt-6'>
                     <p className='text-3xl text-center font-bold text-red-700'>
                         Kegiatan <span className='text-black dark:text-white'> Terbaru</span>
@@ -628,7 +658,7 @@ export default function Beranda() {
                                                 {item.biaya == 0 ? 'Gratis' : item.biaya.toLocaleString()}
                                             </div>
                                         </div>
-                                        <img className='object-cover lg:max-h-34 xl:max-h-40 2xl:max-h-96 w-[30em] ' src={BaseUrl + item.photo} alt='Foto Kegiatan' />
+                                        <img className='object-cover lg:max-h-34 xl:max-h-40 2xl:max-h-96 w-[30em] ' src={getImageUrl(item.photo)} alt='Foto Kegiatan' />
                                         <div className='absolute bottom-0 justify-center w-full mx-auto my-0 overflow-hidden text-center rounded-b-md justify-items-center'>
                                             <div className='h-16 w-full py-2 px-2 my-0 text-xs text-center text-white bg-black/70 font-semibold'>
                                                 {item.nama_kegiatan}

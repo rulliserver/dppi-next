@@ -5,7 +5,7 @@ import axios from 'axios';
 import Pagination from '../components/Pagination';
 import FormatLongDate from '../components/FormatLongDate';
 import { UrlApi } from '../components/apiUrl';
-import { BaseUrl } from '../components/baseUrl';
+import { BaseUrl, getImageUrl } from '../components/baseUrl';
 
 interface RegulasiItem {
     id: number;
@@ -186,7 +186,7 @@ export default function RegulasiList() {
                                         <div className='grid md:grid-cols-6 my-5'>
                                             <div className='bg-gray-100 md:col-span-4 flex flex-col md:flex-row rounded-lg border'>
                                                 <img
-                                                    src={`${BaseUrl + item.icon_regulasi}`}
+                                                    src={getImageUrl(item.icon_regulasi)}
                                                     className='w-28 p-2 mx-auto md:mx-0'
                                                     alt={item.nama_regulasi}
                                                 />

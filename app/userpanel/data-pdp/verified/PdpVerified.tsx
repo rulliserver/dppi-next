@@ -313,9 +313,11 @@ function PdpVerified() {
     };
 
     useEffect(() => {
-        getPdp();
-        getProvinsi(); // Load data provinsi saat komponen mount
-    }, []);
+        if (user) {
+            getPdp();
+            getProvinsi(); // Load data provinsi saat komponen mount
+        }
+    }, [user]);
 
 
     const getPdp = async (page: number = 1, query: string = '', provinsiId: number | '' = '', kabupatenId: number | '' = '') => {

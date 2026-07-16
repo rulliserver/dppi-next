@@ -23,6 +23,7 @@ const RatingStats: React.FC = () => {
     const [stats, setStats] = useState<RatingStatsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'overview' | 'reviews'>('overview');
+    const [currentSlide, setCurrentSlide] = useState(0);
 
     useEffect(() => {
         fetchStats();
@@ -39,6 +40,34 @@ const RatingStats: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const chunkReviews = (arr: any[], size: number) => {
+        const chunks = [];
+        for (let i = 0; i < arr.length; i += size) {
+            chunks.push(arr.slice(i, i + size));
+        }
+        return chunks;
+    };
+
+    const reviewChunks = stats ? chunkReviews(stats.recent_ratings, 3) : [];
+
+    const nextSlide = () => {
+        setCurrentSlide((prev) => (prev < reviewChunks.length - 1 ? prev + 1 : 0));
+    };
+
+    const prevSlide = () => {
+        setCurrentSlide((prev) => (prev > 0 ? prev - 1 : reviewChunks.length - 1));
+    };
+
+    useEffect(() => {
+        if (activeTab !== 'reviews' || reviewChunks.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev < reviewChunks.length - 1 ? prev + 1 : 0));
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [activeTab, reviewChunks.length]);
 
     if (loading) {
         return (
@@ -95,7 +124,10 @@ const RatingStats: React.FC = () => {
                         📊 Overview
                     </button>
                     <button
-                        onClick={() => setActiveTab('reviews')}
+                        onClick={() => {
+                            setActiveTab('reviews');
+                            setCurrentSlide(0);
+                        }}
                         className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'reviews'
                             ? 'border-red-500 text-red-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -145,7 +177,7 @@ const RatingStats: React.FC = () => {
                                         </div>
                                     </div>
                                 );
-                            })}
+                             })}
                         </div>
                     </div>
 
@@ -153,54 +185,95 @@ const RatingStats: React.FC = () => {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                        Ulasan Terbaru ({stats.recent_ratings.length})
-                    </h3>
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                            Ulasan Terbaru ({stats.recent_ratings.length})
+                        </h3>
+                        {reviewChunks.length > 1 && (
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={prevSlide}
+                                    type="button"
+                                    className="p-1.5 rounded-full border border-gray-200 hover:bg-gray-100 transition text-gray-600 dark:border-gray-700 dark:hover:bg-gray-800"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={nextSlide}
+                                    type="button"
+                                    className="p-1.5 rounded-full border border-gray-200 hover:bg-gray-100 transition text-gray-600 dark:border-gray-700 dark:hover:bg-gray-800"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     {stats.recent_ratings.length === 0 ? (
                         <p className="text-gray-500 text-center py-8">
                             Belum ada ulasan yang disetujui
                         </p>
                     ) : (
-                        <div className="space-y-4">
-                            {stats.recent_ratings.map((review) => (
-                                <div
-                                    key={review.id}
-                                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition"
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <div className="font-medium text-gray-800">
-                                                {review.name}
-                                            </div>
-                                            <div className="flex items-center mt-1">
-                                                <div className="flex">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <span
-                                                            key={i}
-                                                            className={`${i < review.rating
-                                                                ? 'text-yellow-500'
-                                                                : 'text-gray-300'
-                                                                }`}
-                                                        >
-                                                            <img src="/assets/images/ico-stars.svg" alt="bintang kosong" />
-                                                        </span>
-                                                    ))}
+                        <div className="space-y-6">
+                            <div className="flex flex-col gap-4">
+                                {(reviewChunks[currentSlide] || []).map((review: any) => (
+                                    <div
+                                        key={review.id}
+                                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50/50 transition shadow-sm bg-white"
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <div className="font-semibold text-sm text-gray-850 truncate max-w-[180px]" title={review.name}>
+                                                    {review.name}
                                                 </div>
-                                                <span className="ml-2 text-sm text-gray-500">
-                                                    {review.rating}.0
-                                                </span>
+                                                <div className="flex items-center mt-1">
+                                                    <div className="flex">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <span
+                                                                key={i}
+                                                                className={`${i < review.rating
+                                                                    ? 'text-yellow-500'
+                                                                    : 'text-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <img src="/assets/images/ico-stars.svg" alt="bintang kosong" className="w-4 h-4 inline-block" />
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                    <span className="ml-2 text-xs text-gray-500 font-semibold">
+                                                        {review.rating}.0
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="text-[11px] text-gray-500">
+                                                {new Date(review.created_at).toLocaleDateString('id-ID')}
                                             </div>
                                         </div>
-                                        <div className="text-sm text-gray-500">
-                                            {new Date(review.created_at).toLocaleDateString('id-ID')}
-                                        </div>
+                                        <p className="text-gray-700 text-xs leading-relaxed italic mt-2">
+                                            "{review.suggestion}"
+                                        </p>
                                     </div>
-                                    <p className="text-gray-700 mt-2 line-clamp-3">
-                                        {review.suggestion}
-                                    </p>
-
+                                ))}
+                            </div>
+                            
+                            {/* Slide indicators */}
+                            {reviewChunks.length > 1 && (
+                                <div className="flex justify-center space-x-1.5 pt-2">
+                                    {reviewChunks.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setCurrentSlide(idx)}
+                                            type="button"
+                                            className={`w-2 h-2 rounded-full transition-all duration-250 ${
+                                                currentSlide === idx ? 'bg-red-500 w-5' : 'bg-gray-300 hover:bg-gray-400'
+                                            }`}
+                                        />
+                                    ))}
                                 </div>
-                            ))}
+                            )}
                         </div>
                     )}
                 </div>

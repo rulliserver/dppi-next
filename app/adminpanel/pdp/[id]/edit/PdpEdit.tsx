@@ -40,6 +40,72 @@ function centerAspectCrop(mediaWidth: any, mediaHeight: any, aspect: any) {
 const animatedComponents = makeAnimated();
 
 export default function PdpEdit() {
+    const [isDark, setIsDark] = useState(false);
+    useEffect(() => {
+        setIsDark(document.documentElement.classList.contains('dark'));
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+        return () => observer.disconnect();
+    }, []);
+
+    const selectStyles = {
+        control: (provided: any, state: any) => ({
+            ...provided,
+            backgroundColor: isDark ? '#374151' : '#ffffff',
+            borderColor: state.isFocused ? '#7c3aed' : isDark ? '#4b5563' : '#d1d5db',
+            color: isDark ? '#f3f4f6' : '#1f2937',
+            boxShadow: state.isFocused ? '0 0 0 1px #7c3aed' : 'none',
+            '&:hover': {
+                borderColor: '#7c3aed'
+            }
+        }),
+        option: (provided: any, state: any) => ({
+            ...provided,
+            backgroundColor: state.isSelected 
+                ? '#7c3aed' 
+                : state.isFocused 
+                    ? isDark ? '#4b5563' : 'rgba(124, 58, 237, 0.1)' 
+                    : isDark ? '#374151' : '#ffffff',
+            color: state.isSelected 
+                ? '#ffffff' 
+                : isDark ? '#f3f4f6' : '#1f2937',
+            cursor: 'pointer'
+        }),
+        singleValue: (provided: any) => ({
+            ...provided,
+            color: isDark ? '#f3f4f6' : '#1f2937'
+        }),
+        multiValue: (provided: any) => ({
+            ...provided,
+            backgroundColor: isDark ? '#4b5563' : '#e5e7eb',
+        }),
+        multiValueLabel: (provided: any) => ({
+            ...provided,
+            color: isDark ? '#f3f4f6' : '#1f2937',
+        }),
+        multiValueRemove: (provided: any) => ({
+            ...provided,
+            color: isDark ? '#f3f4f6' : '#1f2937',
+            '&:hover': {
+                backgroundColor: '#ef4444',
+                color: '#ffffff'
+            }
+        }),
+        menu: (provided: any) => ({
+            ...provided,
+            backgroundColor: isDark ? '#374151' : '#ffffff'
+        }),
+        input: (provided: any) => ({
+            ...provided,
+            color: isDark ? '#f3f4f6' : '#1f2937'
+        })
+    };
+
     const { id } = useParams();
     const router = useRouter();
     const [loading, setLoading]: any = useState(false);
@@ -310,7 +376,7 @@ export default function PdpEdit() {
                 nama_lengkap: data.nama_lengkap || '',
                 jk: data.jk || '',
                 tempat_lahir: data.tempat_lahir || '',
-                tgl_lahir: data.tgl_lahir || '',
+                tgl_lahir: data.tgl_lahir && data.tgl_lahir !== '0000-00-00' ? data.tgl_lahir : null,
                 alamat: data.alamat || '',
                 pendidikan_terakhir: data.pendidikan_terakhir || '',
                 jurusan: data.jurusan || '',
@@ -356,7 +422,14 @@ export default function PdpEdit() {
                 confirmButtonColor: '#2563eb',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    router.back()
+                    if (typeof window !== 'undefined') {
+                        const ref = document.referrer;
+                        if (ref && (ref.includes('/data-pdp') || ref.includes('/pdp'))) {
+                            window.location.href = ref;
+                        } else {
+                            window.location.href = '/adminpanel/pdp/belum-registrasi';
+                        }
+                    }
                 }
             });
         } catch (error: any) {
@@ -509,7 +582,7 @@ export default function PdpEdit() {
         <div className='bg-gray-50 pb-28 dark:bg-gray-700'>
             {data ?
                 <form onSubmit={handleSubmit}>
-                    <div className='grid grid-cols-1 md:grid-cols-2 bg-white dark:bg-gray-900 dark:text-gray-900 p-8 rounded-lg overflow-hidden'>
+                    <div className='grid grid-cols-1 md:grid-cols-2 bg-white dark:bg-gray-900 dark:text-gray-200 p-8 rounded-lg overflow-hidden'>
                         <div className='pr-2 md:border-r'>
                             <div className='border-t-2 md:border-t-0 mt-4 md:mt-0'>
                                 <p className='font-semibold'>DATA DIRI</p>
@@ -522,7 +595,6 @@ export default function PdpEdit() {
                                     id='nik'
                                     type='text'
                                     name='nik'
-                                    required
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete='nik'
@@ -587,7 +659,6 @@ export default function PdpEdit() {
                                     id='nama_lengkap'
                                     type='text'
                                     name='nama_lengkap'
-                                    required
                                     tabIndex={2}
                                     autoComplete='nama_lengkap'
                                     value={data.nama_lengkap}
@@ -602,9 +673,8 @@ export default function PdpEdit() {
                                     name='jk'
                                     id='jk'
                                     tabIndex={3}
-                                    required
                                     value={data.jk}
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm '
+                                    className='border-gray-300 dark:border-gray-600 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-gray-200'
                                     onChange={handleOnChange}
                                 >
                                     <option value=''>--Pilih Salah Satu--</option>
@@ -620,7 +690,6 @@ export default function PdpEdit() {
                                     id='tempat_lahir'
                                     type='text'
                                     name='tempat_lahir'
-                                    required
                                     tabIndex={4}
                                     autoComplete='tempat_lahir'
                                     value={data.tempat_lahir}
@@ -636,7 +705,6 @@ export default function PdpEdit() {
                                     id='tgl_lahir'
                                     type='date'
                                     name='tgl_lahir'
-                                    required
                                     tabIndex={5}
                                     autoComplete='tgl_lahir'
                                     value={data.tgl_lahir}
@@ -657,8 +725,7 @@ export default function PdpEdit() {
                                     onChange={handleProvinsiChangeDoimisili}
                                     tabIndex={6}
                                     value={data.id_provinsi_domisili}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
                                 >
                                     <option value=''>--Pilih Provinsi--</option>
                                     {provinsi && provinsi.map((item: any) => (
@@ -678,8 +745,7 @@ export default function PdpEdit() {
                                     disabled={!selectedProvinsiDomisili}
                                     onChange={handleOnChange}
                                     value={data.id_kabupaten_domisili}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
                                 >
                                     <option value=''>--Pilih kabupaten--</option>
                                     {filteredKabupatenDomisili.map((item: any) => (
@@ -694,7 +760,6 @@ export default function PdpEdit() {
                                 id='alamat'
                                 type='text'
                                 name='alamat'
-                                required
                                 tabIndex={8}
                                 autoComplete='alamat'
                                 value={data.alamat || ''}
@@ -713,8 +778,7 @@ export default function PdpEdit() {
                                     tabIndex={9}
                                     value={data.pendidikan_terakhir}
                                     onChange={handleOnChange}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                     <option value=''>--Pilih Tingkat Pendidikan--</option>
                                     <option value='SMA'>SMA/Sederajat</option>
                                     <option value='D3'>D3</option>
@@ -730,7 +794,6 @@ export default function PdpEdit() {
                                     id='jurusan'
                                     type='text'
                                     name='jurusan'
-                                    required
                                     tabIndex={10}
                                     autoComplete='jurusan'
                                     defaultValue={data.jurusan}
@@ -745,7 +808,6 @@ export default function PdpEdit() {
                                     id='nama_instansi_pendidikan'
                                     type='text'
                                     name='nama_instansi_pendidikan'
-                                    required
                                     tabIndex={11}
                                     autoComplete='nama_instansi_pendidikan'
                                     defaultValue={data.nama_instansi_pendidikan}
@@ -763,7 +825,6 @@ export default function PdpEdit() {
                                     id='email'
                                     type='email'
                                     name='email'
-                                    required
                                     tabIndex={26}
                                     autoComplete='email'
                                     value={data.email}
@@ -783,7 +844,6 @@ export default function PdpEdit() {
                                     className='block w-full mt-1 text-sm'
                                     autoComplete='telepon'
                                     onChange={handleOnChange}
-                                    required
                                 />
                             </div>
 
@@ -871,8 +931,7 @@ export default function PdpEdit() {
                                         onChange={handleOnChange}
                                         value={data.jabatan}
                                         tabIndex={12}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                         <option value=''>--Pilih Pilih Jabatan--</option>
                                         {jabatanKabupaten.map((item: any) => (
                                             <option key={item.id} value={item.nama_jabatan}>
@@ -890,8 +949,7 @@ export default function PdpEdit() {
                                         onChange={handleOnChange}
                                         value={data.jabatan}
                                         tabIndex={12}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                         <option value=''>--Pilih Pilih Jabatan--</option>
                                         {jabatanProvinsi.map((item: any) => (
                                             <option key={item.id} value={item.nama_jabatan}>
@@ -909,8 +967,7 @@ export default function PdpEdit() {
                                         onChange={handleOnChange}
                                         value={data.jabatan}
                                         tabIndex={12}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                         <option value=''>--Pilih Pilih Jabatan--</option>
                                         {jabatan.map((item: any) => (
                                             <option key={item.id} value={item.nama_jabatan}>
@@ -930,8 +987,7 @@ export default function PdpEdit() {
                                     onChange={handleTingkatPenugasan}
                                     value={data.tingkat_penugasan}
                                     tabIndex={12}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                     <option value=''>--Pilih Tingkat Penugasan--</option>
                                     <option value='Paskibraka Tingkat Kabupaten/Kota'>Paskibraka Tingkat Kabupaten/Kota</option>
                                     <option value='Paskibraka Tingkat Provinsi'>Paskibraka Tingkat Provinsi</option>
@@ -947,8 +1003,7 @@ export default function PdpEdit() {
                                         onChange={handleProvinsiChange}
                                         value={data.id_provinsi}
                                         tabIndex={13}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                         <option value=''>--Pilih Provinsi--</option>
                                         {provinsi && provinsi.map((item: any) => (
                                             <option key={item.id} value={item.id}>
@@ -970,8 +1025,7 @@ export default function PdpEdit() {
                                         disabled={!selectedProvinsi}
                                         onChange={handleOnChange}
                                         value={data.id_kabupaten}
-                                        required
-                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                        className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                         <option value=''>--Pilih kabupaten--</option>
                                         {filteredKabupaten.map((item: any) => (
                                             <option key={item.id} value={item.id}>
@@ -991,8 +1045,7 @@ export default function PdpEdit() {
                                     onChange={handleOnChange}
                                     tabIndex={15}
                                     value={data.thn_tugas}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                     <option value=''>--Pilih Tahun Penugasan--</option>
                                     {years.map((year) => (
                                         <option key={year} value={year}>
@@ -1032,6 +1085,7 @@ export default function PdpEdit() {
 
                                 <Select
                                     instanceId="select-hobi"
+                                    styles={selectStyles}
                                     options={hobi}
                                     value={hobi.filter(option =>
                                         data.id_hobi && data.id_hobi.includes(option.value)
@@ -1050,8 +1104,7 @@ export default function PdpEdit() {
                                     onChange={handleFirstMinatChange}
                                     value={data.id_minat}
                                     tabIndex={18}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                     <option value=''>--Pilih Minat--</option>
                                     {minat && minat.map((item: any) => (
                                         <option key={item.id} value={item.id}>
@@ -1068,8 +1121,7 @@ export default function PdpEdit() {
                                     onChange={handleOnChange}
                                     value={data.detail_minat}
                                     tabIndex={19}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 w-full text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    className='border-gray-300 focus:border-red-500 w-full text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                     <option value=''>--Pilih Detail Minat--</option>
                                     {filteredDetailFirstMinat.map((item: any) => (
                                         <option key={item.id} value={item.detail_minat}>
@@ -1100,7 +1152,7 @@ export default function PdpEdit() {
                                             onChange={handleSecondMinatChange}
                                             value={data.id_minat_2}
                                             tabIndex={20}
-                                            className='border-gray-300 focus:border-red-500 w-fulltext-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                            className='border-gray-300 focus:border-red-500 w-full text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                             <option value=''>--Pilih Minat--</option>
                                             {filteredSecondMinat.map((item: any) => (
                                                 <option key={item.id} value={item.id}>
@@ -1117,7 +1169,7 @@ export default function PdpEdit() {
                                             onChange={handleOnChange}
                                             value={data.detail_minat_2}
                                             tabIndex={21}
-                                            className='border-gray-300 focus:border-red-500 text-sm w-full focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                            className='border-gray-300 focus:border-red-500 text-sm w-full focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                             <option value=''>--Pilih Minat--</option>
                                             {filteredDetailSecondMinat.map((item: any) => (
                                                 <option key={item.id} value={item.detail_minat}>
@@ -1146,8 +1198,7 @@ export default function PdpEdit() {
                                     onChange={handleFirstBakatChange}
                                     value={data.id_bakat}
                                     tabIndex={23}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    className='border-gray-300 focus:border-red-500 text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                     <option value=''>--Pilih Bakat--</option>
                                     {bakat.map((item: any) => (
                                         <option key={item.id} value={item.id}>
@@ -1164,8 +1215,7 @@ export default function PdpEdit() {
                                     onChange={handleOnChange}
                                     value={data.detail_bakat}
                                     tabIndex={24}
-                                    required
-                                    className='border-gray-300 focus:border-red-500 w-full text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400'>
+                                    className='border-gray-300 focus:border-red-500 w-full text-sm focus:ring-red-500 rounded-md shadow-sm ring-gray-400 bg-white dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'>
                                     <option value=''>--Pilih Detail Bakat--</option>
                                     {filteredDetailBakat.map((item: any) => (
                                         <option key={item.id} value={item.detail_bakat}>

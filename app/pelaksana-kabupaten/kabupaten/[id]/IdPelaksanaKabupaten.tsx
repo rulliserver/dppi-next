@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { UrlApi } from "@/app/components/apiUrl";
 import { useParams } from "next/navigation";
-import { BaseUrl } from "@/app/components/baseUrl";
+import { BaseUrl, getImageUrl } from "@/app/components/baseUrl";
 import Image from "next/image";
 
 export default function IdPelaksanaKabupaten() {
@@ -82,7 +82,7 @@ export default function IdPelaksanaKabupaten() {
                                     className='cursor-pointer'
                                 >
                                     <div className='bg-gray-200 rounded-md max-w-75 grid grid-cols-1 justify-center pb-4'>
-                                        <img src={BaseUrl + ketum.photo} alt='Photo Ketum Kabupaten' className='max-w-75 rounded-t-md' />
+                                        <img src={getImageUrl(ketum.photo)} alt='Photo Ketum Kabupaten' className='max-w-75 rounded-t-md' />
                                         <p className='text-center pt-2 font-semibold px-2'>{ketum.nama_lengkap}</p>
                                         <p className='px-2 text-sm text-center'>{ketum.jabatan}</p>
                                     </div>
@@ -98,7 +98,7 @@ export default function IdPelaksanaKabupaten() {
                                         onClick={() => handleImageClick(waket)}
                                         className='cursor-pointer'
                                     >
-                                        <img src={BaseUrl + waket.photo} alt='Photo waket Kabupaten' className='max-w-75 rounded-t-md' />
+                                        <img src={getImageUrl(waket.photo)} alt='Photo waket Kabupaten' className='max-w-75 rounded-t-md' />
                                         <p className='text-center pt-2 font-semibold px-2'>{waket.nama_lengkap}</p>
                                         <p className='px-2 text-sm text-center'>{waket.jabatan}</p>
                                     </div>
@@ -114,7 +114,7 @@ export default function IdPelaksanaKabupaten() {
                                         onClick={() => handleImageClick(sekretaris)}
                                         className='cursor-pointer'
                                     >
-                                        <img src={BaseUrl + sekretaris.photo} alt='Photo sekretaris Kabupaten' className='max-w-75 rounded-t-md' />
+                                        <img src={getImageUrl(sekretaris.photo)} alt='Photo sekretaris Kabupaten' className='max-w-75 rounded-t-md' />
                                         <p className='text-center pt-2 font-semibold px-2'>{sekretaris.nama_lengkap}</p>
                                         <p className='px-2 text-sm text-center'>{sekretaris.jabatan}</p>
                                     </div>
@@ -135,7 +135,7 @@ export default function IdPelaksanaKabupaten() {
                                             onClick={() => handleImageClick(item)}
                                             className='cursor-pointer'
                                         >
-                                            <img src={BaseUrl + item.photo} alt='Photo item Kabupaten' className='max-w-75 rounded-t-md' />
+                                            <img src={getImageUrl(item.photo)} alt='Photo item Kabupaten' className='max-w-75 rounded-t-md' />
                                             <p className='text-center pt-2 font-semibold px-2'>{item.nama_lengkap}</p>
                                             <p className='px-2 text-sm text-center'>{item.jabatan}</p>
                                         </div>
@@ -163,7 +163,7 @@ export default function IdPelaksanaKabupaten() {
                                     <div className='p-4'>
                                         <div className='flex justify-center mb-4'>
                                             <Image
-                                                src={BaseUrl + selectedMember.photo}
+                                                src={getImageUrl(selectedMember.photo)}
                                                 alt={selectedMember.nama_lengkap}
                                                 className='rounded-lg object-cover'
                                                 width={150}

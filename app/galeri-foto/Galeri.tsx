@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Pagination from '../components/Pagination';
 import axios from 'axios';
 import { UrlApi } from '../components/apiUrl';
-import { BaseUrl } from '../components/baseUrl';
+import { BaseUrl, getImageUrl as getGlobalImageUrl } from '../components/baseUrl';
 
 interface GalleryItem {
     id: number;
@@ -94,9 +94,9 @@ export default function Galeri() {
     // Function untuk mendapatkan URL gambar
     const getImageUrl = (foto: string | string[]): string => {
         if (Array.isArray(foto) && foto.length > 0) {
-            return `${BaseUrl}uploads/assets/images/gallery/${foto[0]}`;
+            return getGlobalImageUrl(`uploads/assets/images/gallery/${foto[0]}`);
         } else if (typeof foto === 'string') {
-            return `${BaseUrl}uploads/assets/images/gallery/${foto}`;
+            return getGlobalImageUrl(`uploads/assets/images/gallery/${foto}`);
         }
         return '/images/placeholder.jpg'; // Fallback image
     };

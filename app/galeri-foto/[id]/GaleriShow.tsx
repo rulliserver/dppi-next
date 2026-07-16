@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import ImageGallery from 'react-image-gallery';
 import 'react-image-gallery/styles/css/image-gallery.css';
 import axios from 'axios';
-import { BaseUrl } from '@/app/components/baseUrl';
+import { BaseUrl, getImageUrl as getGlobalImageUrl } from '@/app/components/baseUrl';
 import { UrlApi } from '@/app/components/apiUrl';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -123,18 +123,21 @@ export default function GaleriShow() {
     // Function untuk mendapatkan URL gambar
     const getImageUrl = (foto: string | string[]): string => {
         if (Array.isArray(foto) && foto.length > 0) {
-            return `${BaseUrl}uploads/assets/images/gallery/${foto[0]}`;
+            return getGlobalImageUrl(`uploads/assets/images/gallery/${foto[0]}`);
         } else if (typeof foto === 'string') {
-            return `${BaseUrl}uploads/assets/images/gallery/${foto}`;
+            return getGlobalImageUrl(`uploads/assets/images/gallery/${foto}`);
         }
         return '/images/placeholder.jpg'; // Fallback image
     };
 
 
 
-    const images = galeri?.foto.map((foto: any) => {
-        return { original: `${BaseUrl}uploads/assets/images/gallery/${foto}`, thumbnail: `${BaseUrl}uploads/assets/images/gallery/${foto}` };
-    });
+     const images = galeri?.foto.map((foto: any) => {
+        return { 
+            original: getGlobalImageUrl(`uploads/assets/images/gallery/${foto}`), 
+            thumbnail: getGlobalImageUrl(`uploads/assets/images/gallery/${foto}`) 
+        };
+     });
 
 
 
