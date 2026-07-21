@@ -281,16 +281,34 @@ export default function ProfilingPage() {
     // Calculate Pamong averages - handle null values
     const getSikapAvg = (p: DailyPamong) => {
         const values = sikapFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-        if (values.length === 0) return '0';
+        if (values.length === 0) return '0.00';
         const sum = values.reduce((acc, val) => acc + val, 0);
-        return (sum / values.length).toFixed(1);
+        return (sum / values.length).toFixed(2);
     };
 
     const getPenampilanAvg = (p: DailyPamong) => {
         const values = penampilanFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-        if (values.length === 0) return '0';
+        if (values.length === 0) return '0.00';
         const sum = values.reduce((acc, val) => acc + val, 0);
-        return (sum / values.length).toFixed(1);
+        return (sum / values.length).toFixed(2);
+    };
+
+    const getSikapSum = (p: DailyPamong) => {
+        const values = sikapFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+        if (values.length === 0) return 0;
+        return values.reduce((acc, val) => acc + val, 0);
+    };
+
+    const getPenampilanSum = (p: DailyPamong) => {
+        const values = penampilanFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+        if (values.length === 0) return 0;
+        return values.reduce((acc, val) => acc + val, 0);
+    };
+
+    const getPamongNilaiKeseluruhan = (p: DailyPamong) => {
+        const sAvg = parseFloat(getSikapAvg(p));
+        const pAvg = parseFloat(getPenampilanAvg(p));
+        return (sAvg + pAvg).toFixed(2);
     };
 
     // Calculate Pelatih averages
@@ -497,6 +515,29 @@ export default function ProfilingPage() {
                                     Status: <strong>{details.profile.status || 'Aktif'}</strong>
                                 </span>
                             </div>
+
+                            {details.pemusatan.pamong && details.pemusatan.pamong.length > 0 && (
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-3 border-t border-gray-150 dark:border-gray-800">
+                                    <div className="flex items-center gap-1.5 text-xs">
+                                        <span className="text-gray-500 dark:text-gray-400 font-medium">Total Skor SIKAP:</span>
+                                        <span className="font-mono font-bold text-violet-600 dark:text-violet-400">
+                                            {details.pemusatan.pamong.reduce((sum, p) => sum + getSikapSum(p), 0)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs">
+                                        <span className="text-gray-500 dark:text-gray-400 font-medium">Total Skor PENAMPILAN:</span>
+                                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                            {details.pemusatan.pamong.reduce((sum, p) => sum + getPenampilanSum(p), 0)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs">
+                                        <span className="text-gray-500 dark:text-gray-400 font-semibold">Nilai Keseluruhan Rata²:</span>
+                                        <span className="px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 font-bold font-mono text-xs">
+                                            {(details.pemusatan.pamong.reduce((sum, p) => sum + parseFloat(getPamongNilaiKeseluruhan(p)), 0) / details.pemusatan.pamong.length).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -528,26 +569,41 @@ export default function ProfilingPage() {
                         <div className="p-6">
                             {/* PAMONG TAB */}
                             {activeTab === 'pamong' && (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-xs border-collapse">
+                                <div className="overflow-x-auto">                                     <table className="w-full text-left text-xs border-collapse">
                                         <thead>
                                             <tr className="border-b border-gray-200 dark:border-gray-800 text-gray-500 font-bold uppercase pb-2">
                                                 <th className="py-3 px-2">Tanggal</th>
-                                                <th className="py-3 px-2">Rata-rata Sikap</th>
-                                                <th className="py-3 px-2">Rata-rata Penampilan</th>
+                                                <th className="py-3 px-2 text-center">Total Sikap</th>
+                                                <th className="py-3 px-2 text-center">Total Penampilan</th>
+                                                <th className="py-3 px-2 text-center">Rata² Sikap</th>
+                                                <th className="py-3 px-2 text-center">Rata² Penampilan</th>
+                                                <th className="py-3 px-2 text-center">Nilai Keseluruhan</th>
+                                                <th className="py-3 px-2 text-center">Rata² Keseluruhan</th>
                                                 <th className="py-3 px-2">Catatan khusus</th>
                                                 <th className="py-3 px-2 text-right">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
                                             {!details.pemusatan.pamong || details.pemusatan.pamong.length === 0 ? (
-                                                <tr><td colSpan={5} className="py-6 text-center text-gray-400 italic">Belum ada catatan jurnal pamong.</td></tr>
+                                                <tr><td colSpan={9} className="py-6 text-center text-gray-400 italic">Belum ada catatan jurnal pamong.</td></tr>
                                             ) : (
                                                 details.pemusatan.pamong.map((p, idx) => (
                                                     <tr key={idx} className="hover:bg-gray-50/30">
                                                         <td className="py-3 px-2 font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">{p.tanggal}</td>
-                                                        <td className="py-3 px-2 font-mono font-bold text-violet-600 dark:text-violet-400">{getSikapAvg(p)}</td>
-                                                        <td className="py-3 px-2 font-mono font-bold text-violet-600 dark:text-violet-400">{getPenampilanAvg(p)}</td>
+                                                        <td className="py-3 px-2 text-center font-mono font-bold text-violet-600 dark:text-violet-400">{getSikapSum(p)}</td>
+                                                        <td className="py-3 px-2 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{getPenampilanSum(p)}</td>
+                                                        <td className="py-3 px-2 text-center font-mono font-semibold text-indigo-600 dark:text-indigo-400">{getSikapAvg(p)}</td>
+                                                        <td className="py-3 px-2 text-center font-mono font-semibold text-teal-600 dark:text-teal-400">{getPenampilanAvg(p)}</td>
+                                                        <td className="py-3 px-2 text-center font-mono">
+                                                            <span className="px-2.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 font-bold text-xs">
+                                                                {getPamongNilaiKeseluruhan(p)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-2 text-center font-mono">
+                                                            <span className="px-2.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 font-bold text-xs">
+                                                                {((parseFloat(getSikapAvg(p)) + parseFloat(getPenampilanAvg(p))) / 2).toFixed(2)}
+                                                            </span>
+                                                        </td>
                                                         <td className="py-3 px-2 text-gray-650 dark:text-gray-300 max-w-xs truncate" title={p.catatan || ''}>{p.catatan || '-'}</td>
                                                         <td className="py-3 px-2 text-right">
                                                             <button
@@ -659,7 +715,7 @@ export default function ProfilingPage() {
                                     Detail Penilaian Pamong - {selectedPamongLog.tanggal}
                                 </h3>
                                 <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
-                                    Rata-rata: Sikap ({getSikapAvg(selectedPamongLog)}) | Penampilan ({getPenampilanAvg(selectedPamongLog)})
+                                    Total: Sikap ({getSikapSum(selectedPamongLog)}) | Penampilan ({getPenampilanSum(selectedPamongLog)}) &bull; Rata-rata: Sikap ({getSikapAvg(selectedPamongLog)}) | Penampilan ({getPenampilanAvg(selectedPamongLog)}) &bull; Nilai Keseluruhan: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">{getPamongNilaiKeseluruhan(selectedPamongLog)}</strong>
                                 </p>
                             </div>
                             <button

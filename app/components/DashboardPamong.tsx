@@ -122,7 +122,7 @@ export default function PamongDashboardPage() {
                 data: filteredDailyStats.map(item => item.jumlah_sikap).reverse(),
                 borderColor: 'rgb(139, 92, 246)',
                 backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                fill: true,
+                fill: false,
                 tension: 0.3,
                 pointBackgroundColor: 'rgb(139, 92, 246)',
                 pointBorderColor: '#fff',
@@ -134,9 +134,21 @@ export default function PamongDashboardPage() {
                 data: filteredDailyStats.map(item => item.jumlah_penampilan).reverse(),
                 borderColor: 'rgb(16, 185, 129)',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                fill: true,
+                fill: false,
                 tension: 0.3,
                 pointBackgroundColor: 'rgb(16, 185, 129)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+            },
+            {
+                label: 'Penilaian KESELURUHAN (Sikap & Penampilan)',
+                data: filteredDailyStats.map(item => item.jumlah_sikap + item.jumlah_penampilan).reverse(),
+                borderColor: 'rgb(99, 102, 241)',
+                backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: 'rgb(99, 102, 241)',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
                 pointRadius: 4,
@@ -170,7 +182,10 @@ export default function PamongDashboardPage() {
                     label: function (context: any) {
                         let label = context.dataset.label || '';
                         let value = context.parsed.y;
-                        return `${label}: ${value} penilaian`;
+                        if (value !== null && value !== undefined) {
+                            return `${label}: ${Number(value).toFixed(2)}`;
+                        }
+                        return `${label}: -`;
                     }
                 }
             },
@@ -220,7 +235,7 @@ export default function PamongDashboardPage() {
                         📊 Dashboard Pamong
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        Perkembangan penilaian harian SIKAP dan PENAMPILAN peserta
+                        Perkembangan penilaian harian Sikap dan Penampilan peserta
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -247,7 +262,7 @@ export default function PamongDashboardPage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Total Penilaian</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -269,6 +284,15 @@ export default function PamongDashboardPage() {
                     </p>
                     <p className="text-xs text-gray-400">Rata-rata {avgPenampilanPerDay.toFixed(1)}/hari</p>
                 </div>
+                <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-indigo-200 dark:border-indigo-900/50 shadow-sm bg-linear-to-br from-indigo-50/30 to-purple-50/30 dark:from-indigo-950/20 dark:to-purple-950/20">
+                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Nilai Keseluruhan</p>
+                    <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono">
+                        {dashboardData.candidate_stats.length > 0
+                            ? (dashboardData.candidate_stats.reduce((acc, c) => acc + (c.nilai_keseluruhan || (c.rata_rata_sikap + c.rata_rata_penampilan)), 0) / dashboardData.candidate_stats.length).toFixed(1)
+                            : '0'}
+                    </p>
+                    <p className="text-xs text-gray-400">Rata-rata peserta</p>
+                </div>
                 <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Hari Aktif</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -285,6 +309,10 @@ export default function PamongDashboardPage() {
                         Grafik Perkembangan Penilaian Harian
                     </h2>
                     <div className="flex items-center gap-4 text-xs">
+                        <span className="flex items-center gap-1">
+                            <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
+                            KESELURUHAN
+                        </span>
                         <span className="flex items-center gap-1">
                             <span className="w-3 h-3 rounded-full bg-violet-500"></span>
                             SIKAP
@@ -317,17 +345,19 @@ export default function PamongDashboardPage() {
                                 <th className="text-center py-3 px-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">PENAMPILAN</th>
                                 <th className="text-center py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Rata-rata SIKAP</th>
                                 <th className="text-center py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Rata-rata PENAMPILAN</th>
-                                <th className="text-center py-3 px-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 font-bold">Nilai Rata²</th>
-                                <th className="text-center py-3 px-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 font-bold">Nilai Keseluruhan</th>
+                                <th className="text-center py-3 px-2 text-xs text-indigo-600 dark:text-indigo-400 font-bold">Nilai Keseluruhan</th>
+                                <th className="text-center py-3 px-2 text-xs text-purple-600 dark:text-purple-400 font-bold">Rata-Rata Keseluruhan</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {dashboardData.candidate_stats.map((candidate, index) => (
+                            {[...dashboardData.candidate_stats]
+                                .sort((a, b) => (b.nilai_keseluruhan ?? (b.rata_rata_sikap + b.rata_rata_penampilan)) - (a.nilai_keseluruhan ?? (a.rata_rata_sikap + a.rata_rata_penampilan)))
+                                .map((candidate, index) => (
                                 <tr
                                     key={candidate.id}
                                     className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                                 >
-                                    <td className="py-2 px-2 text-gray-500">{index + 1}</td>
+                                    <td className="py-2 px-2 text-gray-500 font-bold">{index + 1}</td>
                                     <td className="py-2 px-2 font-medium text-gray-800 dark:text-gray-200">
                                         {candidate.nama_lengkap}
                                     </td>
@@ -337,26 +367,26 @@ export default function PamongDashboardPage() {
                                     <td className="py-2 px-2 text-center font-bold text-gray-800 dark:text-gray-200">
                                         {candidate.total_penilaian}
                                     </td>
-                                    <td className="py-2 px-2 text-center text-violet-600 dark:text-violet-400">
+                                    <td className="py-2 px-2 text-center text-violet-600 dark:text-violet-400 font-semibold">
                                         {candidate.total_sikap}
                                     </td>
-                                    <td className="py-2 px-2 text-center text-emerald-600 dark:text-emerald-400">
+                                    <td className="py-2 px-2 text-center text-emerald-600 dark:text-emerald-400 font-semibold">
                                         {candidate.total_penampilan}
                                     </td>
-                                    <td className="py-2 px-2 text-center text-gray-600 dark:text-gray-400">
-                                        {candidate.rata_rata_sikap.toFixed(1)}
+                                    <td className="py-2 px-2 text-center text-gray-600 dark:text-gray-400 font-mono">
+                                        {candidate.rata_rata_sikap.toFixed(2)}
                                     </td>
-                                    <td className="py-2 px-2 text-center text-gray-600 dark:text-gray-400">
-                                        {candidate.rata_rata_penampilan.toFixed(1)}
-                                    </td>
-                                    <td className="py-2 px-2 text-center font-mono">
-                                        <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
-                                            {candidate.nilai_rata_rata ? candidate.nilai_rata_rata.toFixed(2) : ((candidate.rata_rata_sikap + candidate.rata_rata_penampilan) / 2).toFixed(2)}
-                                        </span>
+                                    <td className="py-2 px-2 text-center text-gray-600 dark:text-gray-400 font-mono">
+                                        {candidate.rata_rata_penampilan.toFixed(2)}
                                     </td>
                                     <td className="py-2 px-2 text-center font-mono">
                                         <span className="px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 font-bold text-xs">
-                                            {candidate.nilai_keseluruhan ? candidate.nilai_keseluruhan.toFixed(1) : (candidate.rata_rata_sikap + candidate.rata_rata_penampilan).toFixed(1)}
+                                            {candidate.nilai_keseluruhan ? candidate.nilai_keseluruhan.toFixed(2) : (candidate.rata_rata_sikap + candidate.rata_rata_penampilan).toFixed(2)}
+                                        </span>
+                                    </td>
+                                    <td className="py-2 px-2 text-center font-mono">
+                                        <span className="px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 font-bold text-xs">
+                                            {candidate.nilai_rata_rata ? candidate.nilai_rata_rata.toFixed(2) : ((candidate.rata_rata_sikap + candidate.rata_rata_penampilan) / 2).toFixed(2)}
                                         </span>
                                     </td>
                                 </tr>

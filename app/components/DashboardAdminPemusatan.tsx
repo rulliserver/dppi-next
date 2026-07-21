@@ -456,24 +456,28 @@ export default function DashboardAdminPemusatan() {
         labels: progressLabels,
         datasets: [
             {
-                label: 'Pamong: Rata-Rata Sikap',
-                data: chartDataCapaska.map(c => c.pamong_sikap),
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                label: 'Rata=Rata Penilaian Pamong',
+                data: chartDataCapaska.map(c => {
+                    const s = c.pamong_sikap;
+                    const p = c.pamong_penampilan;
+                    if (s !== null && s !== undefined && s > 0 && p !== null && p !== undefined && p > 0) {
+                        return Number(((s + p) / 2).toFixed(2));
+                    } else if (s !== null && s !== undefined && s > 0) {
+                        return Number(s.toFixed(2));
+                    } else if (p !== null && p !== undefined && p > 0) {
+                        return Number(p.toFixed(2));
+                    }
+                    return null;
+                }),
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.15)',
                 tension: 0.2,
                 pointRadius: 4,
-            },
-            {
-                label: 'Pamong: Rata-Rata Penampilan',
-                data: chartDataCapaska.map(c => c.pamong_penampilan),
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.2,
-                pointRadius: 4,
+                fill: true,
             },
             {
                 label: 'Pelatih: Rata-Rata PBB',
-                data: chartDataCapaska.map(c => c.pelatih_pbb),
+                data: chartDataCapaska.map(c => c.pelatih_pbb !== null && c.pelatih_pbb !== undefined ? Number(c.pelatih_pbb.toFixed(2)) : null),
                 borderColor: '#f59e0b',
                 backgroundColor: 'rgba(245, 158, 11, 0.1)',
                 tension: 0.2,
@@ -481,9 +485,9 @@ export default function DashboardAdminPemusatan() {
             },
             {
                 label: 'Pelatih: Rata-Rata Bendera',
-                data: chartDataCapaska.map(c => c.pelatih_bendera),
-                borderColor: '#8b5cf6',
-                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                data: chartDataCapaska.map(c => c.pelatih_bendera !== null && c.pelatih_bendera !== undefined ? Number(c.pelatih_bendera.toFixed(2)) : null),
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 tension: 0.2,
                 pointRadius: 4,
             }
@@ -497,6 +501,15 @@ export default function DashboardAdminPemusatan() {
             legend: {
                 labels: {
                     color: isDark ? '#ffffff' : '#374151'
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context: any) {
+                        const label = context.dataset.label || '';
+                        const val = context.parsed.y;
+                        return `${label}: ${val !== null && val !== undefined ? Number(val).toFixed(2) : '-'}`;
+                    }
                 }
             }
         },
@@ -525,11 +538,17 @@ export default function DashboardAdminPemusatan() {
         label: c.nama_lengkap
     }));
 
-    const filteredCapaska = data.capaska_progress.filter(c =>
-        c.nama_lengkap.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.no_peserta.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.pamong_name && c.pamong_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const filteredCapaska = data.capaska_progress
+        .filter(c =>
+            c.nama_lengkap.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.no_peserta.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (c.pamong_name && c.pamong_name.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        .sort((a, b) => {
+            const scoreA = a.nilai_keseluruhan ?? ((a.pamong_sikap_avg || 0) + (a.pamong_penampilan_avg || 0) + (a.pelatih_pbb_avg || 0) + (a.pelatih_bendera_avg || 0));
+            const scoreB = b.nilai_keseluruhan ?? ((b.pamong_sikap_avg || 0) + (b.pamong_penampilan_avg || 0) + (b.pelatih_pbb_avg || 0) + (b.pelatih_bendera_avg || 0));
+            return scoreB - scoreA;
+        });
 
     const totalPages = Math.ceil(filteredCapaska.length / itemsPerPage);
     const paginatedCapaska = filteredCapaska.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -600,11 +619,11 @@ export default function DashboardAdminPemusatan() {
             </div>
 
             {/* Averages display */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-5 rounded-lg border border-indigo-500/20 flex items-center justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-linear-to-r from-indigo-500/10 to-purple-500/10 p-5 rounded-lg border border-indigo-500/20 flex items-center justify-between">
                     <div>
                         <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-200">Indeks Sikap Capaska</h4>
-                        <p className="text-xs text-indigo-700 dark:text-indigo-300">Rata-rata kumulatif seluruh jurnal pamong</p>
+                        <p className="text-xs text-indigo-700 dark:text-indigo-300">Rata-rata kumulatif jurnal pamong</p>
                     </div>
                     <div className="text-right">
                         <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400 font-mono">
@@ -613,14 +632,26 @@ export default function DashboardAdminPemusatan() {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 p-5 rounded-lg border border-emerald-500/20 flex items-center justify-between">
+                <div className="bg-linear-to-r from-emerald-500/10 to-teal-500/10 p-5 rounded-lg border border-emerald-500/20 flex items-center justify-between">
                     <div>
                         <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">Indeks Penampilan Capaska</h4>
-                        <p className="text-xs text-emerald-700 dark:text-emerald-300">Rata-rata kerapihan & kebersihan kamar/pribadi</p>
+                        <p className="text-xs text-emerald-700 dark:text-emerald-300">Rata-rata kerapihan & kebersihan</p>
                     </div>
                     <div className="text-right">
                         <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
                             {data.overview.avg_penampilan.toFixed(2)}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="bg-linear-to-r from-violet-500/10 to-fuchsia-500/10 p-5 rounded-lg border border-violet-500/20 flex items-center justify-between">
+                    <div>
+                        <h4 className="text-sm font-bold text-violet-900 dark:text-violet-200">Indeks Keseluruhan Capaska</h4>
+                        <p className="text-xs text-violet-700 dark:text-violet-300">Kumulatif Sikap & Penampilan</p>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-3xl font-black text-violet-600 dark:text-violet-400 font-mono">
+                            {(data.overview.avg_sikap + data.overview.avg_penampilan).toFixed(1)}
                         </span>
                     </div>
                 </div>
@@ -706,8 +737,8 @@ export default function DashboardAdminPemusatan() {
                                 <th className="p-3">No. Peserta</th>
                                 <th className="p-3">Nama Capaska</th>
                                 <th className="p-3">Pamong</th>
-                                <th className="p-3 text-center">Nilai Rata²</th>
                                 <th className="p-3 text-center">Nilai Keseluruhan</th>
+                                <th className="p-3 text-center">Rata-Rata Keseluruhan</th>
                                 <th className="p-3 text-center">Jurnal (P/P/D)</th>
                                 <th className="p-3">Status</th>
                                 <th className="p-3 text-center">Aksi</th>
@@ -726,13 +757,13 @@ export default function DashboardAdminPemusatan() {
                                         )}
                                     </td>
                                     <td className="p-3 text-center font-mono">
-                                        <span className="px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold">
-                                            {c.nilai_rata_rata ? c.nilai_rata_rata.toFixed(2) : '0.00'}
+                                        <span className="px-2 py-1 rounded bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 font-bold">
+                                            {c.nilai_keseluruhan ? c.nilai_keseluruhan.toFixed(2) : '0.00'}
                                         </span>
                                     </td>
                                     <td className="p-3 text-center font-mono">
-                                        <span className="px-2 py-1 rounded bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 font-bold">
-                                            {c.nilai_keseluruhan ? c.nilai_keseluruhan.toFixed(1) : '0.0'}
+                                        <span className="px-2 py-1 rounded bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 font-bold">
+                                            {c.nilai_rata_rata ? c.nilai_rata_rata.toFixed(2) : '0.00'}
                                         </span>
                                     </td>
                                     <td className="p-3 text-center font-mono font-bold text-gray-700 dark:text-gray-300">

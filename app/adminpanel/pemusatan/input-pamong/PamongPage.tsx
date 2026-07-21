@@ -228,6 +228,16 @@ export default function PamongPage() {
         return (sum / values.length).toFixed(1);
     };
 
+    // Calculate total sum - jumlah seluruh nilai yang diisi
+    const getSum = (fields: { key: string }[]) => {
+        const values = fields
+            .map(f => scores[f.key])
+            .filter((val): val is number => val !== null && val !== undefined);
+
+        if (values.length === 0) return 0;
+        return values.reduce((acc, val) => acc + val, 0);
+    };
+
     // Hitung jumlah yang sudah dinilai
     const getFilledCount = (fields: { key: string }[]) => {
         return fields.filter(f => scores[f.key] !== null && scores[f.key] !== undefined).length;
@@ -450,26 +460,73 @@ export default function PamongPage() {
                     </div>
                 </div>
 
-                {/* Auto-save indicator */}
-                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-                    <span>
-                        {isDataLoaded && selectedCandidate && (
-                            `Total Terisi: ${getFilledCount([...sikapFields, ...penampilanFields])}/${sikapFields.length + penampilanFields.length}`
-                        )}
-                    </span>
-                    <div className="flex items-center gap-2">
-                        {saveLoading ? (
-                            <>
-                                <div className="w-3 h-3 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
-                                <span>Menyimpan otomatis...</span>
-                            </>
-                        ) : lastSaved ? (
-                            <>
-                                <span className="text-green-500">✓</span>
-                                <span>Terakhir disimpan: {lastSaved.toLocaleTimeString()}</span>
-                            </>
-                        ) : null}
+                {/* Auto-save indicator & Overall Score Summary Panel */}
+                <div className="flex flex-col gap-3">
+                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                        <span>
+                            {isDataLoaded && selectedCandidate && (
+                                `Total Terisi: ${getFilledCount([...sikapFields, ...penampilanFields])}/${sikapFields.length + penampilanFields.length}`
+                            )}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            {saveLoading ? (
+                                <>
+                                    <div className="w-3 h-3 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
+                                    <span>Menyimpan otomatis...</span>
+                                </>
+                            ) : lastSaved ? (
+                                <>
+                                    <span className="text-green-500">✓</span>
+                                    <span>Terakhir disimpan: {lastSaved.toLocaleTimeString()}</span>
+                                </>
+                            ) : null}
+                        </div>
                     </div>
+
+                    {isDataLoaded && selectedCandidate && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 bg-violet-50/60 dark:bg-violet-950/20 p-3.5 rounded-lg border border-violet-200 dark:border-violet-900/40 shadow-xs">
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Total Sikap</span>
+                                <span className="text-lg font-bold text-violet-600 dark:text-violet-400 font-mono">
+                                    {getSum(sikapFields)}
+                                </span>
+                                <span className="text-[10px] text-gray-400">Rata²: {getAverage(sikapFields)}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Rata² Sikap</span>
+                                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+                                    {getAverage(sikapFields)}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Total Penampilan</span>
+                                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                                    {getSum(penampilanFields)}
+                                </span>
+                                <span className="text-[10px] text-gray-400">Rata²: {getAverage(penampilanFields)}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Rata² Penampilan</span>
+                                <span className="text-lg font-bold text-teal-600 dark:text-teal-400 font-mono">
+                                    {getAverage(penampilanFields)}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-bold text-violet-700 dark:text-violet-300">Nilai Keseluruhan</span>
+                                <span className="text-lg font-black text-violet-600 dark:text-violet-400 font-mono">
+                                    {(parseFloat(getAverage(sikapFields)) + parseFloat(getAverage(penampilanFields))).toFixed(1)}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Rata² Keseluruhan</span>
+                                <span className="text-lg font-bold text-purple-600 dark:text-purple-400 font-mono">
+                                    {getAverage([...sikapFields, ...penampilanFields])}
+                                </span>
+                            </div>
+
+                        </div>
+                    )}
                 </div>
 
                 <hr className="border-gray-150 dark:border-gray-800" />
@@ -480,13 +537,13 @@ export default function PamongPage() {
                         type="button"
                         onClick={() => setActiveTab('sikap')}
                         className={`flex-1 py-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'sikap'
-                                ? 'border-violet-600 text-violet-600 dark:text-violet-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+                            ? 'border-violet-600 text-violet-600 dark:text-violet-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
                             }`}
                     >
                         <span>SIKAP</span>
                         <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 font-mono">
-                            {getAverage(sikapFields)}
+                            Total: {getSum(sikapFields)} | Rata²: {getAverage(sikapFields)}
                         </span>
                         <span className="text-xs text-gray-400">
                             ({getFilledCount(sikapFields)}/{sikapFields.length})
@@ -496,13 +553,13 @@ export default function PamongPage() {
                         type="button"
                         onClick={() => setActiveTab('penampilan')}
                         className={`flex-1 py-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'penampilan'
-                                ? 'border-violet-600 text-violet-600 dark:text-violet-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
+                            ? 'border-violet-600 text-violet-600 dark:text-violet-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
                             }`}
                     >
                         <span>PENAMPILAN</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 font-mono">
-                            {getAverage(penampilanFields)}
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-mono">
+                            Total: {getSum(penampilanFields)} | Rata²: {getAverage(penampilanFields)}
                         </span>
                         <span className="text-xs text-gray-400">
                             ({getFilledCount(penampilanFields)}/{penampilanFields.length})
@@ -524,8 +581,8 @@ export default function PamongPage() {
                                         <label
                                             key={option.value}
                                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${scores[field.key] === option.value
-                                                    ? 'bg-violet-600 text-white'
-                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                                ? 'bg-violet-600 text-white'
+                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                                                 }`}
                                         >
                                             <input
@@ -543,8 +600,8 @@ export default function PamongPage() {
                                         type="button"
                                         onClick={() => handleScoreChange(field.key, null as any)}
                                         className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${scores[field.key] === null || scores[field.key] === undefined
-                                                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
-                                                : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                                            ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
+                                            : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
                                             }`}
                                         disabled={scores[field.key] === null || scores[field.key] === undefined}
                                     >
@@ -566,8 +623,8 @@ export default function PamongPage() {
                                         <label
                                             key={option.value}
                                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${scores[field.key] === option.value
-                                                    ? 'bg-violet-600 text-white'
-                                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                                ? 'bg-violet-600 text-white'
+                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                                                 }`}
                                         >
                                             <input
@@ -585,8 +642,8 @@ export default function PamongPage() {
                                         type="button"
                                         onClick={() => handleScoreChange(field.key, null as any)}
                                         className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${scores[field.key] === null || scores[field.key] === undefined
-                                                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
-                                                : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                                            ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
+                                            : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
                                             }`}
                                         disabled={scores[field.key] === null || scores[field.key] === undefined}
                                     >
