@@ -962,6 +962,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     <div className="mt-4 border-t border-gray-200/30 pt-4">
                                         <p className="px-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Pemusatan 2026</p>
                                         
+                                        {/* Dashboard Pemusatan */}
+                                        {["Admin Pemusatan", "Superadmin"].includes(user.role) && (
+                                            <a
+                                                href='/adminpanel/pemusatan/dashboard'
+                                                className={
+                                                    pathname === '/adminpanel/pemusatan/dashboard'
+                                                        ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                        : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                                }>
+                                                <i className={pathname === '/adminpanel/pemusatan/dashboard' ? 'mx-2 text-xl py-auto fas fa-chart-line text-purple-600' : 'mx-2 text-xl py-auto fas fa-chart-line text-accent'}></i>
+                                                <p className='mx-1 menu-list'>Dashboard Pemusatan</p>
+                                            </a>
+                                        )}
+
                                         {/* Pamong */}
                                         {["Pamong", "Admin Pemusatan", "Superadmin"].includes(user.role) && (
                                             <a

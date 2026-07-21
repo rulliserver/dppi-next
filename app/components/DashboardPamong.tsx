@@ -47,6 +47,8 @@ interface CandidateStats {
     total_penilaian: number;
     rata_rata_sikap: number;
     rata_rata_penampilan: number;
+    nilai_keseluruhan?: number;
+    nilai_rata_rata?: number;
 }
 
 interface DashboardData {
@@ -310,11 +312,13 @@ export default function PamongDashboardPage() {
                                 <th className="text-left py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">#</th>
                                 <th className="text-left py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Nama Peserta</th>
                                 <th className="text-left py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">JK</th>
-                                <th className="text-center py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Total</th>
+                                <th className="text-center py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Total Jurnal</th>
                                 <th className="text-center py-3 px-2 text-xs font-semibold text-violet-600 dark:text-violet-400">SIKAP</th>
                                 <th className="text-center py-3 px-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">PENAMPILAN</th>
                                 <th className="text-center py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Rata-rata SIKAP</th>
                                 <th className="text-center py-3 px-2 text-xs font-semibold text-gray-500 dark:text-gray-400">Rata-rata PENAMPILAN</th>
+                                <th className="text-center py-3 px-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 font-bold">Nilai Rata²</th>
+                                <th className="text-center py-3 px-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 font-bold">Nilai Keseluruhan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -344,6 +348,16 @@ export default function PamongDashboardPage() {
                                     </td>
                                     <td className="py-2 px-2 text-center text-gray-600 dark:text-gray-400">
                                         {candidate.rata_rata_penampilan.toFixed(1)}
+                                    </td>
+                                    <td className="py-2 px-2 text-center font-mono">
+                                        <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
+                                            {candidate.nilai_rata_rata ? candidate.nilai_rata_rata.toFixed(2) : ((candidate.rata_rata_sikap + candidate.rata_rata_penampilan) / 2).toFixed(2)}
+                                        </span>
+                                    </td>
+                                    <td className="py-2 px-2 text-center font-mono">
+                                        <span className="px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 font-bold text-xs">
+                                            {candidate.nilai_keseluruhan ? candidate.nilai_keseluruhan.toFixed(1) : (candidate.rata_rata_sikap + candidate.rata_rata_penampilan).toFixed(1)}
+                                        </span>
                                     </td>
                                 </tr>
                             ))}

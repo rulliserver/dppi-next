@@ -9,6 +9,13 @@ interface Candidate {
     id: number;
     nama_lengkap: string;
     jk: string;
+    id_pamong?: string;
+}
+
+interface Pamong {
+    id: string;
+    nama_user: string;
+    count_assigned: number;
 }
 
 const sikapFields = [
@@ -71,6 +78,8 @@ const initialScores: Record<string, number | null> = {};
 
 export default function PamongPage() {
     const [candidates, setCandidates] = useState<Candidate[]>([]);
+    const [pamongList, setPamongList] = useState<Pamong[]>([]);
+    const [selectedPamong, setSelectedPamong] = useState<string>('');
     const [isDark, setIsDark] = useState(false);
     const [activeTab, setActiveTab] = useState<'sikap' | 'penampilan'>('sikap');
 
@@ -91,13 +100,13 @@ export default function PamongPage() {
         }),
         option: (provided: any, state: any) => ({
             ...provided,
-            backgroundColor: state.isSelected 
-                ? '#7c3aed' 
-                : state.isFocused 
-                    ? isDark ? '#374151' : 'rgba(124, 58, 237, 0.1)' 
+            backgroundColor: state.isSelected
+                ? '#7c3aed'
+                : state.isFocused
+                    ? isDark ? '#374151' : 'rgba(124, 58, 237, 0.1)'
                     : isDark ? '#1f2937' : '#ffffff',
-            color: state.isSelected 
-                ? '#ffffff' 
+            color: state.isSelected
+                ? '#ffffff'
                 : isDark ? '#f3f4f6' : '#1f2937',
             cursor: 'pointer'
         }),
@@ -115,10 +124,33 @@ export default function PamongPage() {
         })
     };
 
-    const candidateOptions = candidates.map(c => ({
+    const pamongOptions = [
+        { value: '', label: '-- Semua Pamong (Tampilkan Semua Peserta) --' },
+        ...pamongList.map(p => ({
+            value: p.id,
+            label: `${p.nama_user} (${p.count_assigned} Peserta)`
+        }))
+    ];
+
+    const filteredCandidates = selectedPamong
+        ? candidates.filter(c => c.id_pamong === selectedPamong)
+        : candidates;
+
+    const candidateOptions = filteredCandidates.map(c => ({
         value: c.id,
-        label: `${c.nama_lengkap} (${c.jk.toUpperCase()})}`
+        label: `${c.nama_lengkap} (${c.jk.toUpperCase()})`
     }));
+
+    const handleCandidateChange = (newValue: any) => {
+        const candidateId = newValue ? newValue.value : '';
+        setSelectedCandidate(candidateId);
+        if (candidateId) {
+            const cand = candidates.find(c => c.id === candidateId);
+            if (cand && cand.id_pamong && !selectedPamong && pamongList.some(p => p.id === cand.id_pamong)) {
+                setSelectedPamong(cand.id_pamong);
+            }
+        }
+    };
 
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -126,7 +158,7 @@ export default function PamongPage() {
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    
+
     // Form States
     const [selectedCandidate, setSelectedCandidate] = useState<number | ''>('');
     const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
@@ -134,33 +166,41 @@ export default function PamongPage() {
     const [catatan, setCatatan] = useState('');
 
     useEffect(() => {
-        const fetchCandidates = async () => {
+        const fetchInitialData = async () => {
             try {
-                const res = await fetch(`${UrlApi}/pemusatan/candidates`, {
-                    credentials: 'include'
-                });
-                if (!res.ok) throw new Error('Gagal memuat daftar peserta');
-                const data = await res.json();
-                setCandidates(data);
+                const [candRes, pamongRes] = await Promise.all([
+                    fetch(`${UrlApi}/pemusatan/candidates`, { credentials: 'include' }),
+                    fetch(`${UrlApi}/pemusatan/list-pamong`, { credentials: 'include' })
+                ]);
+                if (!candRes.ok) throw new Error('Gagal memuat daftar peserta');
+                const candData = await candRes.json();
+                setCandidates(candData);
+
+                if (pamongRes.ok) {
+                    const pamongData = await pamongRes.json();
+                    if (Array.isArray(pamongData)) {
+                        setPamongList(pamongData);
+                    }
+                }
             } catch (err: any) {
                 Swal.fire('Error', err.message || 'Terjadi kesalahan', 'error');
             } finally {
                 setLoading(false);
             }
         };
-        fetchCandidates();
+        fetchInitialData();
     }, []);
 
     // Auto-save effect dengan debounce
     useEffect(() => {
         if (!selectedCandidate || !tanggal) return;
         if (!isDataLoaded) return;
-        
+
         // Clear timeout sebelumnya
         if (autoSaveTimeoutRef.current) {
             clearTimeout(autoSaveTimeoutRef.current);
         }
-        
+
         // Set timeout baru
         autoSaveTimeoutRef.current = setTimeout(() => {
             handleAutoSave();
@@ -182,7 +222,7 @@ export default function PamongPage() {
         const values = fields
             .map(f => scores[f.key])
             .filter((val): val is number => val !== null && val !== undefined);
-        
+
         if (values.length === 0) return '0';
         const sum = values.reduce((acc, val) => acc + val, 0);
         return (sum / values.length).toFixed(1);
@@ -217,13 +257,17 @@ export default function PamongPage() {
                 id_paskibraka: Number(selectedCandidate),
                 tanggal,
             };
-            
+
+            if (selectedPamong) {
+                payload.id_pamong = selectedPamong;
+            }
+
             Object.entries(scores).forEach(([key, val]) => {
                 if (val !== null && val !== undefined) {
                     payload[key] = val;
                 }
             });
-            
+
             if (catatan.trim()) {
                 payload.catatan = catatan.trim();
             }
@@ -241,7 +285,7 @@ export default function PamongPage() {
             if (!res.ok) throw new Error(result.message || 'Gagal menyimpan jurnal');
 
             setLastSaved(new Date());
-            
+
             if (showNotification) {
                 Swal.fire({
                     title: 'Berhasil!',
@@ -250,7 +294,7 @@ export default function PamongPage() {
                     confirmButtonColor: '#7c3aed'
                 });
             }
-            
+
             return true;
         } catch (err: any) {
             if (showNotification) {
@@ -263,10 +307,10 @@ export default function PamongPage() {
     // Auto-save function (tanpa notifikasi)
     const handleAutoSave = async () => {
         if (!selectedCandidate) return;
-        
+
         const hasAnyScore = Object.values(scores).some(val => val !== null && val !== undefined);
         if (!hasAnyScore && !catatan.trim()) return;
-        
+
         setSaveLoading(true);
         await saveData(false);
         setSaveLoading(false);
@@ -283,11 +327,11 @@ export default function PamongPage() {
     // Submit untuk tab tertentu
     const handleTabSubmit = async (tab: 'sikap' | 'penampilan') => {
         setSubmitLoading(true);
-        
+
         // Validasi apakah ada nilai di tab tersebut
         const fields = tab === 'sikap' ? sikapFields : penampilanFields;
         const hasAnyScore = fields.some(f => scores[f.key] !== null && scores[f.key] !== undefined);
-        
+
         if (!hasAnyScore && !catatan.trim()) {
             Swal.fire('Peringatan', `Silakan isi minimal satu penilaian di tab ${tab === 'sikap' ? 'SIKAP' : 'PENAMPILAN'} atau catatan`, 'warning');
             setSubmitLoading(false);
@@ -305,16 +349,16 @@ export default function PamongPage() {
                 setIsDataLoaded(false);
                 return;
             }
-            
+
             setIsDataLoaded(false);
             try {
-                const res = await fetch(`${UrlApi}/pemusatan/pamong/${selectedCandidate}/${tanggal}`, {
+                const res = await fetch(`${UrlApi}/pemusatan/existing/pamong/${selectedCandidate}/${tanggal}`, {
                     credentials: 'include'
                 });
-                
+
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.id) {
+                    if (data && (data.id || data.id_paskibraka)) {
                         const newScores: Record<string, number | null> = { ...initialScores };
                         Object.keys(initialScores).forEach(key => {
                             if (data[key] !== undefined && data[key] !== null) {
@@ -342,7 +386,7 @@ export default function PamongPage() {
                 setIsDataLoaded(true);
             }
         };
-        
+
         loadExistingData();
     }, [selectedCandidate, tanggal]);
 
@@ -363,13 +407,30 @@ export default function PamongPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm space-y-6">
-                {/* Select Candidate & Date */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Select Pamong (if Admin), Candidate & Date */}
+                <div className={`grid grid-cols-1 ${pamongList.length > 0 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
+                    {pamongList.length > 0 && (
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Pilih Pamong (Pengasuh)</label>
+                            <Select
+                                value={pamongOptions.find(opt => opt.value === selectedPamong) || pamongOptions[0]}
+                                onChange={(newValue) => {
+                                    setSelectedPamong(newValue ? newValue.value : '');
+                                    setSelectedCandidate('');
+                                }}
+                                options={pamongOptions}
+                                styles={selectStyles}
+                                placeholder="-- Pilih Pamong --"
+                                isSearchable
+                            />
+                        </div>
+                    )}
+
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Pilih Peserta Capaska</label>
                         <Select
                             value={candidateOptions.find(opt => opt.value === selectedCandidate) || null}
-                            onChange={(newValue) => setSelectedCandidate(newValue ? newValue.value : '')}
+                            onChange={handleCandidateChange}
                             options={candidateOptions}
                             styles={selectStyles}
                             placeholder="-- Pilih Peserta --"
@@ -418,11 +479,10 @@ export default function PamongPage() {
                     <button
                         type="button"
                         onClick={() => setActiveTab('sikap')}
-                        className={`flex-1 py-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${
-                            activeTab === 'sikap'
+                        className={`flex-1 py-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'sikap'
                                 ? 'border-violet-600 text-violet-600 dark:text-violet-400'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
-                        }`}
+                            }`}
                     >
                         <span>SIKAP</span>
                         <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 font-mono">
@@ -435,11 +495,10 @@ export default function PamongPage() {
                     <button
                         type="button"
                         onClick={() => setActiveTab('penampilan')}
-                        className={`flex-1 py-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${
-                            activeTab === 'penampilan'
+                        className={`flex-1 py-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'penampilan'
                                 ? 'border-violet-600 text-violet-600 dark:text-violet-400'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white'
-                        }`}
+                            }`}
                     >
                         <span>PENAMPILAN</span>
                         <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 font-mono">
@@ -464,11 +523,10 @@ export default function PamongPage() {
                                     {scoreOptions.map((option) => (
                                         <label
                                             key={option.value}
-                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                                                scores[field.key] === option.value
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${scores[field.key] === option.value
                                                     ? 'bg-violet-600 text-white'
                                                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                                            }`}
+                                                }`}
                                         >
                                             <input
                                                 type="radio"
@@ -484,11 +542,10 @@ export default function PamongPage() {
                                     <button
                                         type="button"
                                         onClick={() => handleScoreChange(field.key, null as any)}
-                                        className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                                            scores[field.key] === null || scores[field.key] === undefined
+                                        className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${scores[field.key] === null || scores[field.key] === undefined
                                                 ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
                                                 : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-                                        }`}
+                                            }`}
                                         disabled={scores[field.key] === null || scores[field.key] === undefined}
                                     >
                                         ✕
@@ -508,11 +565,10 @@ export default function PamongPage() {
                                     {scoreOptions.map((option) => (
                                         <label
                                             key={option.value}
-                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                                                scores[field.key] === option.value
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${scores[field.key] === option.value
                                                     ? 'bg-violet-600 text-white'
                                                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                                            }`}
+                                                }`}
                                         >
                                             <input
                                                 type="radio"
@@ -528,11 +584,10 @@ export default function PamongPage() {
                                     <button
                                         type="button"
                                         onClick={() => handleScoreChange(field.key, null as any)}
-                                        className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                                            scores[field.key] === null || scores[field.key] === undefined
+                                        className={`px-2 py-1.5 rounded-full text-xs font-medium transition-colors ${scores[field.key] === null || scores[field.key] === undefined
                                                 ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50'
                                                 : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-                                        }`}
+                                            }`}
                                         disabled={scores[field.key] === null || scores[field.key] === undefined}
                                     >
                                         ✕

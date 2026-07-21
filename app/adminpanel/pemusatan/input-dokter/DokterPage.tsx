@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UrlApi } from '@/app/components/apiUrl';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
@@ -63,6 +63,10 @@ export default function DokterPage() {
     }));
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
+    const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
     // Form States
     const [selectedCandidate, setSelectedCandidate] = useState<number | ''>('');
@@ -92,14 +96,74 @@ export default function DokterPage() {
         fetchCandidates();
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Load existing data when candidate/date changes
+    useEffect(() => {
+        const loadExistingData = async () => {
+            if (!selectedCandidate || !tanggal) {
+                setIsDataLoaded(false);
+                return;
+            }
+            
+            setIsDataLoaded(false);
+            try {
+                const res = await fetch(`${UrlApi}/pemusatan/existing/dokter/${selectedCandidate}/${tanggal}`, {
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) {
+                        setTensi(data.tensi || '120/80');
+                        setSuhu(data.suhu || 36.5);
+                        setKeluhan(data.keluhan || '');
+                        setDiagnosa(data.diagnosa || '');
+                        setTerapiObat(data.terapi_obat || '');
+                        setRekomendasi(data.rekomendasi_istirahat || 'Bisa Latihan');
+                        setLastSaved(new Date());
+                    } else {
+                        // Reset form
+                        setKeluhan('');
+                        setDiagnosa('');
+                        setTerapiObat('');
+                        setTensi('120/80');
+                        setSuhu(36.5);
+                        setRekomendasi('Bisa Latihan');
+                        setLastSaved(null);
+                    }
+                } else {
+                    setKeluhan('');
+                    setDiagnosa('');
+                    setTerapiObat('');
+                    setTensi('120/80');
+                    setSuhu(36.5);
+                    setRekomendasi('Bisa Latihan');
+                    setLastSaved(null);
+                }
+            } catch (err) {
+                setKeluhan('');
+                setDiagnosa('');
+                setTerapiObat('');
+                setTensi('120/80');
+                setSuhu(36.5);
+                setRekomendasi('Bisa Latihan');
+                setLastSaved(null);
+            } finally {
+                setIsDataLoaded(true);
+            }
+        };
+        
+        loadExistingData();
+    }, [selectedCandidate, tanggal]);
+
+    // Save Data function
+    const saveData = async (showNotification: boolean = false) => {
         if (!selectedCandidate) {
-            Swal.fire('Peringatan', 'Silakan pilih peserta terlebih dahulu', 'warning');
-            return;
+            if (showNotification) {
+                Swal.fire('Peringatan', 'Silakan pilih peserta terlebih dahulu', 'warning');
+            }
+            return false;
         }
 
-        setSubmitLoading(true);
         try {
             const res = await fetch(`${UrlApi}/pemusatan/dokter`, {
                 method: 'POST',
@@ -122,26 +186,59 @@ export default function DokterPage() {
             const result = await res.json();
             if (!res.ok) throw new Error(result.message || 'Gagal menyimpan jurnal');
 
-            Swal.fire({
-                title: 'Berhasil!',
-                text: 'Jurnal harian Dokter berhasil disimpan.',
-                icon: 'success',
-                confirmButtonColor: '#3085d6'
-            });
-
-            // Reset form
-            setSelectedCandidate('');
-            setKeluhan('');
-            setDiagnosa('');
-            setTerapiObat('');
-            setTensi('120/80');
-            setSuhu(36.5);
-            setRekomendasi('Bisa Latihan');
+            setLastSaved(new Date());
+            
+            if (showNotification) {
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Jurnal harian Dokter berhasil disimpan.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c3aed'
+                });
+            }
+            
+            return true;
         } catch (err: any) {
-            Swal.fire('Gagal', err.message || 'Terjadi kesalahan server', 'error');
-        } finally {
-            setSubmitLoading(false);
+            if (showNotification) {
+                Swal.fire('Gagal', err.message || 'Terjadi kesalahan server', 'error');
+            }
+            return false;
         }
+    };
+
+    // Auto-save function
+    const handleAutoSave = async () => {
+        if (!selectedCandidate) return;
+        setSaveLoading(true);
+        await saveData(false);
+        setSaveLoading(false);
+    };
+
+    // Auto-save effect
+    useEffect(() => {
+        if (!selectedCandidate || !tanggal) return;
+        if (!isDataLoaded) return;
+        
+        if (autoSaveTimeoutRef.current) {
+            clearTimeout(autoSaveTimeoutRef.current);
+        }
+        
+        autoSaveTimeoutRef.current = setTimeout(() => {
+            handleAutoSave();
+        }, 2000);
+
+        return () => {
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+        };
+    }, [tensi, suhu, keluhan, diagnosa, terapiObat, rekomendasi, selectedCandidate, tanggal, isDataLoaded]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitLoading(true);
+        await saveData(true);
+        setSubmitLoading(false);
     };
 
     if (loading) {
@@ -154,7 +251,7 @@ export default function DokterPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto mb-20">
+        <div className="mx-auto mb-20">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jurnal Harian Dokter / Tim Kesehatan</h1>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">Input data tanda vital, keluhan medis, terapi obat, dan rekomendasi latihan harian Capaska</p>
@@ -184,6 +281,23 @@ export default function DokterPage() {
                             className="p-2.5 border border-gray-300 dark:border-gray-700 rounded dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
                             required
                         />
+                    </div>
+                </div>
+
+                {/* Auto-save indicator */}
+                <div className="flex justify-end items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-2">
+                        {saveLoading ? (
+                            <>
+                                <div className="w-3 h-3 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Menyimpan otomatis...</span>
+                            </>
+                        ) : lastSaved ? (
+                            <>
+                                <span className="text-green-500">✓</span>
+                                <span>Terakhir disimpan: {lastSaved.toLocaleTimeString()}</span>
+                            </>
+                        ) : null}
                     </div>
                 </div>
 

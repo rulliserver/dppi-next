@@ -1,3 +1,5 @@
+// app/adminpanel/profiling/page.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,134 +7,115 @@ import { UrlApi } from '@/app/components/apiUrl';
 import Swal from 'sweetalert2';
 import Pagination from '@/app/components/UserPagination';
 
+// Update Candidate interface sesuai dengan data_capaska
 interface Candidate {
     id: number;
-    nama_lengkap: string;
+    nama_lengkap: string | null;
     photo: string | null;
-    jk: string;
-    nama_instansi_pendidikan: string | null;
-    nomor_dada: string | null;
+    jk: string | null;
+    no_peserta: string | null;
+    no_hp: string | null;
+    tanggal_lahir: string | null;
+    tempat_lahir: string | null;
+    provinsi: string | null;
+    kabupaten_kota: string | null;
+    asal_sekolah: string | null;
     status: string | null;
+    id_pamong: string | null;
 }
 
-interface SelectionScores {
-    wawancara: {
-        nilai_pancasila_kebangsaan: string | null;
-        nilai_intelegensia_umum: string | null;
-        nilai_minat_bakat: string | null;
-        nilai_penampilan: string | null;
-        status: string | null;
-    } | null;
-    psikotes: {
-        iq: number | null;
-        kategori: string | null;
-    } | null;
-    kesehatan: {
-        score_mata: number | null;
-        score_gigi: number | null;
-        score_tht: number | null;
-    } | null;
-    pbb: {
-        sikap_sempurna: string | null;
-        hormat: string | null;
-        jalan_ditempat: string | null;
-        istirahat: string | null;
-        langkah_tegap: string | null;
-    } | null;
-}
-
+// Daily Pamong interface - semua field bisa null
 interface DailyPamong {
     tanggal: string;
-    nilai_ketaqwaan: number;
-    nilai_niat_kemauan: number;
-    nilai_keberanian: number;
-    nilai_komunikasi: number;
-    nilai_keterbukaan: number;
-    nilai_ketelitian: number;
-    nilai_kesadaran: number;
-    nilai_toleransi: number;
-    nilai_keikhlasan: number;
-    nilai_mempercayai: number;
-    nilai_jiwa_korsa: number;
-    nilai_kekeluargaan: number;
-    nilai_persatuan_kesatuan: number;
-    nilai_ketahanan: number;
-    nilai_kekompakan_keseragaman: number;
-    nilai_ketertiban: number;
-    nilai_kesopanan: number;
-    nilai_kesigapan: number;
-    nilai_kewajaran: number;
-    nilai_ketanggapan: number;
-    nilai_ketenangan: number;
-    nilai_menyimak: number;
-    nilai_kebiasaan: number;
-    nilai_mengelola_stres: number;
-    nilai_menghargai_waktu: number;
-    nilai_berbicara: number;
-    nilai_berjalan: number;
-    nilai_makan_minum: number;
-    nilai_kehadiran: number;
-    nilai_hubungan_interpersonal: number;
-    nilai_ketaatan: number;
-    nilai_istirahat_malam: number;
-    nilai_keindahan: number;
-    nilai_kerapihan: number;
-    nilai_kebersihan: number;
-    nilai_berpakaian: number;
-    nilai_penampilan_rambut: number;
-    nilai_bersih_rapih_wangi: number;
+    nilai_ketaqwaan: number | null;
+    nilai_niat_kemauan: number | null;
+    nilai_keberanian: number | null;
+    nilai_komunikasi: number | null;
+    nilai_keterbukaan: number | null;
+    nilai_ketelitian: number | null;
+    nilai_kesadaran: number | null;
+    nilai_toleransi: number | null;
+    nilai_keikhlasan: number | null;
+    nilai_mempercayai: number | null;
+    nilai_jiwa_korsa: number | null;
+    nilai_kekeluargaan: number | null;
+    nilai_persatuan_kesatuan: number | null;
+    nilai_ketahanan: number | null;
+    nilai_kekompakan_keseragaman: number | null;
+    nilai_ketertiban: number | null;
+    nilai_kesopanan: number | null;
+    nilai_kesigapan: number | null;
+    nilai_kewajaran: number | null;
+    nilai_ketanggapan: number | null;
+    nilai_ketenangan: number | null;
+    nilai_menyimak: number | null;
+    nilai_kebiasaan: number | null;
+    nilai_mengelola_stres: number | null;
+    nilai_menghargai_waktu: number | null;
+    nilai_berbicara: number | null;
+    nilai_berjalan: number | null;
+    nilai_makan_minum: number | null;
+    nilai_kehadiran: number | null;
+    nilai_hubungan_interpersonal: number | null;
+    nilai_ketaatan: number | null;
+    nilai_istirahat_malam: number | null;
+    nilai_keindahan: number | null;
+    nilai_kerapihan: number | null;
+    nilai_kebersihan: number | null;
+    nilai_berpakaian: number | null;
+    nilai_penampilan_rambut: number | null;
+    nilai_bersih_rapih_wangi: number | null;
     catatan: string | null;
 }
 
 interface DailyPelatih {
     tanggal: string;
-    nilai_aba_aba: number;
-    nilai_berhimpun: number;
-    nilai_berkumpul: number;
-    nilai_keluar_masuk_barisan: number;
-    nilai_hormat: number;
-    nilai_sikap_sempurna: number;
-    nilai_istirahat: number;
-    nilai_periksa_kerapihan: number;
-    nilai_berhitung: number;
-    nilai_lepas_kenakan_topi: number;
-    nilai_bubar: number;
-    nilai_lencang_depan: number;
-    nilai_lencang_kanan_kiri: number;
-    nilai_setengah_lengan_lencang_kanan_kiri: number;
-    nilai_hadap_kanan_kiri: number;
-    nilai_hadap_serong_kanan_kiri: number;
-    nilai_balik_kanan: number;
-    nilai_langkah_bisa: number;
-    nilai_langkah_tegap: number;
-    nilai_sikap_awal_berlari: number;
-    nilai_jalan_di_tempat: number;
-    nilai_4_langkah_ke_depan: number;
-    nilai_4_langkah_ke_kanan: number;
-    nilai_4_langkah_ke_kiri: number;
-    nilai_4_langkah_ke_belakang: number;
-    nilai_lipat_bendera: number;
-    nilai_bentang_bendera: number;
-    nilai_10_tahap_penurunan: number;
-    nilai_jadi_kibra_pembentang: number;
-    nilai_jadi_kibra_pembawa: number;
-    nilai_jadi_kibra_pengerek: number;
+    nilai_aba_aba: number | null;
+    nilai_berhimpun: number | null;
+    nilai_berkumpul: number | null;
+    nilai_keluar_masuk_barisan: number | null;
+    nilai_hormat: number | null;
+    nilai_sikap_sempurna: number | null;
+    nilai_istirahat: number | null;
+    nilai_periksa_kerapihan: number | null;
+    nilai_berhitung: number | null;
+    nilai_lepas_kenakan_topi: number | null;
+    nilai_bubar: number | null;
+    nilai_lencang_depan: number | null;
+    nilai_lencang_kanan_kiri: number | null;
+    nilai_setengah_lengan_lencang_kanan_kiri: number | null;
+    nilai_hadap_kanan_kiri: number | null;
+    nilai_hadap_serong_kanan_kiri: number | null;
+    nilai_balik_kanan: number | null;
+    nilai_langkah_bisa: number | null;
+    nilai_langkah_tegap: number | null;
+    nilai_sikap_awal_berlari: number | null;
+    nilai_jalan_di_tempat: number | null;
+    nilai_4_langkah_ke_depan: number | null;
+    nilai_4_langkah_ke_kanan: number | null;
+    nilai_4_langkah_ke_kiri: number | null;
+    nilai_4_langkah_ke_belakang: number | null;
+    nilai_lipat_bendera: number | null;
+    nilai_bentang_bendera: number | null;
+    nilai_10_tahap_penurunan: number | null;
+    nilai_jadi_kibra_pembentang: number | null;
+    nilai_jadi_kibra_pembawa: number | null;
+    nilai_jadi_kibra_pengerek: number | null;
     catatan: string | null;
 }
 
 interface DailyDokter {
     tanggal: string;
-    tensi: string;
-    suhu: string;
+    tensi: string | null;
+    suhu: string | null;
     keluhan: string | null;
     diagnosa: string | null;
     terapi_obat: string | null;
-    rekomendasi_istirahat: string;
+    rekomendasi_istirahat: string | null;
 }
 
 interface JournalDetails {
     profile: Candidate;
-    seleksi: SelectionScores;
     pemusatan: {
         pamong: DailyPamong[];
         pelatih: DailyPelatih[];
@@ -140,6 +123,7 @@ interface JournalDetails {
     };
 }
 
+// Field definitions
 const sikapFields = [
     { key: 'nilai_ketaqwaan', label: '1. Ketaqwaan' },
     { key: 'nilai_niat_kemauan', label: '2. Niat / Kemauan' },
@@ -276,7 +260,7 @@ export default function ProfilingPage() {
     };
 
     const filteredCandidates = candidates.filter((c) =>
-        c.nama_lengkap.toLowerCase().includes(searchQuery.toLowerCase())
+        c.nama_lengkap?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false
     );
 
     useEffect(() => {
@@ -287,35 +271,45 @@ export default function ProfilingPage() {
     const startIndex = (currentPage - 1) * limit;
     const paginatedCandidates = filteredCandidates.slice(startIndex, startIndex + limit);
 
-    const getRecommendationColor = (rec: string) => {
+    const getRecommendationColor = (rec: string | null) => {
+        if (!rec) return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
         if (rec === 'Bisa Latihan') return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300';
         if (rec === 'Latihan Ringan') return 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300';
         return 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300';
     };
 
-    // Calculate Pamong averages
+    // Calculate Pamong averages - handle null values
     const getSikapAvg = (p: DailyPamong) => {
-        const sum = sikapFields.reduce((acc, f) => acc + ((p as any)[f.key] || 0), 0);
-        return (sum / sikapFields.length).toFixed(1);
+        const values = sikapFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+        if (values.length === 0) return '0';
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        return (sum / values.length).toFixed(1);
     };
 
     const getPenampilanAvg = (p: DailyPamong) => {
-        const sum = penampilanFields.reduce((acc, f) => acc + ((p as any)[f.key] || 0), 0);
-        return (sum / penampilanFields.length).toFixed(1);
+        const values = penampilanFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+        if (values.length === 0) return '0';
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        return (sum / values.length).toFixed(1);
     };
 
     // Calculate Pelatih averages
     const getPbbSikapDiamAvg = (p: DailyPelatih) => {
-        const sum = pbbSikapDiamFields.reduce((acc, f) => acc + ((p as any)[f.key] || 0), 0);
-        return (sum / pbbSikapDiamFields.length).toFixed(1);
+        const values = pbbSikapDiamFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+        if (values.length === 0) return '0';
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        return (sum / values.length).toFixed(1);
     };
 
     const getBenderaAvg = (p: DailyPelatih) => {
-        const sum = benderaFields.reduce((acc, f) => acc + ((p as any)[f.key] || 0), 0);
-        return (sum / benderaFields.length).toFixed(1);
+        const values = benderaFields.map(f => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+        if (values.length === 0) return '0';
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        return (sum / values.length).toFixed(1);
     };
 
-    const getScoreColor = (score: number) => {
+    const getScoreColor = (score: number | null | undefined) => {
+        if (score === null || score === undefined) return 'text-gray-400';
         if (score >= 80) return 'text-emerald-600 dark:text-emerald-450';
         if (score >= 60) return 'text-amber-600 dark:text-amber-450';
         return 'text-rose-600 dark:text-rose-455';
@@ -328,7 +322,7 @@ export default function ProfilingPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jurnal Profiling Paskibraka 2026</h1>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        Kompilasi penilaian seleksi dan pemantauan jurnal harian masa karantina Desa Bahagia
+                        Kompilasi penilaian jurnal harian Pamong, Pelatih, dan Dokter
                     </p>
                 </div>
                 {selectedId !== null && (
@@ -361,10 +355,11 @@ export default function ProfilingPage() {
                             <table className="w-full text-left border-collapse text-xs">
                                 <thead>
                                     <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-250 dark:border-gray-750 font-semibold text-gray-650 dark:text-gray-400 uppercase tracking-wider">
+                                        <th className="px-6 py-4">Foto</th>
                                         <th className="px-6 py-4">Nama Lengkap</th>
-                                        <th className="px-6 py-4">No. Dada</th>
-                                        <th className="px-6 py-4">Jenis Kelamin</th>
-                                        <th className="px-6 py-4">Instansi Pendidikan</th>
+                                        <th className="px-6 py-4">No. Peserta</th>
+                                        <th className="px-6 py-4">JK</th>
+                                        <th className="px-6 py-4">Asal Sekolah</th>
                                         <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4 text-right">Aksi</th>
                                     </tr>
@@ -372,7 +367,7 @@ export default function ProfilingPage() {
                                 <tbody className="divide-y divide-gray-150 dark:divide-gray-800">
                                     {loading ? (
                                         <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                                 <div className="flex flex-col items-center justify-center gap-2">
                                                     <div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
                                                     <span>Memuat data...</span>
@@ -381,31 +376,44 @@ export default function ProfilingPage() {
                                         </tr>
                                     ) : filteredCandidates.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                                 Tidak ada peserta yang cocok dengan kata kunci pencarian.
                                              </td>
                                         </tr>
                                     ) : (
                                         paginatedCandidates.map((c) => (
                                             <tr key={c.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                                                <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 shrink-0 border border-gray-200 dark:border-gray-850">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-850">
                                                         {c.photo ? (
-                                                            <img src={`${UrlApi.replace('/api', '')}/${c.photo}`} alt="avatar" className="w-full h-full object-cover" />
+                                                            <img 
+                                                                src={`${UrlApi.replace('/api', '')}/uploads/capaska/${c.photo}`} 
+                                                                alt={c.nama_lengkap || 'Avatar'} 
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                                                }}
+                                                            />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">IMG</div>
+                                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 bg-gray-200 dark:bg-gray-700">
+                                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
                                                         )}
                                                     </div>
-                                                    <span>{c.nama_lengkap}</span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-900 dark:text-white">
+                                                    {c.nama_lengkap || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap font-mono text-[11px] font-semibold text-gray-650 dark:text-gray-400">
-                                                    {c.nomor_dada || '-'}
+                                                    {c.no_peserta || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-gray-650 dark:text-gray-300">
-                                                    {c.jk}
+                                                    {c.jk || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-gray-650 dark:text-gray-300">
-                                                    {c.nama_instansi_pendidikan || '-'}
+                                                    {c.asal_sekolah || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${c.status === 'Lulus' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-gray-100 text-gray-850 dark:bg-gray-800 dark:text-gray-350'}`}>
@@ -413,12 +421,20 @@ export default function ProfilingPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <button
-                                                        onClick={() => fetchJournalDetails(c.id)}
-                                                        className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/40 dark:hover:bg-violet-950 text-violet-750 dark:text-violet-300 rounded font-semibold transition-colors"
-                                                    >
-                                                        Lihat Jurnal Profiling
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => fetchJournalDetails(c.id)}
+                                                            className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/40 dark:hover:bg-violet-950 text-violet-750 dark:text-violet-300 rounded font-semibold transition-colors text-[11px]"
+                                                        >
+                                                            Lihat Profiling
+                                                        </button>
+                                                        <a
+                                                            href={`/adminpanel/capaska/edit/${c.id}`}
+                                                            className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-950 text-amber-750 dark:text-amber-300 rounded font-semibold transition-colors text-[11px]"
+                                                        >
+                                                            Edit
+                                                        </a>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))
@@ -453,77 +469,34 @@ export default function ProfilingPage() {
                     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-lg shadow-sm flex flex-col md:flex-row gap-6">
                         <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-800 shrink-0 mx-auto md:mx-0">
                             {details.profile.photo ? (
-                                <img src={`${UrlApi.replace('/api', '')}/${details.profile.photo}`} alt="avatar" className="w-full h-full object-cover" />
+                                <img 
+                                    src={`${UrlApi.replace('/api', '')}/uploads/capaska/${details.profile.photo}`} 
+                                    alt={details.profile.nama_lengkap || 'Avatar'}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                    }}
+                                />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400">NO PHOTO</div>
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 dark:bg-gray-700 text-xs">
+                                    NO PHOTO
+                                </div>
                             )}
                         </div>
                         <div className="flex-1 text-center md:text-left space-y-1">
-                            <h2 className="text-xl font-bold text-gray-950 dark:text-white">{details.profile.nama_lengkap}</h2>
-                            <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold">{details.profile.nama_instansi_pendidikan || '-'}</p>
+                            <h2 className="text-xl font-bold text-gray-950 dark:text-white">{details.profile.nama_lengkap || '-'}</h2>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold">No. Peserta: {details.profile.no_peserta || '-'}</p>
                             <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2 text-xs">
                                 <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 rounded text-gray-700 dark:text-gray-300 font-medium">
-                                    No. Dada: <strong>{details.profile.nomor_dada || '-'}</strong>
+                                    JK: <strong>{details.profile.jk || '-'}</strong>
                                 </span>
                                 <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 rounded text-gray-700 dark:text-gray-300 font-medium">
-                                    Gender: <strong>{details.profile.jk}</strong>
+                                    Asal Sekolah: <strong>{details.profile.asal_sekolah || '-'}</strong>
                                 </span>
                                 <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 rounded text-gray-700 dark:text-gray-300 font-medium">
-                                    Status: <strong>{details.profile.status || 'Karantina'}</strong>
+                                    Status: <strong>{details.profile.status || 'Aktif'}</strong>
                                 </span>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Selection stage metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* PBB */}
-                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-lg shadow-sm space-y-2">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Hasil Seleksi PBB (Rata-rata)</h3>
-                            {details.seleksi.pbb ? (
-                                <div className="space-y-1 text-xs">
-                                    <div className="flex justify-between"><span>Sikap Sempurna:</span><span className="font-bold">{details.seleksi.pbb.sikap_sempurna ? Number(details.seleksi.pbb.sikap_sempurna).toFixed(0) : '-'}</span></div>
-                                    <div className="flex justify-between"><span>Hormat:</span><span className="font-bold">{details.seleksi.pbb.hormat ? Number(details.seleksi.pbb.hormat).toFixed(0) : '-'}</span></div>
-                                    <div className="flex justify-between"><span>Jalan di Tempat:</span><span className="font-bold">{details.seleksi.pbb.jalan_ditempat ? Number(details.seleksi.pbb.jalan_ditempat).toFixed(0) : '-'}</span></div>
-                                    <div className="flex justify-between"><span>Langkah Tegap:</span><span className="font-bold">{details.seleksi.pbb.langkah_tegap ? Number(details.seleksi.pbb.langkah_tegap).toFixed(0) : '-'}</span></div>
-                                </div>
-                            ) : <p className="text-gray-400 text-xs italic">Data tidak ditemukan</p>}
-                        </div>
-
-                        {/* Wawancara */}
-                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-lg shadow-sm space-y-2">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Hasil Wawancara</h3>
-                            {details.seleksi.wawancara ? (
-                                <div className="space-y-1 text-xs">
-                                    <div className="flex justify-between"><span>Pancasila & Kebangsaan:</span><span className="font-bold">{details.seleksi.wawancara.nilai_pancasila_kebangsaan ? Number(details.seleksi.wawancara.nilai_pancasila_kebangsaan).toFixed(0) : '-'}</span></div>
-                                    <div className="flex justify-between"><span>Intelegensia Umum:</span><span className="font-bold">{details.seleksi.wawancara.nilai_intelegensia_umum ? Number(details.seleksi.wawancara.nilai_intelegensia_umum).toFixed(0) : '-'}</span></div>
-                                    <div className="flex justify-between"><span>Minat & Bakat:</span><span className="font-bold">{details.seleksi.wawancara.nilai_minat_bakat ? Number(details.seleksi.wawancara.nilai_minat_bakat).toFixed(0) : '-'}</span></div>
-                                    <div className="flex justify-between"><span>Penampilan:</span><span className="font-bold">{details.seleksi.wawancara.nilai_penampilan ? Number(details.seleksi.wawancara.nilai_penampilan).toFixed(0) : '-'}</span></div>
-                                </div>
-                            ) : <p className="text-gray-400 text-xs italic">Data tidak ditemukan</p>}
-                        </div>
-
-                        {/* Kesehatan */}
-                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-lg shadow-sm space-y-2">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Hasil Kesehatan</h3>
-                            {details.seleksi.kesehatan ? (
-                                <div className="space-y-1 text-xs">
-                                    <div className="flex justify-between"><span>Score Mata:</span><span className="font-bold">{details.seleksi.kesehatan.score_mata ?? '-'}</span></div>
-                                    <div className="flex justify-between"><span>Score Gigi:</span><span className="font-bold">{details.seleksi.kesehatan.score_gigi ?? '-'}</span></div>
-                                    <div className="flex justify-between"><span>Score THT:</span><span className="font-bold">{details.seleksi.kesehatan.score_tht ?? '-'}</span></div>
-                                </div>
-                            ) : <p className="text-gray-400 text-xs italic">Data tidak ditemukan</p>}
-                        </div>
-
-                        {/* Psikotes */}
-                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-lg shadow-sm space-y-2">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Psikotes / IQ</h3>
-                            {details.seleksi.psikotes ? (
-                                <div className="space-y-1 text-xs">
-                                    <div className="flex justify-between"><span>IQ Asesi:</span><span className="font-bold">{details.seleksi.psikotes.iq ?? '-'}</span></div>
-                                    <div className="flex justify-between"><span>Kategori IQ:</span><span className="font-bold">{details.seleksi.psikotes.kategori ?? '-'}</span></div>
-                                </div>
-                            ) : <p className="text-gray-400 text-xs italic">Data tidak ditemukan</p>}
                         </div>
                     </div>
 
@@ -567,7 +540,7 @@ export default function ProfilingPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
-                                            {details.pemusatan.pamong.length === 0 ? (
+                                            {!details.pemusatan.pamong || details.pemusatan.pamong.length === 0 ? (
                                                 <tr><td colSpan={5} className="py-6 text-center text-gray-400 italic">Belum ada catatan jurnal pamong.</td></tr>
                                             ) : (
                                                 details.pemusatan.pamong.map((p, idx) => (
@@ -606,7 +579,7 @@ export default function ProfilingPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
-                                            {details.pemusatan.pelatih.length === 0 ? (
+                                            {!details.pemusatan.pelatih || details.pemusatan.pelatih.length === 0 ? (
                                                 <tr><td colSpan={5} className="py-6 text-center text-gray-400 italic">Belum ada catatan jurnal pelatih.</td></tr>
                                             ) : (
                                                 details.pemusatan.pelatih.map((p, idx) => (
@@ -647,20 +620,20 @@ export default function ProfilingPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
-                                            {details.pemusatan.dokter.length === 0 ? (
+                                            {!details.pemusatan.dokter || details.pemusatan.dokter.length === 0 ? (
                                                 <tr><td colSpan={7} className="py-6 text-center text-gray-400 italic">Belum ada catatan jurnal medis.</td></tr>
                                             ) : (
                                                 details.pemusatan.dokter.map((d, idx) => (
                                                     <tr key={idx} className="hover:bg-gray-50/30">
                                                         <td className="py-3 px-2 font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">{d.tanggal}</td>
-                                                        <td className="py-3 px-2 font-mono">{d.tensi}</td>
-                                                        <td className="py-3 px-2 font-mono">{d.suhu}°C</td>
+                                                        <td className="py-3 px-2 font-mono">{d.tensi || '-'}</td>
+                                                        <td className="py-3 px-2 font-mono">{d.suhu ? `${d.suhu}°C` : '-'}</td>
                                                         <td className="py-3 px-2 max-w-30 truncate" title={d.keluhan || ''}>{d.keluhan || '-'}</td>
                                                         <td className="py-3 px-2 max-w-30 truncate" title={d.diagnosa || ''}>{d.diagnosa || '-'}</td>
                                                         <td className="py-3 px-2 max-w-30 truncate" title={d.terapi_obat || ''}>{d.terapi_obat || '-'}</td>
                                                         <td className="py-3 px-2 whitespace-nowrap">
                                                             <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${getRecommendationColor(d.rekomendasi_istirahat)}`}>
-                                                                {d.rekomendasi_istirahat}
+                                                                {d.rekomendasi_istirahat || '-'}
                                                             </span>
                                                         </td>
                                                     </tr>
@@ -675,7 +648,7 @@ export default function ProfilingPage() {
                 </div>
             )}
 
-            {/* Pamong Score Detail Modal */}
+            {/* Pamong Score Detail Modal - same as before but with null handling */}
             {selectedPamongLog && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
                     <div className="bg-white dark:bg-gray-900 border border-gray-250 dark:border-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
@@ -709,14 +682,14 @@ export default function ProfilingPage() {
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2.5">
                                         {sikapFields.map((field) => {
-                                            const val = (selectedPamongLog as any)[field.key] || 0;
+                                            const val = (selectedPamongLog as any)[field.key];
                                             return (
                                                 <div key={field.key} className="flex justify-between items-center text-xs py-1 border-b border-gray-50 dark:border-gray-850">
                                                     <span className="text-gray-650 dark:text-gray-300 font-medium truncate max-w-48" title={field.label}>
                                                         {field.label.replace(/^\d+\.\s*/, '')}
                                                     </span>
                                                     <span className={`font-mono font-bold ${getScoreColor(val)}`}>
-                                                        {val}
+                                                        {val !== null && val !== undefined ? val : '-'}
                                                     </span>
                                                 </div>
                                             );
@@ -732,14 +705,14 @@ export default function ProfilingPage() {
                                         </h4>
                                         <div className="space-y-2.5">
                                             {penampilanFields.map((field) => {
-                                                const val = (selectedPamongLog as any)[field.key] || 0;
+                                                const val = (selectedPamongLog as any)[field.key];
                                                 return (
                                                     <div key={field.key} className="flex justify-between items-center text-xs py-1 border-b border-gray-50 dark:border-gray-850">
                                                         <span className="text-gray-650 dark:text-gray-300 font-medium">
                                                             {field.label.replace(/^\d+\.\s*/, '')}
                                                         </span>
                                                         <span className={`font-mono font-bold ${getScoreColor(val)}`}>
-                                                            {val}
+                                                            {val !== null && val !== undefined ? val : '-'}
                                                         </span>
                                                     </div>
                                                 );
@@ -773,7 +746,7 @@ export default function ProfilingPage() {
                 </div>
             )}
 
-            {/* Pelatih Score Detail Modal */}
+            {/* Pelatih Score Detail Modal - similar with null handling */}
             {selectedPelatihLog && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
                     <div className="bg-white dark:bg-gray-900 border border-gray-250 dark:border-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
@@ -807,14 +780,14 @@ export default function ProfilingPage() {
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2.5">
                                         {pbbSikapDiamFields.map((field) => {
-                                            const val = (selectedPelatihLog as any)[field.key] || 0;
+                                            const val = (selectedPelatihLog as any)[field.key];
                                             return (
                                                 <div key={field.key} className="flex justify-between items-center text-xs py-1 border-b border-gray-50 dark:border-gray-850">
                                                     <span className="text-gray-650 dark:text-gray-300 font-medium truncate max-w-48" title={field.label}>
                                                         {field.label.replace(/^\d+\.\s*/, '')}
                                                     </span>
                                                     <span className={`font-mono font-bold ${getScoreColor(val)}`}>
-                                                        {val}
+                                                        {val !== null && val !== undefined ? val : '-'}
                                                     </span>
                                                 </div>
                                             );
@@ -830,14 +803,14 @@ export default function ProfilingPage() {
                                         </h4>
                                         <div className="space-y-2.5">
                                             {benderaFields.map((field) => {
-                                                const val = (selectedPelatihLog as any)[field.key] || 0;
+                                                const val = (selectedPelatihLog as any)[field.key];
                                                 return (
                                                     <div key={field.key} className="flex justify-between items-center text-xs py-1 border-b border-gray-50 dark:border-gray-850">
                                                         <span className="text-gray-650 dark:text-gray-300 font-medium">
                                                             {field.label.replace(/^\d+\.\s*/, '')}
                                                         </span>
                                                         <span className={`font-mono font-bold ${getScoreColor(val)}`}>
-                                                            {val}
+                                                            {val !== null && val !== undefined ? val : '-'}
                                                         </span>
                                                     </div>
                                                 );

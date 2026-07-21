@@ -10,6 +10,7 @@ import { exportContactsXlsx } from '../utils/export-contacts-xlsx';
 import { useUser } from '../components/UserContext';
 import AdvancedStats from '../components/AdvancedStats';
 import DashboardPamong from '../components/DashboardPamong';
+import DashboardAdminPemusatan from '../components/DashboardAdminPemusatan';
 
 export default function Dashboard() {
     const { user } = useUser()
@@ -403,12 +404,15 @@ export default function Dashboard() {
                 user?.role === "Pamong" ?
                     <DashboardPamong />
                     :
-                    (<div className="flex items-center justify-center">
-                        <div className=" p-8 text-center">
-                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Selamat Datang, {user?.name}!</h1>
-                            <p className="text-gray-600">Anda telah berhasil masuk ke Adminpanel.</p>
-                        </div>
-                    </div>)
+                    user?.role === "Admin Pemusatan" ?
+                        <DashboardAdminPemusatan />
+                        :
+                        (<div className="flex items-center justify-center">
+                            <div className=" p-8 text-center">
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">Selamat Datang, {user?.name}!</h1>
+                                <p className="text-gray-600">Anda telah berhasil masuk ke Adminpanel.</p>
+                            </div>
+                        </div>)
             }
             {user?.role === "Administrator" || user?.role === "Superadmin" ? (
                 <div>

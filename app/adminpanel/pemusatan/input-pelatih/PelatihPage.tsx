@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UrlApi } from '@/app/components/apiUrl';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
@@ -136,6 +136,10 @@ export default function PelatihPage() {
 
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
+    const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
     // Form States
     const [selectedCandidate, setSelectedCandidate] = useState<number | ''>('');
@@ -171,14 +175,63 @@ export default function PelatihPage() {
         return (sum / fields.length).toFixed(1);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Load existing data when candidate/date changes
+    useEffect(() => {
+        const loadExistingData = async () => {
+            if (!selectedCandidate || !tanggal) {
+                setIsDataLoaded(false);
+                return;
+            }
+            
+            setIsDataLoaded(false);
+            try {
+                const res = await fetch(`${UrlApi}/pemusatan/existing/pelatih/${selectedCandidate}/${tanggal}`, {
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) {
+                        const newScores: Record<string, number> = { ...initialScores };
+                        Object.keys(initialScores).forEach(key => {
+                            if (data[key] !== undefined && data[key] !== null) {
+                                newScores[key] = data[key];
+                            }
+                        });
+                        setScores(newScores);
+                        setCatatan(data.catatan || '');
+                        setLastSaved(new Date());
+                    } else {
+                        setScores({ ...initialScores });
+                        setCatatan('');
+                        setLastSaved(null);
+                    }
+                } else {
+                    setScores({ ...initialScores });
+                    setCatatan('');
+                    setLastSaved(null);
+                }
+            } catch (err) {
+                setScores({ ...initialScores });
+                setCatatan('');
+                setLastSaved(null);
+            } finally {
+                setIsDataLoaded(true);
+            }
+        };
+        
+        loadExistingData();
+    }, [selectedCandidate, tanggal]);
+
+    // Save Data function
+    const saveData = async (showNotification: boolean = false) => {
         if (!selectedCandidate) {
-            Swal.fire('Peringatan', 'Silakan pilih peserta terlebih dahulu', 'warning');
-            return;
+            if (showNotification) {
+                Swal.fire('Peringatan', 'Silakan pilih peserta terlebih dahulu', 'warning');
+            }
+            return false;
         }
 
-        setSubmitLoading(true);
         try {
             const payload = {
                 id_paskibraka: Number(selectedCandidate),
@@ -199,21 +252,59 @@ export default function PelatihPage() {
             const result = await res.json();
             if (!res.ok) throw new Error(result.message || 'Gagal menyimpan jurnal');
 
-            Swal.fire({
-                title: 'Berhasil!',
-                text: 'Jurnal harian Pelatih berhasil disimpan.',
-                icon: 'success',
-                confirmButtonColor: '#7c3aed'
-            });
-
-            // Reset form except candidate and date
-            setScores(initialScores);
-            setCatatan('');
+            setLastSaved(new Date());
+            
+            if (showNotification) {
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Jurnal harian Pelatih berhasil disimpan.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c3aed'
+                });
+            }
+            
+            return true;
         } catch (err: any) {
-            Swal.fire('Gagal', err.message || 'Terjadi kesalahan server', 'error');
-        } finally {
-            setSubmitLoading(false);
+            if (showNotification) {
+                Swal.fire('Gagal', err.message || 'Terjadi kesalahan server', 'error');
+            }
+            return false;
         }
+    };
+
+    // Auto-save function (tanpa notifikasi)
+    const handleAutoSave = async () => {
+        if (!selectedCandidate) return;
+        setSaveLoading(true);
+        await saveData(false);
+        setSaveLoading(false);
+    };
+
+    // Auto-save effect
+    useEffect(() => {
+        if (!selectedCandidate || !tanggal) return;
+        if (!isDataLoaded) return;
+        
+        if (autoSaveTimeoutRef.current) {
+            clearTimeout(autoSaveTimeoutRef.current);
+        }
+        
+        autoSaveTimeoutRef.current = setTimeout(() => {
+            handleAutoSave();
+        }, 2000);
+
+        return () => {
+            if (autoSaveTimeoutRef.current) {
+                clearTimeout(autoSaveTimeoutRef.current);
+            }
+        };
+    }, [scores, catatan, selectedCandidate, tanggal, isDataLoaded]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitLoading(true);
+        await saveData(true);
+        setSubmitLoading(false);
     };
 
     if (loading) {
@@ -226,7 +317,7 @@ export default function PelatihPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto mb-20">
+        <div className="mx-auto mb-20">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jurnal Harian Pelatih</h1>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">Input evaluasi PBB Sikap Diam (25 indikator) & Bendera (6 indikator) harian Capaska</p>
@@ -256,6 +347,23 @@ export default function PelatihPage() {
                             className="p-2.5 border border-gray-300 dark:border-gray-700 rounded dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none"
                             required
                         />
+                    </div>
+                </div>
+
+                {/* Auto-save indicator */}
+                <div className="flex justify-end items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-2">
+                        {saveLoading ? (
+                            <>
+                                <div className="w-3 h-3 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Menyimpan otomatis...</span>
+                            </>
+                        ) : lastSaved ? (
+                            <>
+                                <span className="text-green-500">✓</span>
+                                <span>Terakhir disimpan: {lastSaved.toLocaleTimeString()}</span>
+                            </>
+                        ) : null}
                     </div>
                 </div>
 
