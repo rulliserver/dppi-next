@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from "react";
-import { UrlApi } from "../components/apiUrl";
+import { UrlApi } from '@/app/components/apiUrl';
 import axios from "axios";
 import Swal from 'sweetalert2';
-import { BaseUrl } from "../components/baseUrl";
+import { BaseUrl } from '@/app/components/baseUrl';
 
 export default function PengangkatanDppiProvinsi() {
     const [currentStep, setCurrentStep] = useState(1);

@@ -3,9 +3,9 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UrlApi } from '../components/apiUrl';
+import { UrlApi } from '@/app/components/apiUrl';
 import { v4 as uuidv4 } from 'uuid';
-import SimpleVisitorStats from '../components/SimpleVisitorStats';
+import SimpleVisitorStats from '@/app/components/SimpleVisitorStats';
 export default function GuestLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const pathname = usePathname()
     const [isScrolled, setIsScrolled] = useState(false);

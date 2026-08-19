@@ -3,17 +3,17 @@
 import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { UrlApi } from "./components/apiUrl";
-import { BaseUrl, getImageUrl } from "./components/baseUrl";
-import SlideBerita from "./components/SlideBerita";
-import Peta from "./components/Peta";
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl, getImageUrl } from '@/app/components/baseUrl';
+import SlideBerita from '@/app/components/SlideBerita';
+import Peta from '@/app/components/Peta';
 import Image from "next/image";
-import RatingForm from './components/RatingForm';
-import RatingStats from './components/RatingStats';
-import RatingDisplay from "./components/RatingDisplay";
-import AnnouncementPopup from "./components/AnnouncementPopup";
+import RatingForm from '@/app/components/RatingForm';
+import RatingStats from '@/app/components/RatingStats';
+import RatingDisplay from '@/app/components/RatingDisplay';
+import AnnouncementPopup from '@/app/components/AnnouncementPopup';
 import { log } from "console";
-import ChatWidget from "./components/ChatWidget";
+import ChatWidget from '@/app/components/ChatWidget';
 
 export default function Beranda() {
     const [video, setVideo]: any = useState();

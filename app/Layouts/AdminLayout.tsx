@@ -2,11 +2,11 @@
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Swal from 'sweetalert2';
-import { UrlApi } from '../components/apiUrl';
-import { BaseUrl } from '../components/baseUrl';
-import darkMode from '../components/DarkMode';
-import Dropdown from '../components/Dropdown';
-import { useUser } from '../components/UserContext';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
+import darkMode from '@/app/components/DarkMode';
+import Dropdown from '@/app/components/Dropdown';
+import { useUser } from '@/app/components/UserContext';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -377,6 +377,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                     Video
                                                 </a>
                                             </li>
+                                             <li>
+                                                 <a
+                                                     href='/adminpanel/paskibraka-management'
+                                                     className={`block px-4 py-2 ${pathname === '/adminpanel/paskibraka-management'
+                                                         ? 'bg-violet-500 text-white rounded-md'
+                                                         : 'text-gray-700 hover:bg-gray-100'
+                                                         }`}
+                                                 >
+                                                     Input Soal & Tugas
+                                                 </a>
+                                             </li>
                                             <li>
                                                 <a
                                                     href='/adminpanel/paskibraka-nasional'
@@ -500,6 +511,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 <span className='w-10 dash-separator'></span>
                                 <p className='ml-2 menu-separator'>Input Data</p>
                             </div>
+                            {['Administrator', 'Superadmin', 'Admin Pemusatan', 'Pamong', 'Pelatih', 'Admin Penilaian', 'Admin Pendaftaran', 'Admin Kesbangpol'].includes(user?.role) ? (
+                                <div>
+                                    <a
+                                        href='/adminpanel/paskibraka-management'
+                                        className={
+                                            pathname === '/adminpanel/paskibraka-management'
+                                                ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                        }>
+                                        <i className={pathname === '/adminpanel/paskibraka-management' ? 'mx-2 text-xl py-auto fas fa-tasks text-purple-600' : 'mx-2 text-xl py-auto fas fa-tasks text-accent'}></i>
+
+                                        <p className='mx-1 menu-list' id='menu-name-task'>
+                                            Input Soal & Tugas
+                                        </p>
+                                    </a>
+                                </div>
+                            ) : ''}
                             {user.role === "Administrator" || user.role === "Superadmin" ? (
                                 <div>
                                     <a
@@ -888,6 +916,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 ) : ''}
                                 {user.role === "Administrator" || user.role === "Superadmin" ? (
                                     <>
+                                         <a
+                                             href='/adminpanel/paskibraka-management'
+                                             className={
+                                                 pathname === '/adminpanel/paskibraka-management'
+                                                     ? 'active flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 group1:'
+                                                     : 'flex w-[95%] px-2 py-2 mx-2 hover:rounded-md hover:bg-accent/20 text-accent dark:text-white'
+                                             }>
+                                             <i
+                                                 className={
+                                                     pathname === '/adminpanel/paskibraka-management'
+                                                         ? 'ml-2 mr-1 text-xl py-auto fas fa-tasks text-purple-600'
+                                                         : 'ml-2 mr-1 text-xl py-auto fas fa-tasks text-accent'
+                                                 }></i>
+
+                                             <p className='mx-1 menu-list' id='menu-name3'>
+                                                 Input Soal & Tugas
+                                             </p>
+                                         </a>
                                         <a
                                             href='/adminpanel/paskibraka-nasional'
                                             className={

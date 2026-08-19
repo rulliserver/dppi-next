@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { UrlApi } from "../components/apiUrl";
+import { UrlApi } from '@/app/components/apiUrl';
 import axios from "axios";
-import { BaseUrl, getImageUrl } from "../components/baseUrl";
+import { BaseUrl, getImageUrl } from '@/app/components/baseUrl';
 import Image from "next/image";
 
 export default function PelaksanaPusat() {

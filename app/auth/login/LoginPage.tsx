@@ -1,10 +1,10 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { UrlApi } from '../../components/apiUrl';
-import InputError from '../../components/InputError';
-import Checkbox from '../../components/Checkbox';
-import { useUser } from '../../components/UserContext';
+import { UrlApi } from '@/app/components/apiUrl';
+import InputError from '@/app/components/InputError';
+import Checkbox from '@/app/components/Checkbox';
+import { useUser } from '@/app/components/UserContext';
 import { ScaleLoader } from 'react-spinners';
 
 type LoginResponse =
@@ -46,6 +46,8 @@ function LoginForm() {
                 ];
                 if (adminRoles.includes(role)) {
                     window.location.href = '/adminpanel';
+                } else if (role === 'Paskibraka') {
+                    window.location.href = '/paskibraka-panel/profile';
                 } else {
                     window.location.href = '/userpanel';
                 }
@@ -111,9 +113,13 @@ function LoginForm() {
                 'Superadmin', 'Administrator', 'Admin Kesbangpol', 'Admin Pendaftaran', 'Admin Penilaian', 'Admin Pemusatan',
                 'Jurnalis', 'Juri PBB', 'Juri Minat Bakat', 'Pewawancara', 'Dokter Penilai', 'Pamong', 'Pelatih', 'Dokter'
             ];
-            window.location.href = adminRoles.includes(role)
-                  ? '/adminpanel'
-                  : '/userpanel';
+            if (adminRoles.includes(role)) {
+                window.location.href = '/adminpanel';
+            } else if (role === 'Paskibraka') {
+                window.location.href = '/paskibraka-panel/profile';
+            } else {
+                window.location.href = '/userpanel';
+            }
 
         } catch (err: any) {
             setErrorMessage(err.message || 'Login gagal, coba lagi.');

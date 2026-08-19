@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { BaseUrl } from "../components/baseUrl";
-import { useUser } from "../components/UserContext";
+import { BaseUrl } from '@/app/components/baseUrl';
+import { useUser } from '@/app/components/UserContext';
 import axios from "axios";
-import { UrlApi } from "../components/apiUrl";
+import { UrlApi } from '@/app/components/apiUrl';
 import Image from "next/image";
 
 export default function Userpanel() {

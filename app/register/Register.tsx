@@ -7,12 +7,12 @@ import makeAnimated from 'react-select/animated';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-image-crop/dist/ReactCrop.css';
 import axios from 'axios';
-import { useDebounceEffect } from '../components/useDebounceEffect';
-import { canvasPreview } from '../components/CanvasPreview';
-import { UrlApi } from '../components/apiUrl';
+import { useDebounceEffect } from '@/app/components/useDebounceEffect';
+import { canvasPreview } from '@/app/components/CanvasPreview';
+import { UrlApi } from '@/app/components/apiUrl';
 import Link from 'next/link';
-import InputLabel from '../components/InputLabel';
-import TextInput from '../components/TextInput';
+import InputLabel from '@/app/components/InputLabel';
+import TextInput from '@/app/components/TextInput';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 interface HobiOption {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { UrlApi } from '../components/apiUrl';
+import { UrlApi } from '@/app/components/apiUrl';
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import axios from 'axios';

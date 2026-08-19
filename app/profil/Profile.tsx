@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import TextEditor from "../components/TextEditor";
-import { UrlApi } from "../components/apiUrl";
+import TextEditor from '@/app/components/TextEditor';
+import { UrlApi } from '@/app/components/apiUrl';
 import axios from "axios";
 
 export default function Profil() {

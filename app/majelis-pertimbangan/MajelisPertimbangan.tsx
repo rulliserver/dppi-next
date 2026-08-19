@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import axios from 'axios';
-import { UrlApi } from '../components/apiUrl';
-import { BaseUrl } from '../components/baseUrl';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
 
 export default function MajelisPertimbangan() {
     const [mp, setMp]: any = useState();

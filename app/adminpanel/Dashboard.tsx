@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import 'datatables.net-dt';
 import $ from 'jquery';
-import { UrlApi } from '../components/apiUrl';
-import { BaseUrl } from '../components/baseUrl';
-import { exportContactsXlsx } from '../utils/export-contacts-xlsx';
-import { useUser } from '../components/UserContext';
-import AdvancedStats from '../components/AdvancedStats';
-import DashboardPamong from '../components/DashboardPamong';
-import DashboardAdminPemusatan from '../components/DashboardAdminPemusatan';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
+import { exportContactsXlsx } from '@/app/utils/export-contacts-xlsx';
+import { useUser } from '@/app/components/UserContext';
+import AdvancedStats from '@/app/components/AdvancedStats';
+import DashboardPamong from '@/app/components/DashboardPamong';
+import DashboardAdminPemusatan from '@/app/components/DashboardAdminPemusatan';
 
 export default function Dashboard() {
     const { user } = useUser()

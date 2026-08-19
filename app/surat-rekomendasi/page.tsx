@@ -3,7 +3,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import SuratRekomendasi from "../components/SuratRekomendasi";
+import SuratRekomendasi from '@/app/components/SuratRekomendasi';
 
 
 // Dynamically import PDFDownloadLink with ssr: false

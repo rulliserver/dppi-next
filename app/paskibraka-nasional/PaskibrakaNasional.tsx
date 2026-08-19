@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UrlApi } from "../components/apiUrl";
-import { BaseUrl } from "../components/baseUrl";
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
 
 interface PaskibrakaNasional {
     id: number;

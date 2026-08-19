@@ -2,15 +2,15 @@
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Swal from 'sweetalert2';
-import { UrlApi } from '../components/apiUrl';
-import { BaseUrl } from '../components/baseUrl';
-import darkMode from '../components/DarkMode';
-import Dropdown from '../components/Dropdown';
-import { useUser } from '../components/UserContext';
+import { UrlApi } from '@/app/components/apiUrl';
+import { BaseUrl } from '@/app/components/baseUrl';
+import darkMode from '@/app/components/DarkMode';
+import Dropdown from '@/app/components/Dropdown';
+import { useUser } from '@/app/components/UserContext';
 import Link from 'next/link';
 import axios from 'axios';
-import DownloadCVButton from '../components/DownloadCVButton';
-import LoadingIndikator from '../components/loadingIndikator';
+import DownloadCVButton from '@/app/components/DownloadCVButton';
+import LoadingIndikator from '@/app/components/loadingIndikator';
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();

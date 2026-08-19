@@ -4,7 +4,7 @@ import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recapt
 import { Button } from '@headlessui/react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { UrlApi } from '../components/apiUrl';
+import { UrlApi } from '@/app/components/apiUrl';
 
 interface FormData {
     nama: string;
