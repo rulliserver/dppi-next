@@ -27,6 +27,7 @@ interface Submission {
     user_id: string;
     nama_siswa: string;
     judul_tugas?: string;
+    deadline_tugas?: string;
     file_url: string;
     file_type: string;
     catatan_siswa?: string;
@@ -49,15 +50,17 @@ export default function AdminPaskibrakaManagementPage() {
         judul: '',
         deskripsi: '',
         deadline: '',
-        file_lampiran: ''
     });
+    const [taskFile, setTaskFile] = useState<File | null>(null);
+    const [savingTask, setSavingTask] = useState(false);
 
     // Form Info
     const [infoForm, setInfoForm] = useState({
         judul: '',
         konten: '',
-        file_lampiran: ''
     });
+    const [infoFile, setInfoFile] = useState<File | null>(null);
+    const [savingInfo, setSavingInfo] = useState(false);
 
     // Form Grading
     const [gradingSub, setGradingSub] = useState<Submission | null>(null);
@@ -117,24 +120,36 @@ export default function AdminPaskibrakaManagementPage() {
         }
     };
 
-    // Task Submit
+    // Task Submit (Supports PDF upload)
     const handleSaveTask = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setSavingTask(true);
+            const formData = new FormData();
+            formData.append('judul', taskForm.judul);
+            formData.append('deskripsi', taskForm.deskripsi);
+            formData.append('deadline', taskForm.deadline);
+            if (taskFile) {
+                formData.append('file_lampiran', taskFile);
+            }
+
             const res = await fetch(`${UrlApi}/paskibraka/tugas`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify(taskForm)
+                body: formData
             });
 
-            if (!res.ok) throw new Error('Gagal menyimpan tugas');
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Gagal menyimpan tugas');
 
             Swal.fire('Berhasil', 'Tugas bulanan berhasil diterbitkan.', 'success');
-            setTaskForm({ judul: '', deskripsi: '', deadline: '', file_lampiran: '' });
+            setTaskForm({ judul: '', deskripsi: '', deadline: '' });
+            setTaskFile(null);
             fetchAllData();
         } catch (err: any) {
             Swal.fire('Error', err.message, 'error');
+        } finally {
+            setSavingTask(false);
         }
     };
 
@@ -154,24 +169,35 @@ export default function AdminPaskibrakaManagementPage() {
         }
     };
 
-    // Info Submit
+    // Info Submit (Supports PDF upload)
     const handleSaveInfo = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setSavingInfo(true);
+            const formData = new FormData();
+            formData.append('judul', infoForm.judul);
+            formData.append('konten', infoForm.konten);
+            if (infoFile) {
+                formData.append('file_lampiran', infoFile);
+            }
+
             const res = await fetch(`${UrlApi}/paskibraka/informasi`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify(infoForm)
+                body: formData
             });
 
-            if (!res.ok) throw new Error('Gagal menyimpan informasi');
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Gagal menyimpan informasi');
 
             Swal.fire('Berhasil', 'Informasi/Pengumuman berhasil diterbitkan.', 'success');
-            setInfoForm({ judul: '', konten: '', file_lampiran: '' });
+            setInfoForm({ judul: '', konten: '' });
+            setInfoFile(null);
             fetchAllData();
         } catch (err: any) {
             Swal.fire('Error', err.message, 'error');
+        } finally {
+            setSavingInfo(false);
         }
     };
 
@@ -221,6 +247,19 @@ export default function AdminPaskibrakaManagementPage() {
         }
     };
 
+    const isLateSubmission = (sub: Submission) => {
+        if (!sub.submitted_at || !sub.deadline_tugas) return false;
+        return new Date(sub.submitted_at).getTime() > new Date(sub.deadline_tugas).getTime();
+    };
+
+    const getFileUrl = (path?: string) => {
+        if (!path) return '#';
+        if (path.startsWith('http')) return path;
+        const cleanPath = path.replace(/^\//, '');
+        const domain = UrlApi.replace(/\/api\/?$/, '');
+        return `${domain}/${cleanPath}`;
+    };
+
     return (
         <AdminLayout>
             <div className="space-y-6">
@@ -229,7 +268,7 @@ export default function AdminPaskibrakaManagementPage() {
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Manajemen Paskibraka Admin</h1>
                         <p className="text-slate-500 text-sm mt-1">
-                            Kelola tugas bulanan, pengumuman informasi, pemeriksaan berkas jawaban, dan input nilai Paskibraka.
+                            Kelola tugas bulanan, pengumuman informasi PDF, pemeriksaan berkas jawaban, dan input nilai Paskibraka.
                         </p>
                     </div>
 
@@ -288,53 +327,52 @@ export default function AdminPaskibrakaManagementPage() {
                             </h3>
                             <form onSubmit={handleSaveTask} className="space-y-3 text-sm">
                                 <div>
-                                    <label className="block font-semibold mb-1">Judul Tugas *</label>
+                                    <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Judul Tugas *</label>
                                     <input
                                         type="text"
                                         value={taskForm.judul}
                                         onChange={(e) => setTaskForm({ ...taskForm, judul: e.target.value })}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
                                         placeholder="Judul Tugas Bulanan..."
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block font-semibold mb-1">Deskripsi & Instruksi *</label>
+                                    <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Deskripsi & Instruksi *</label>
                                     <textarea
                                         value={taskForm.deskripsi}
                                         onChange={(e) => setTaskForm({ ...taskForm, deskripsi: e.target.value })}
                                         rows={4}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
                                         placeholder="Instruksi pengerjaan tugas..."
                                         required
                                     ></textarea>
                                 </div>
                                 <div>
-                                    <label className="block font-semibold mb-1">Deadline / Tenggat Waktu *</label>
+                                    <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Pilih Tanggal & Waktu Deadline *</label>
                                     <input
-                                        type="text"
+                                        type="datetime-local"
                                         value={taskForm.deadline}
                                         onChange={(e) => setTaskForm({ ...taskForm, deadline: e.target.value })}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
-                                        placeholder="YYYY-MM-DD HH:MM:SS (contoh: 2026-08-31 23:59:59)"
+                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block font-semibold mb-1">Path/URL Lampiran Admin (Opsional)</label>
+                                    <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Upload Lampiran PDF Tugas (Opsional)</label>
                                     <input
-                                        type="text"
-                                        value={taskForm.file_lampiran}
-                                        onChange={(e) => setTaskForm({ ...taskForm, file_lampiran: e.target.value })}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
-                                        placeholder="uploads/..."
+                                        type="file"
+                                        accept="application/pdf,.pdf"
+                                        onChange={(e) => setTaskFile(e.target.files?.[0] || null)}
+                                        className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-950/40 dark:file:text-red-300"
                                     />
                                 </div>
                                 <button
                                     type="submit"
-                                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl"
+                                    disabled={savingTask}
+                                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition disabled:opacity-50"
                                 >
-                                    Terbitkan Tugas
+                                    {savingTask ? 'Menyimpan...' : 'Terbitkan Tugas'}
                                 </button>
                             </form>
                         </div>
@@ -352,6 +390,18 @@ export default function AdminPaskibrakaManagementPage() {
                                             <div>
                                                 <h4 className="font-bold text-slate-900 dark:text-white">{t.judul}</h4>
                                                 <p className="text-xs text-slate-500 mt-1 whitespace-pre-line">{t.deskripsi}</p>
+                                                {t.file_lampiran && (
+                                                    <div className="mt-2">
+                                                        <a
+                                                            href={getFileUrl(t.file_lampiran)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:underline"
+                                                        >
+                                                            📄 Unduh PDF Lampiran Admin
+                                                        </a>
+                                                    </div>
+                                                )}
                                                 <span className="inline-block mt-2 text-xs font-semibold text-red-600 dark:text-red-400">
                                                     Deadline: {new Date(t.deadline).toLocaleString('id-ID')}
                                                 </span>
@@ -379,42 +429,42 @@ export default function AdminPaskibrakaManagementPage() {
                             </h3>
                             <form onSubmit={handleSaveInfo} className="space-y-3 text-sm">
                                 <div>
-                                    <label className="block font-semibold mb-1">Judul Informasi *</label>
+                                    <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Judul Informasi *</label>
                                     <input
                                         type="text"
                                         value={infoForm.judul}
                                         onChange={(e) => setInfoForm({ ...infoForm, judul: e.target.value })}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
                                         placeholder="Judul pengumuman/edaran..."
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block font-semibold mb-1">Isi Konten *</label>
+                                    <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Isi Konten *</label>
                                     <textarea
                                         value={infoForm.konten}
                                         onChange={(e) => setInfoForm({ ...infoForm, konten: e.target.value })}
                                         rows={4}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500"
                                         placeholder="Konten edaran..."
                                         required
                                     ></textarea>
                                 </div>
                                 <div>
-                                    <label className="block font-semibold mb-1">Path File Lampiran (Opsional)</label>
+                                    <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Upload Lampiran PDF Edaran (Opsional)</label>
                                     <input
-                                        type="text"
-                                        value={infoForm.file_lampiran}
-                                        onChange={(e) => setInfoForm({ ...infoForm, file_lampiran: e.target.value })}
-                                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
-                                        placeholder="uploads/..."
+                                        type="file"
+                                        accept="application/pdf,.pdf"
+                                        onChange={(e) => setInfoFile(e.target.files?.[0] || null)}
+                                        className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-950/40 dark:file:text-red-300"
                                     />
                                 </div>
                                 <button
                                     type="submit"
-                                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl"
+                                    disabled={savingInfo}
+                                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition disabled:opacity-50"
                                 >
-                                    Terbitkan Informasi
+                                    {savingInfo ? 'Menyimpan...' : 'Terbitkan Informasi'}
                                 </button>
                             </form>
                         </div>
@@ -432,6 +482,18 @@ export default function AdminPaskibrakaManagementPage() {
                                             <div>
                                                 <h4 className="font-bold text-slate-900 dark:text-white">{info.judul}</h4>
                                                 <p className="text-xs text-slate-500 mt-1 whitespace-pre-line">{info.konten}</p>
+                                                {info.file_lampiran && (
+                                                    <div className="mt-2">
+                                                        <a
+                                                            href={getFileUrl(info.file_lampiran)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:underline"
+                                                        >
+                                                            📄 Unduh PDF Edaran
+                                                        </a>
+                                                    </div>
+                                                )}
                                                 <span className="inline-block mt-2 text-xs text-slate-400">
                                                     Dibuat: {info.created_at ? new Date(info.created_at).toLocaleDateString('id-ID') : '-'}
                                                 </span>
@@ -452,116 +514,160 @@ export default function AdminPaskibrakaManagementPage() {
 
                 {/* Tab Content 3: Pengumpulan & Penilaian */}
                 {activeTab === 'pengumpulan' && (
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white pb-2 border-b border-slate-100 dark:border-slate-700">
-                            Pemeriksaan Berkas (PDF, DOCX, MP4) & Input Nilai
+                            Berkas Jawaban Paskibraka ({submissions.length})
                         </h3>
 
-                        {/* Modal Penilaian jika dipilih */}
-                        {gradingSub && (
-                            <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-3">
-                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                                    Input Nilai untuk: <span className="text-red-600">{gradingSub.nama_siswa}</span> ({gradingSub.judul_tugas})
-                                </h4>
-                                <form onSubmit={handleSaveGrade} className="space-y-3 text-sm">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-xs font-semibold mb-1">Nilai (Angka / Huruf) *</label>
-                                            <input
-                                                type="text"
-                                                value={gradeInput}
-                                                onChange={(e) => setGradeInput(e.target.value)}
-                                                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-slate-900 dark:text-white"
-                                                placeholder="Contoh: 88.5 atau A"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold mb-1">Catatan Admin / Feedback</label>
-                                            <input
-                                                type="text"
-                                                value={catatanInput}
-                                                onChange={(e) => setCatatanInput(e.target.value)}
-                                                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-slate-900 dark:text-white"
-                                                placeholder="Evaluasi tugas Paskibraka..."
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs"
-                                        >
-                                            Simpan Nilai
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setGradingSub(null)}
-                                            className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs"
-                                        >
-                                            Batal
-                                        </button>
-                                    </div>
-                                </form>
+                        {submissions.length === 0 ? (
+                            <p className="text-slate-400 text-center py-8">Belum ada berkas tugas dikumpulkan oleh siswa Paskibraka.</p>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold uppercase">
+                                        <tr>
+                                            <th className="px-4 py-3">Nama Siswa</th>
+                                            <th className="px-4 py-3">Tugas</th>
+                                            <th className="px-4 py-3">Waktu Pengumpulan</th>
+                                            <th className="px-4 py-3">Status Batas Waktu</th>
+                                            <th className="px-4 py-3">Berkas</th>
+                                            <th className="px-4 py-3">Nilai Admin</th>
+                                            <th className="px-4 py-3">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                                        {submissions.map((sub) => {
+                                            const late = isLateSubmission(sub);
+                                            return (
+                                                <tr key={sub.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/40">
+                                                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
+                                                        {sub.nama_siswa}
+                                                    </td>
+                                                    <td className="px-4 py-3">{sub.judul_tugas || '-'}</td>
+                                                    <td className="px-4 py-3 text-xs text-slate-500">
+                                                        {sub.submitted_at ? new Date(sub.submitted_at).toLocaleString('id-ID') : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        {late ? (
+                                                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                                                Terlambat
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                                                Tepat Waktu
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <a
+                                                            href={getFileUrl(sub.file_url)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs font-bold text-red-600 hover:underline uppercase"
+                                                        >
+                                                            Unduh ({sub.file_type})
+                                                        </a>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        {sub.nilai ? (
+                                                            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-extrabold text-xs">
+                                                                {sub.nilai}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400 italic">Belum Dinilai</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <button
+                                                            onClick={() => {
+                                                                setGradingSub(sub);
+                                                                setGradeInput(sub.nilai || '');
+                                                                setCatatanInput(sub.catatan_admin || '');
+                                                            }}
+                                                            className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 font-semibold text-xs rounded-lg transition"
+                                                        >
+                                                            Beri Nilai
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-xs font-semibold">
-                                    <tr>
-                                        <th className="p-3">Siswa Paskibraka</th>
-                                        <th className="p-3">Tugas</th>
-                                        <th className="p-3">Berkas</th>
-                                        <th className="p-3">Tgl Kumpul</th>
-                                        <th className="p-3">Nilai Admin</th>
-                                        <th className="p-3">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-                                    {submissions.map((sub) => (
-                                        <tr key={sub.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30">
-                                            <td className="p-3 font-bold text-slate-900 dark:text-white">{sub.nama_siswa}</td>
-                                            <td className="p-3">{sub.judul_tugas || '-'}</td>
-                                            <td className="p-3">
-                                                <a
-                                                    href={`${UrlApi}/${sub.file_url}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 underline"
-                                                >
-                                                    <span className="uppercase text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold">
-                                                        {sub.file_type}
-                                                    </span>
-                                                    Unduh / Buka
-                                                </a>
-                                            </td>
-                                            <td className="p-3 text-xs text-slate-500">
-                                                {sub.submitted_at ? new Date(sub.submitted_at).toLocaleString('id-ID') : '-'}
-                                            </td>
-                                            <td className="p-3 font-bold text-emerald-600">
-                                                {sub.nilai || <span className="text-xs text-slate-400 font-normal">Belum dinilai</span>}
-                                            </td>
-                                            <td className="p-3">
-                                                <button
-                                                    onClick={() => {
-                                                        setGradingSub(sub);
-                                                        setGradeInput(sub.nilai || '');
-                                                        setCatatanInput(sub.catatan_admin || '');
-                                                    }}
-                                                    className="px-3 py-1.5 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 font-semibold rounded-lg text-xs hover:bg-slate-800"
-                                                >
-                                                    {sub.nilai ? 'Edit Nilai' : 'Beri Nilai'}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 )}
             </div>
+
+            {/* Modal Input Nilai */}
+            {gradingSub && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-900 dark:text-white">
+                                Penilaian Tugas Paskibraka
+                            </h3>
+                            <button onClick={() => setGradingSub(null)} className="text-slate-400 hover:text-slate-600">✕</button>
+                        </div>
+                        <form onSubmit={handleSaveGrade} className="p-6 space-y-4 text-sm">
+                            <div>
+                                <span className="text-xs text-slate-400 block font-medium">Siswa Paskibraka</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{gradingSub.nama_siswa}</span>
+                            </div>
+                            <div>
+                                <span className="text-xs text-slate-400 block font-medium">Tugas</span>
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">{gradingSub.judul_tugas}</span>
+                            </div>
+                            {isLateSubmission(gradingSub) && (
+                                <div>
+                                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                        Status: Terlambat Dikerjakan
+                                    </span>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-semibold mb-1">Nilai (Angka/Huruf, mis. 90 atau A) *</label>
+                                <input
+                                    type="text"
+                                    value={gradeInput}
+                                    onChange={(e) => setGradeInput(e.target.value)}
+                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                    placeholder="85"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold mb-1">Catatan / Umpan Balik Admin</label>
+                                <textarea
+                                    value={catatanInput}
+                                    onChange={(e) => setCatatanInput(e.target.value)}
+                                    rows={3}
+                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white"
+                                    placeholder="Ulasan tugas..."
+                                ></textarea>
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setGradingSub(null)}
+                                    className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-xs shadow"
+                                >
+                                    Simpan Nilai
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }
