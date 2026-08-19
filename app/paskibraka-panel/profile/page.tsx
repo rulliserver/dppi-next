@@ -235,7 +235,9 @@ export default function PaskibrakaProfilePage() {
 
     const currentPhoto = profile?.user?.avatar || profile?.capaska_details?.photo;
     const photoUrl = currentPhoto
-        ? currentPhoto.startsWith('http') ? currentPhoto : `${UrlApi}/${currentPhoto}`
+        ? currentPhoto.startsWith('http') 
+            ? currentPhoto 
+            : `${UrlApi.replace(/\/api\/?$/, '')}/${currentPhoto.replace(/^\//, '')}`
         : null;
 
     const sekolahDisplay = profile?.user?.nama_sekolah || profile?.capaska_details?.asal_sekolah || '-';
