@@ -255,7 +255,11 @@ interface Top5CriterionResult {
     // Matrix Criteria Modal states
     const [showMatrixModal, setShowMatrixModal] = useState(false);
     const [matrixModalTab, setMatrixModalTab] = useState<'sikap' | 'penampilan' | 'pbb'>('sikap');
+    const [matrixGenderFilter, setMatrixGenderFilter] = useState<'ALL' | 'L' | 'P'>('ALL');
     const [matrixHeaders, setMatrixHeaders] = useState<string[]>([]);
+    const [sikapHeaders, setSikapHeaders] = useState<string[]>([]);
+    const [penampilanHeaders, setPenampilanHeaders] = useState<string[]>([]);
+    const [pbbHeaders, setPbbHeaders] = useState<string[]>([]);
     const [sikapMatrixData, setSikapMatrixData] = useState<any[]>([]);
     const [penampilanMatrixData, setPenampilanMatrixData] = useState<any[]>([]);
     const [pbbMatrixData, setPbbMatrixData] = useState<any[]>([]);
@@ -1022,9 +1026,12 @@ interface Top5CriterionResult {
 
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
+            const jkLabel = cand.jk === 'L' || cand.jk?.toLowerCase() === 'putra' || cand.jk?.toLowerCase().includes('laki') ? 'Putra' : cand.jk === 'P' || cand.jk?.toLowerCase() === 'putri' || cand.jk?.toLowerCase().includes('perempuan') ? 'Putri' : cand.jk || '-';
+
             return {
                 'No.': idx + 1,
                 'Nama Peserta': cand.nama_lengkap || `Peserta #${cand.id}`,
+                'Jenis Kelamin': jkLabel,
                 'No. Peserta': cand.no_peserta || '-',
                 'Provinsi': cand.provinsi || '-',
                 ...scoresObj,
@@ -1059,9 +1066,12 @@ interface Top5CriterionResult {
 
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
+            const jkLabel = cand.jk === 'L' || cand.jk?.toLowerCase() === 'putra' || cand.jk?.toLowerCase().includes('laki') ? 'Putra' : cand.jk === 'P' || cand.jk?.toLowerCase() === 'putri' || cand.jk?.toLowerCase().includes('perempuan') ? 'Putri' : cand.jk || '-';
+
             return {
                 'No.': idx + 1,
                 'Nama Peserta': cand.nama_lengkap || `Peserta #${cand.id}`,
+                'Jenis Kelamin': jkLabel,
                 'No. Peserta': cand.no_peserta || '-',
                 'Provinsi': cand.provinsi || '-',
                 ...scoresObj,
@@ -1096,9 +1106,12 @@ interface Top5CriterionResult {
 
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
+            const jkLabel = cand.jk === 'L' || cand.jk?.toLowerCase() === 'putra' || cand.jk?.toLowerCase().includes('laki') ? 'Putra' : cand.jk === 'P' || cand.jk?.toLowerCase() === 'putri' || cand.jk?.toLowerCase().includes('perempuan') ? 'Putri' : cand.jk || '-';
+
             return {
                 'No.': idx + 1,
                 'Nama Peserta': cand.nama_lengkap || `Peserta #${cand.id}`,
+                'Jenis Kelamin': jkLabel,
                 'No. Peserta': cand.no_peserta || '-',
                 'Provinsi': cand.provinsi || '-',
                 ...scoresObj,
@@ -1122,7 +1135,10 @@ interface Top5CriterionResult {
         setMatrixLoading(true);
         try {
             const { sikapCriteriaHeaders, penampilanCriteriaHeaders, pbbCriteriaHeaders, sikapMatrix, penampilanMatrix, pbbMatrix } = await calculateCriteriaMatrix();
-            setMatrixHeaders(sikapCriteriaHeaders);
+            setSikapHeaders(sikapCriteriaHeaders);
+            setPenampilanHeaders(penampilanCriteriaHeaders);
+            setPbbHeaders(pbbCriteriaHeaders);
+            setMatrixHeaders(matrixModalTab === 'sikap' ? sikapCriteriaHeaders : matrixModalTab === 'penampilan' ? penampilanCriteriaHeaders : pbbCriteriaHeaders);
             setSikapMatrixData(sikapMatrix);
             setPenampilanMatrixData(penampilanMatrix);
             setPbbMatrixData(pbbMatrix);
@@ -2025,38 +2041,75 @@ interface Top5CriterionResult {
                             </div>
                         </div>
 
-                        {/* Modal Sub Header Tabs */}
-                        <div className="px-6 border-b border-gray-200 dark:border-gray-800 flex gap-4 bg-gray-50/50 dark:bg-gray-800/30">
-                            <button
-                                onClick={() => setMatrixModalTab('sikap')}
-                                className={`py-3 text-xs font-bold border-b-2 transition ${
-                                    matrixModalTab === 'sikap'
-                                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                31 Kriteria Sikap Pamong
-                            </button>
-                            <button
-                                onClick={() => setMatrixModalTab('penampilan')}
-                                className={`py-3 text-xs font-bold border-b-2 transition ${
-                                    matrixModalTab === 'penampilan'
-                                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                7 Kriteria Penampilan Pamong
-                            </button>
-                            <button
-                                onClick={() => setMatrixModalTab('pbb')}
-                                className={`py-3 text-xs font-bold border-b-2 transition ${
-                                    matrixModalTab === 'pbb'
-                                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                25 Kriteria PBB Pelatih
-                            </button>
+                        {/* Modal Sub Header Controls */}
+                        <div className="px-6 py-2.5 border-b border-gray-200 dark:border-gray-800 flex flex-wrap justify-between items-center gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+                            {/* Gender Toggle */}
+                            <div className="flex items-center p-1 bg-gray-200/80 dark:bg-gray-800 rounded-xl">
+                                <button
+                                    onClick={() => setMatrixGenderFilter('ALL')}
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                        matrixGenderFilter === 'ALL'
+                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <span>🌐</span> SEMUA
+                                </button>
+                                <button
+                                    onClick={() => setMatrixGenderFilter('L')}
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                        matrixGenderFilter === 'L'
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <span>♂</span> PUTRA
+                                </button>
+                                <button
+                                    onClick={() => setMatrixGenderFilter('P')}
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                        matrixGenderFilter === 'P'
+                                            ? 'bg-pink-600 text-white shadow-sm'
+                                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <span>♀</span> PUTRI
+                                </button>
+                            </div>
+
+                            {/* Category Tabs */}
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => { setMatrixModalTab('sikap'); setMatrixHeaders(sikapHeaders); }}
+                                    className={`py-2 text-xs font-bold border-b-2 transition ${
+                                        matrixModalTab === 'sikap'
+                                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    31 Kriteria Sikap Pamong
+                                </button>
+                                <button
+                                    onClick={() => { setMatrixModalTab('penampilan'); setMatrixHeaders(penampilanHeaders); }}
+                                    className={`py-2 text-xs font-bold border-b-2 transition ${
+                                        matrixModalTab === 'penampilan'
+                                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    7 Kriteria Penampilan Pamong
+                                </button>
+                                <button
+                                    onClick={() => { setMatrixModalTab('pbb'); setMatrixHeaders(pbbHeaders); }}
+                                    className={`py-2 text-xs font-bold border-b-2 transition ${
+                                        matrixModalTab === 'pbb'
+                                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    25 Kriteria PBB Pelatih
+                                </button>
+                            </div>
                         </div>
 
                         {/* Modal Matrix Table */}
@@ -2073,6 +2126,7 @@ interface Top5CriterionResult {
                                             <tr>
                                                 <th className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 w-12 text-center sticky left-0 bg-gray-100 dark:bg-gray-800 z-30">No.</th>
                                                 <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[200px] sticky left-12 bg-gray-100 dark:bg-gray-800 z-30 shadow-sm">Nama Peserta</th>
+                                                <th className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[120px] text-center">Jenis Kelamin</th>
                                                 <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[150px]">Provinsi</th>
                                                 {matrixHeaders.map((name, i) => (
                                                     <th key={i} className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[160px] text-center whitespace-normal">
@@ -2083,11 +2137,22 @@ interface Top5CriterionResult {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
-                                            {(matrixModalTab === 'sikap' ? sikapMatrixData : matrixModalTab === 'penampilan' ? penampilanMatrixData : pbbMatrixData).map((row, rIdx) => {
+                                            {(matrixModalTab === 'sikap' ? sikapMatrixData : matrixModalTab === 'penampilan' ? penampilanMatrixData : pbbMatrixData)
+                                                .filter(row => {
+                                                    if (matrixGenderFilter === 'L') return row['Jenis Kelamin'] === 'Putra';
+                                                    if (matrixGenderFilter === 'P') return row['Jenis Kelamin'] === 'Putri';
+                                                    return true;
+                                                })
+                                                .map((row, rIdx) => {
                                                 return (
                                                     <tr key={rIdx} className="hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors">
                                                         <td className="px-3 py-2.5 text-center font-bold text-gray-500 border-r border-gray-200 dark:border-gray-800 sticky left-0 bg-white dark:bg-gray-900 z-10">{row['No.']}</td>
                                                         <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 sticky left-12 bg-white dark:bg-gray-900 z-10 shadow-sm whitespace-nowrap">{row['Nama Peserta']}</td>
+                                                        <td className="px-3 py-2.5 text-center font-semibold text-gray-700 dark:text-gray-300 border-r border-gray-200 dark:border-gray-800 whitespace-nowrap">
+                                                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${row['Jenis Kelamin'] === 'Putra' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300' : row['Jenis Kelamin'] === 'Putri' ? 'bg-pink-50 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300' : 'bg-gray-100 text-gray-600'}`}>
+                                                                {row['Jenis Kelamin']}
+                                                            </span>
+                                                        </td>
                                                         <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-800 whitespace-nowrap">{row['Provinsi']}</td>
                                                         {matrixHeaders.map((name, cIdx) => {
                                                             const val = row[name];
