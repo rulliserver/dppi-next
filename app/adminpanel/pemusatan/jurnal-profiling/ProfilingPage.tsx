@@ -231,7 +231,7 @@ interface TopCandidate {
     maxDaysCount: number;
 }
 
-interface Top5CriterionResult {
+interface Top10CriterionResult {
     key: string;
     label: string;
     category: 'sikap' | 'penampilan';
@@ -244,12 +244,12 @@ interface Top5CriterionResult {
     const [selectedPamongLog, setSelectedPamongLog] = useState<DailyPamong | null>(null);
     const [selectedPelatihLog, setSelectedPelatihLog] = useState<DailyPelatih | null>(null);
 
-    // Top 5 Best Performer Modal states
+    // Top 10 Best Performer Modal states
     const [showBestModal, setShowBestModal] = useState(false);
     const [bestModalTab, setBestModalTab] = useState<'sikap' | 'penampilan'>('sikap');
     const [bestGenderFilter, setBestGenderFilter] = useState<'L' | 'P' | 'ALL'>('ALL'); // 'L' = Putra, 'P' = Putri, 'ALL' = Semua
-    const [top5SikapList, setTop5SikapList] = useState<Top5CriterionResult[]>([]);
-    const [top5PenampilanList, setTop5PenampilanList] = useState<Top5CriterionResult[]>([]);
+    const [top10SikapList, setTop10SikapList] = useState<Top10CriterionResult[]>([]);
+    const [top10PenampilanList, setTop10PenampilanList] = useState<Top10CriterionResult[]>([]);
     const [bestLoading, setBestLoading] = useState(false);
 
     // Matrix Criteria Modal states
@@ -787,7 +787,7 @@ interface Top5CriterionResult {
         }
     };
 
-    // 6. Calculate Top 5 Best Performers for each Sikap (31) and Penampilan (7) criterion separated by Putra & Putri
+    // 6. Calculate Top 10 Best Performers for each Sikap (31) and Penampilan (7) criterion separated by Putra & Putri
     const calculateBestCriteria = async () => {
         const detailPromises = candidates.map(c =>
             fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
@@ -805,9 +805,9 @@ interface Top5CriterionResult {
             return sumTotal / logs.length;
         });
 
-        const computeTop5ForFields = (fields: typeof sikapFields, category: 'sikap' | 'penampilan'): Top5CriterionResult[] => {
+        const computeTop10ForFields = (fields: typeof sikapFields, category: 'sikap' | 'penampilan'): Top10CriterionResult[] => {
             return fields.map(f => {
-                const getTop5ForGender = (genderFilter: 'L' | 'P' | 'ALL'): TopCandidate[] => {
+                const getTop10ForGender = (genderFilter: 'L' | 'P' | 'ALL'): TopCandidate[] => {
                     const candStats = candidates
                         .map((cand, idx) => {
                             if (genderFilter === 'L') {
@@ -845,7 +845,7 @@ interface Top5CriterionResult {
                         return b.overall - a.overall;
                     });
 
-                    return candStats.slice(0, 5).map((item, i) => ({
+                    return candStats.slice(0, 10).map((item, i) => ({
                         rank: i + 1,
                         candId: item.cand.id,
                         nama_lengkap: item.cand.nama_lengkap || 'Peserta',
@@ -862,15 +862,15 @@ interface Top5CriterionResult {
                     key: f.key,
                     label: f.label,
                     category,
-                    topPutra: getTop5ForGender('L'),
-                    topPutri: getTop5ForGender('P'),
-                    topSemua: getTop5ForGender('ALL')
+                    topPutra: getTop10ForGender('L'),
+                    topPutri: getTop10ForGender('P'),
+                    topSemua: getTop10ForGender('ALL')
                 };
             });
         };
 
-        const sikapResults = computeTop5ForFields(sikapFields, 'sikap');
-        const penampilanResults = computeTop5ForFields(penampilanFields, 'penampilan');
+        const sikapResults = computeTop10ForFields(sikapFields, 'sikap');
+        const penampilanResults = computeTop10ForFields(penampilanFields, 'penampilan');
 
         return { sikapResults, penampilanResults };
     };
@@ -881,8 +881,8 @@ interface Top5CriterionResult {
         setBestLoading(true);
         try {
             const { sikapResults, penampilanResults } = await calculateBestCriteria();
-            setTop5SikapList(sikapResults);
-            setTop5PenampilanList(penampilanResults);
+            setTop10SikapList(sikapResults);
+            setTop10PenampilanList(penampilanResults);
         } catch (err: any) {
             console.error(err);
         } finally {
@@ -890,12 +890,12 @@ interface Top5CriterionResult {
         }
     };
 
-    // 8. Export Excel Top 5 Best Criteria (Putra & Putri)
+    // 8. Export Excel Top 10 Best Criteria (Putra & Putri)
     const exportBestCriteriaToExcel = async () => {
         try {
             Swal.fire({
-                title: 'Menyiapkan Export Top 5 per Kriteria',
-                text: 'Mohon tunggu, sedang menghitung 5 peserta terbaik per kriteria (Putra & Putri)...',
+                title: 'Menyiapkan Export Top 10 per Kriteria',
+                text: 'Mohon tunggu, sedang menghitung 10 peserta terbaik per kriteria (Putra & Putri)...',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -904,7 +904,7 @@ interface Top5CriterionResult {
 
             const wb = XLSX.utils.book_new();
 
-            const buildExcelRows = (results: Top5CriterionResult[], genderKey: 'topPutra' | 'topPutri' | 'topSemua') => {
+            const buildExcelRows = (results: Top10CriterionResult[], genderKey: 'topPutra' | 'topPutri' | 'topSemua') => {
                 const rows: any[] = [];
                 results.forEach((item, fIdx) => {
                     const topList = item[genderKey];
@@ -951,37 +951,47 @@ interface Top5CriterionResult {
                 { wch: 30 }
             ];
 
-            // 1. Sheet Top 5 Sikap Putra
+            // 1. Sheet Top 10 Sikap (SEMUA)
+            const wsSikapSemua = XLSX.utils.json_to_sheet(buildExcelRows(sikapResults, 'topSemua'));
+            wsSikapSemua['!cols'] = colsDef;
+            XLSX.utils.book_append_sheet(wb, wsSikapSemua, 'Top 10 Sikap (SEMUA)');
+
+            // 2. Sheet Top 10 Sikap (PUTRA)
             const wsSikapPutra = XLSX.utils.json_to_sheet(buildExcelRows(sikapResults, 'topPutra'));
             wsSikapPutra['!cols'] = colsDef;
-            XLSX.utils.book_append_sheet(wb, wsSikapPutra, 'Top 5 Sikap (PUTRA)');
+            XLSX.utils.book_append_sheet(wb, wsSikapPutra, 'Top 10 Sikap (PUTRA)');
 
-            // 2. Sheet Top 5 Sikap Putri
+            // 3. Sheet Top 10 Sikap (PUTRI)
             const wsSikapPutri = XLSX.utils.json_to_sheet(buildExcelRows(sikapResults, 'topPutri'));
             wsSikapPutri['!cols'] = colsDef;
-            XLSX.utils.book_append_sheet(wb, wsSikapPutri, 'Top 5 Sikap (PUTRI)');
+            XLSX.utils.book_append_sheet(wb, wsSikapPutri, 'Top 10 Sikap (PUTRI)');
 
-            // 3. Sheet Top 5 Penampilan Putra
+            // 4. Sheet Top 10 Penampilan (SEMUA)
+            const wsPenampilanSemua = XLSX.utils.json_to_sheet(buildExcelRows(penampilanResults, 'topSemua'));
+            wsPenampilanSemua['!cols'] = colsDef;
+            XLSX.utils.book_append_sheet(wb, wsPenampilanSemua, 'Top 10 Penampilan (SEMUA)');
+
+            // 5. Sheet Top 10 Penampilan (PUTRA)
             const wsPenampilanPutra = XLSX.utils.json_to_sheet(buildExcelRows(penampilanResults, 'topPutra'));
             wsPenampilanPutra['!cols'] = colsDef;
-            XLSX.utils.book_append_sheet(wb, wsPenampilanPutra, 'Top 5 Penampilan (PUTRA)');
+            XLSX.utils.book_append_sheet(wb, wsPenampilanPutra, 'Top 10 Penampilan (PUTRA)');
 
-            // 4. Sheet Top 5 Penampilan Putri
+            // 6. Sheet Top 10 Penampilan (PUTRI)
             const wsPenampilanPutri = XLSX.utils.json_to_sheet(buildExcelRows(penampilanResults, 'topPutri'));
             wsPenampilanPutri['!cols'] = colsDef;
-            XLSX.utils.book_append_sheet(wb, wsPenampilanPutri, 'Top 5 Penampilan (PUTRI)');
+            XLSX.utils.book_append_sheet(wb, wsPenampilanPutri, 'Top 10 Penampilan (PUTRI)');
 
-            downloadExcelWorkbook(wb, `Rekap_Top5_Peserta_Terbaik_per_Kriteria_Putra_Putri_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
+            downloadExcelWorkbook(wb, `Rekap_Top10_Peserta_Terbaik_per_Kriteria_Putra_Putri_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
 
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil Export',
-                text: 'File Excel Top 5 Peserta Terbaik per Kriteria (Putra & Putri) berhasil diunduh.',
+                text: 'File Excel Top 10 Peserta Terbaik per Kriteria (Putra & Putri) berhasil diunduh.',
                 timer: 2000,
                 showConfirmButton: false
             });
         } catch (err: any) {
-            Swal.fire('Error', err.message || 'Gagal export Excel Top 5 Terbaik', 'error');
+            Swal.fire('Error', err.message || 'Gagal export Excel Top 10 Terbaik', 'error');
         }
     };
 
@@ -1848,10 +1858,10 @@ interface Top5CriterionResult {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                                        Top 5 Peserta Terbaik per Kriteria (Putra & Putri)
+                                        Top 10 Peserta Terbaik per Kriteria (Putra & Putri)
                                     </h3>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Peringkat 5 teratas berdasarkan akumulasi & konsistensi jurnal harian Pamong
+                                        Peringkat 10 teratas berdasarkan akumulasi & konsistensi jurnal harian Pamong
                                     </p>
                                 </div>
                             </div>
@@ -1864,7 +1874,7 @@ interface Top5CriterionResult {
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    Export Excel Top 5
+                                    Export Excel Top 10
                                 </button>
                                 <button onClick={() => setShowBestModal(false)} className="text-gray-400 hover:text-gray-600 text-lg font-bold px-2">✕</button>
                             </div>
@@ -1936,11 +1946,11 @@ interface Top5CriterionResult {
                             {bestLoading ? (
                                 <div className="py-16 text-center text-gray-500 space-y-2">
                                     <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                    <p className="text-xs">Menghitung 5 peserta terbaik per kriteria...</p>
+                                    <p className="text-xs">Menghitung 10 peserta terbaik per kriteria...</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {(bestModalTab === 'sikap' ? top5SikapList : top5PenampilanList).map((item) => {
+                                    {(bestModalTab === 'sikap' ? top10SikapList : top10PenampilanList).map((item) => {
                                         const topList = bestGenderFilter === 'L' ? item.topPutra : bestGenderFilter === 'P' ? item.topPutri : item.topSemua;
                                         return (
                                             <div key={item.key} className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/60 shadow-sm flex flex-col justify-between space-y-3 hover:border-amber-400 dark:hover:border-amber-500 transition">
@@ -1953,7 +1963,7 @@ interface Top5CriterionResult {
                                                     </span>
                                                 </div>
 
-                                                {/* Top 5 list */}
+                                                {/* Top 10 list */}
                                                 <div className="space-y-2">
                                                     {topList.length === 0 ? (
                                                         <p className="text-xs text-gray-400 italic py-2">Belum ada data nilai.</p>
@@ -1995,7 +2005,7 @@ interface Top5CriterionResult {
 
                         {/* Modal Footer */}
                         <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-between items-center text-xs text-gray-500">
-                            <span>Peringkat 5 teratas berdasarkan akumulasi nilai jurnal harian Pamong</span>
+                            <span>Peringkat 10 teratas berdasarkan akumulasi nilai jurnal harian Pamong</span>
                             <button
                                 onClick={() => setShowBestModal(false)}
                                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-white rounded-xl font-bold transition"
