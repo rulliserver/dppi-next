@@ -224,11 +224,13 @@ interface BestCriterionResult {
     label: string;
     category: 'sikap' | 'penampilan';
     bestScore: number;
+    maxDaysCount: number;
     candidateName: string;
     noPeserta: string;
     provinsi: string;
     sekolah: string;
     photo: string | null;
+    tiedCandidatesCount: number;
 }
 
     // Detail modal states
@@ -773,7 +775,7 @@ interface BestCriterionResult {
         }
     };
 
-    // 6. Calculate Best Performers for each Sikap (31) and Penampilan (7) criterion
+    // 6. Calculate Best Performers for each Sikap (31) and Penampilan (7) criterion using Option 2 (Consistency & Co-Winners)
     const calculateBestCriteria = async () => {
         const detailPromises = candidates.map(c =>
             fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
@@ -783,69 +785,82 @@ interface BestCriterionResult {
 
         const results: (JournalDetails | null)[] = await Promise.all(detailPromises);
 
-        const sikapResults: BestCriterionResult[] = sikapFields.map(f => {
-            let bestScore = -1;
-            let bestCand: any = null;
-
-            candidates.forEach((cand, idx) => {
-                const det = results[idx];
-                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
-                if (logs.length === 0) return;
-
-                const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-                if (values.length === 0) return;
-
-                const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
-                if (avg > bestScore) {
-                    bestScore = avg;
-                    bestCand = cand;
-                }
-            });
-
-            return {
-                key: f.key,
-                label: f.label,
-                category: 'sikap',
-                bestScore: bestScore > 0 ? parseFloat(bestScore.toFixed(2)) : 0,
-                candidateName: bestCand?.nama_lengkap || 'Belum Ada Data',
-                noPeserta: bestCand?.no_peserta || '-',
-                provinsi: bestCand?.provinsi || '-',
-                sekolah: bestCand?.asal_sekolah || '-',
-                photo: bestCand?.photo || null,
-            };
+        const overallPamongAvgs = candidates.map((c, idx) => {
+            const det = results[idx];
+            const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+            if (logs.length === 0) return 0;
+            const sumTotal = logs.reduce((acc, p) => acc + parseFloat(getPamongNilaiKeseluruhan(p)), 0);
+            return sumTotal / logs.length;
         });
 
-        const penampilanResults: BestCriterionResult[] = penampilanFields.map(f => {
-            let bestScore = -1;
-            let bestCand: any = null;
+        const computeBestForFields = (fields: typeof sikapFields, category: 'sikap' | 'penampilan'): BestCriterionResult[] => {
+            return fields.map(f => {
+                const candStats = candidates.map((cand, idx) => {
+                    const det = results[idx];
+                    const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+                    if (logs.length === 0) return { cand, avg: -1, maxScoreDays: 0, overall: 0 };
 
-            candidates.forEach((cand, idx) => {
-                const det = results[idx];
-                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
-                if (logs.length === 0) return;
+                    const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+                    if (values.length === 0) return { cand, avg: -1, maxScoreDays: 0, overall: 0 };
 
-                const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-                if (values.length === 0) return;
+                    const maxInLogs = Math.max(...values);
+                    const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                    const maxScoreDays = values.filter(v => v === maxInLogs && v >= 90).length;
 
-                const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
-                if (avg > bestScore) {
-                    bestScore = avg;
-                    bestCand = cand;
+                    return {
+                        cand,
+                        avg: parseFloat(avg.toFixed(2)),
+                        maxScoreDays,
+                        overall: overallPamongAvgs[idx]
+                    };
+                }).filter(s => s.avg >= 0);
+
+                if (candStats.length === 0) {
+                    return {
+                        key: f.key,
+                        label: f.label,
+                        category,
+                        bestScore: 0,
+                        maxDaysCount: 0,
+                        candidateName: 'Belum Ada Data',
+                        noPeserta: '-',
+                        provinsi: '-',
+                        sekolah: '-',
+                        photo: null,
+                        tiedCandidatesCount: 0
+                    };
                 }
-            });
 
-            return {
-                key: f.key,
-                label: f.label,
-                category: 'penampilan',
-                bestScore: bestScore > 0 ? parseFloat(bestScore.toFixed(2)) : 0,
-                candidateName: bestCand?.nama_lengkap || 'Belum Ada Data',
-                noPeserta: bestCand?.no_peserta || '-',
-                provinsi: bestCand?.provinsi || '-',
-                sekolah: bestCand?.asal_sekolah || '-',
-                photo: bestCand?.photo || null,
-            };
-        });
+                const highestAvg = Math.max(...candStats.map(s => s.avg));
+                const topAvgCands = candStats.filter(s => s.avg === highestAvg);
+
+                const highestMaxDays = Math.max(...topAvgCands.map(s => s.maxScoreDays));
+                const topMaxDaysCands = topAvgCands.filter(s => s.maxScoreDays === highestMaxDays);
+
+                const highestOverall = Math.max(...topMaxDaysCands.map(s => s.overall));
+                const winners = topMaxDaysCands.filter(s => s.overall === highestOverall);
+
+                const firstWinner = winners[0];
+                const winnerNames = winners.map(w => w.cand.nama_lengkap || '-').join(', ');
+
+                return {
+                    key: f.key,
+                    label: f.label,
+                    category,
+                    bestScore: highestAvg,
+                    maxDaysCount: highestMaxDays,
+                    candidateName: winnerNames,
+                    noPeserta: winners.length === 1 ? firstWinner.cand.no_peserta || '-' : `${winners.length} Peserta Seri`,
+                    provinsi: winners.length === 1 ? firstWinner.cand.provinsi || '-' : 'Multi Provinsi',
+                    sekolah: winners.length === 1 ? firstWinner.cand.asal_sekolah || '-' : '-',
+                    photo: winners.length === 1 ? firstWinner.cand.photo || null : null,
+                    tiedCandidatesCount: winners.length
+                };
+            });
+        };
+
+        const sikapResults = computeBestForFields(sikapFields, 'sikap');
+        const penampilanResults = computeBestForFields(penampilanFields, 'penampilan');
 
         return { sikapResults, penampilanResults };
     };
@@ -884,20 +899,24 @@ interface BestCriterionResult {
                 'No': idx + 1,
                 'Kriteria Sikap': r.label,
                 'Nilai Rerata Tertinggi': r.bestScore > 0 ? r.bestScore : '-',
+                'Konsistensi (Hari Nilai Puncak)': r.maxDaysCount > 0 ? `${r.maxDaysCount} Hari Nilai Puncak` : '-',
                 'Nama Peserta Terbaik': r.candidateName,
                 'No. Peserta': r.noPeserta,
                 'Provinsi': r.provinsi,
                 'Asal Sekolah': r.sekolah,
+                'Status Seri': r.tiedCandidatesCount > 1 ? `Seri Penuh (${r.tiedCandidatesCount} Peserta)` : 'Tunggal'
             }));
             const wsSikap = XLSX.utils.json_to_sheet(sikapRows);
             wsSikap['!cols'] = [
                 { wch: 6 },
                 { wch: 32 },
                 { wch: 22 },
-                { wch: 30 },
-                { wch: 15 },
+                { wch: 28 },
+                { wch: 35 },
+                { wch: 18 },
                 { wch: 25 },
                 { wch: 30 },
+                { wch: 22 },
             ];
             XLSX.utils.book_append_sheet(wb, wsSikap, 'Nilai Terbaik Sikap (31)');
 
@@ -906,20 +925,24 @@ interface BestCriterionResult {
                 'No': idx + 1,
                 'Kriteria Penampilan': r.label,
                 'Nilai Rerata Tertinggi': r.bestScore > 0 ? r.bestScore : '-',
+                'Konsistensi (Hari Nilai Puncak)': r.maxDaysCount > 0 ? `${r.maxDaysCount} Hari Nilai Puncak` : '-',
                 'Nama Peserta Terbaik': r.candidateName,
                 'No. Peserta': r.noPeserta,
                 'Provinsi': r.provinsi,
                 'Asal Sekolah': r.sekolah,
+                'Status Seri': r.tiedCandidatesCount > 1 ? `Seri Penuh (${r.tiedCandidatesCount} Peserta)` : 'Tunggal'
             }));
             const wsPenampilan = XLSX.utils.json_to_sheet(penampilanRows);
             wsPenampilan['!cols'] = [
                 { wch: 6 },
                 { wch: 32 },
                 { wch: 22 },
-                { wch: 30 },
-                { wch: 15 },
+                { wch: 28 },
+                { wch: 35 },
+                { wch: 18 },
                 { wch: 25 },
                 { wch: 30 },
+                { wch: 22 },
             ];
             XLSX.utils.book_append_sheet(wb, wsPenampilan, 'Nilai Terbaik Penampilan (7)');
 
@@ -1824,9 +1847,16 @@ interface BestCriterionResult {
                                                 <h4 className="font-bold text-xs text-gray-900 dark:text-white leading-tight">
                                                     {item.label}
                                                 </h4>
-                                                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 shrink-0">
-                                                    ⭐ {item.bestScore > 0 ? item.bestScore.toFixed(2) : '-'}
-                                                </span>
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                    {item.maxDaysCount > 0 && (
+                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300" title={`Meraih nilai puncak sebanyak ${item.maxDaysCount} hari`}>
+                                                            🔥 {item.maxDaysCount}x Puncak
+                                                        </span>
+                                                    )}
+                                                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                                                        ⭐ {item.bestScore > 0 ? item.bestScore.toFixed(2) : '-'}
+                                                    </span>
+                                                </div>
                                             </div>
 
                                             <div className="flex items-center gap-3">
