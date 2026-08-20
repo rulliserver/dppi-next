@@ -242,6 +242,15 @@ interface BestCriterionResult {
     const [bestPenampilanList, setBestPenampilanList] = useState<BestCriterionResult[]>([]);
     const [bestLoading, setBestLoading] = useState(false);
 
+    // Matrix Criteria Modal states
+    const [showMatrixModal, setShowMatrixModal] = useState(false);
+    const [matrixModalTab, setMatrixModalTab] = useState<'sikap' | 'penampilan' | 'pbb'>('sikap');
+    const [matrixHeaders, setMatrixHeaders] = useState<string[]>([]);
+    const [sikapMatrixData, setSikapMatrixData] = useState<any[]>([]);
+    const [penampilanMatrixData, setPenampilanMatrixData] = useState<any[]>([]);
+    const [pbbMatrixData, setPbbMatrixData] = useState<any[]>([]);
+    const [matrixLoading, setMatrixLoading] = useState(false);
+
     useEffect(() => {
         const fetchCandidates = async () => {
             try {
@@ -928,6 +937,179 @@ interface BestCriterionResult {
         }
     };
 
+    // 9. Calculate Matrix per Kriteria / per Peserta
+    const calculateCriteriaMatrix = async () => {
+        const detailPromises = candidates.map(c =>
+            fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
+                .then(r => r.ok ? r.json() : null)
+                .catch(() => null)
+        );
+
+        const results: (JournalDetails | null)[] = await Promise.all(detailPromises);
+        const candidateHeaders = candidates.map(c => c.nama_lengkap || `Peserta #${c.id}`);
+
+        const sikapMatrix = sikapFields.map((f, idx) => {
+            let totalSum = 0;
+            let validCount = 0;
+
+            const candidateScores = candidates.map((cand, candIdx) => {
+                const det = results[candIdx];
+                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+                if (logs.length === 0) return '-';
+
+                const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+                if (values.length === 0) return '-';
+
+                const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                totalSum += avg;
+                validCount++;
+                return parseFloat(avg.toFixed(2));
+            });
+
+            const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
+
+            return {
+                'No.': idx + 1,
+                'Kriteria Sikap': f.label,
+                ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
+                'RATA-RATA TOTAL': overallAvg
+            };
+        });
+
+        const penampilanMatrix = penampilanFields.map((f, idx) => {
+            let totalSum = 0;
+            let validCount = 0;
+
+            const candidateScores = candidates.map((cand, candIdx) => {
+                const det = results[candIdx];
+                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+                if (logs.length === 0) return '-';
+
+                const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+                if (values.length === 0) return '-';
+
+                const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                totalSum += avg;
+                validCount++;
+                return parseFloat(avg.toFixed(2));
+            });
+
+            const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
+
+            return {
+                'No.': idx + 1,
+                'Kriteria Penampilan': f.label,
+                ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
+                'RATA-RATA TOTAL': overallAvg
+            };
+        });
+
+        const pbbMatrix = pbbSikapDiamFields.map((f, idx) => {
+            let totalSum = 0;
+            let validCount = 0;
+
+            const candidateScores = candidates.map((cand, candIdx) => {
+                const det = results[candIdx];
+                const logs: DailyPelatih[] = det?.pemusatan?.pelatih || [];
+                if (logs.length === 0) return '-';
+
+                const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+                if (values.length === 0) return '-';
+
+                const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                totalSum += avg;
+                validCount++;
+                return parseFloat(avg.toFixed(2));
+            });
+
+            const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
+
+            return {
+                'No.': idx + 1,
+                'Kriteria PBB': f.label,
+                ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
+                'RATA-RATA TOTAL': overallAvg
+            };
+        });
+
+        return { candidateHeaders, sikapMatrix, penampilanMatrix, pbbMatrix };
+    };
+
+    // 10. Open Matrix Criteria Modal
+    const openMatrixModal = async () => {
+        setShowMatrixModal(true);
+        setMatrixLoading(true);
+        try {
+            const { candidateHeaders, sikapMatrix, penampilanMatrix, pbbMatrix } = await calculateCriteriaMatrix();
+            setMatrixHeaders(candidateHeaders);
+            setSikapMatrixData(sikapMatrix);
+            setPenampilanMatrixData(penampilanMatrix);
+            setPbbMatrixData(pbbMatrix);
+        } catch (err: any) {
+            console.error(err);
+        } finally {
+            setMatrixLoading(false);
+        }
+    };
+
+    // 11. Export Excel Matrix Criteria per Peserta
+    const exportCriteriaMatrixToExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Menyiapkan Export Matriks Rata-Rata',
+                text: 'Mohon tunggu, sedang menghitung matriks nilai rata-rata per kriteria per peserta...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const { candidateHeaders, sikapMatrix, penampilanMatrix, pbbMatrix } = await calculateCriteriaMatrix();
+
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1: Sikap Matrix
+            const wsSikap = XLSX.utils.json_to_sheet(sikapMatrix);
+            wsSikap['!cols'] = [
+                { wch: 6 },
+                { wch: 32 },
+                ...candidateHeaders.map(() => ({ wch: 25 })),
+                { wch: 22 }
+            ];
+            XLSX.utils.book_append_sheet(wb, wsSikap, 'Matriks Sikap (31)');
+
+            // Sheet 2: Penampilan Matrix
+            const wsPenampilan = XLSX.utils.json_to_sheet(penampilanMatrix);
+            wsPenampilan['!cols'] = [
+                { wch: 6 },
+                { wch: 32 },
+                ...candidateHeaders.map(() => ({ wch: 25 })),
+                { wch: 22 }
+            ];
+            XLSX.utils.book_append_sheet(wb, wsPenampilan, 'Matriks Penampilan (7)');
+
+            // Sheet 3: PBB Matrix
+            const wsPbb = XLSX.utils.json_to_sheet(pbbMatrix);
+            wsPbb['!cols'] = [
+                { wch: 6 },
+                { wch: 32 },
+                ...candidateHeaders.map(() => ({ wch: 25 })),
+                { wch: 22 }
+            ];
+            XLSX.utils.book_append_sheet(wb, wsPbb, 'Matriks PBB Pelatih (25)');
+
+            downloadExcelWorkbook(wb, `Matriks_Nilai_RataRata_per_Kriteria_per_Peserta_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Export',
+                text: 'File Excel Matriks Rata-rata per Kriteria per Peserta berhasil diunduh.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (err: any) {
+            Swal.fire('Error', err.message || 'Gagal export data Excel', 'error');
+        }
+    };
+
     return (
         <div className="mb-36 relative">
             {/* Page Header */}
@@ -960,6 +1142,16 @@ interface BestCriterionResult {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
                                 Export Nilai Rata-Rata (Excel)
+                            </button>
+                            <button
+                                onClick={openMatrixModal}
+                                className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+                                title="Lihat & Download Matriks Rata-Rata per Kriteria per Peserta (Excel)"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Matriks Rerata Kriteria (Excel & View)
                             </button>
                             <button
                                 onClick={openBestModal}
@@ -1682,6 +1874,148 @@ interface BestCriterionResult {
                             <span>Dihitung otomatis dari akumulasi harian Pamong</span>
                             <button
                                 onClick={() => setShowBestModal(false)}
+                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-white rounded-xl font-bold transition"
+                            >
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Matrix Criteria x Candidates */}
+            {showMatrixModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-900 w-full max-w-7xl max-h-[92vh] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-indigo-500/10 via-blue-500/5 to-transparent">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-600/20">
+                                    📊
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                                        Matriks Nilai Rata-Rata per Kriteria per Peserta
+                                    </h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Baris = Kriteria Penilaian | Kolom = Nama Peserta Capaska
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={exportCriteriaMatrixToExcel}
+                                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-1.5"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Export Excel Matriks
+                                </button>
+                                <button onClick={() => setShowMatrixModal(false)} className="text-gray-400 hover:text-gray-600 text-lg font-bold px-2">✕</button>
+                            </div>
+                        </div>
+
+                        {/* Modal Sub Header Tabs */}
+                        <div className="px-6 border-b border-gray-200 dark:border-gray-800 flex gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+                            <button
+                                onClick={() => setMatrixModalTab('sikap')}
+                                className={`py-3 text-xs font-bold border-b-2 transition ${
+                                    matrixModalTab === 'sikap'
+                                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                31 Kriteria Sikap Pamong
+                            </button>
+                            <button
+                                onClick={() => setMatrixModalTab('penampilan')}
+                                className={`py-3 text-xs font-bold border-b-2 transition ${
+                                    matrixModalTab === 'penampilan'
+                                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                7 Kriteria Penampilan Pamong
+                            </button>
+                            <button
+                                onClick={() => setMatrixModalTab('pbb')}
+                                className={`py-3 text-xs font-bold border-b-2 transition ${
+                                    matrixModalTab === 'pbb'
+                                        ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                25 Kriteria PBB Pelatih
+                            </button>
+                        </div>
+
+                        {/* Modal Matrix Table */}
+                        <div className="p-4 overflow-auto flex-1">
+                            {matrixLoading ? (
+                                <div className="py-20 text-center text-gray-500 space-y-2">
+                                    <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                    <p className="text-xs">Menghitung matriks rata-rata per kriteria per peserta...</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm">
+                                    <table className="w-full text-left text-xs border-collapse">
+                                        <thead className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold sticky top-0 z-20 shadow-sm">
+                                            <tr>
+                                                <th className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 w-12 text-center sticky left-0 bg-gray-100 dark:bg-gray-800 z-30">No.</th>
+                                                <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[220px] sticky left-12 bg-gray-100 dark:bg-gray-800 z-30">Kriteria Penilaian</th>
+                                                {matrixHeaders.map((name, i) => (
+                                                    <th key={i} className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[160px] text-center whitespace-normal">
+                                                        {name}
+                                                    </th>
+                                                ))}
+                                                <th className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 min-w-[140px] text-center bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-extrabold">RATA-RATA TOTAL</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                                            {(matrixModalTab === 'sikap' ? sikapMatrixData : matrixModalTab === 'penampilan' ? penampilanMatrixData : pbbMatrixData).map((row, rIdx) => {
+                                                const criterionKey = matrixModalTab === 'sikap' ? 'Kriteria Sikap' : matrixModalTab === 'penampilan' ? 'Kriteria Penampilan' : 'Kriteria PBB';
+                                                return (
+                                                    <tr key={rIdx} className="hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors">
+                                                        <td className="px-3 py-2.5 text-center font-bold text-gray-500 border-r border-gray-200 dark:border-gray-800 sticky left-0 bg-white dark:bg-gray-900 z-10">{row['No.']}</td>
+                                                        <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 sticky left-12 bg-white dark:bg-gray-900 z-10 shadow-sm">{row[criterionKey]}</td>
+                                                        {matrixHeaders.map((name, cIdx) => {
+                                                            const val = row[name];
+                                                            return (
+                                                                <td key={cIdx} className="px-3 py-2.5 text-center border-r border-gray-150 dark:border-gray-800 font-semibold text-gray-800 dark:text-gray-200">
+                                                                    {typeof val === 'number' ? (
+                                                                        <span className={`px-2 py-0.5 rounded font-extrabold text-[11px] ${
+                                                                            val >= 85 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300' :
+                                                                            val >= 75 ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300' :
+                                                                            val >= 65 ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' :
+                                                                            'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
+                                                                        }`}>
+                                                                            {val.toFixed(2)}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-gray-400 text-xs">-</span>
+                                                                    )}
+                                                                </td>
+                                                            );
+                                                        })}
+                                                        <td className="px-4 py-2.5 text-center font-extrabold text-indigo-700 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-950/30 text-xs">
+                                                            {row['RATA-RATA TOTAL']}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-between items-center text-xs text-gray-500">
+                            <span>Dihitung dari seluruh jurnal harian Pamong & Pelatih</span>
+                            <button
+                                onClick={() => setShowMatrixModal(false)}
                                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-white rounded-xl font-bold transition"
                             >
                                 Tutup
