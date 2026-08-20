@@ -237,6 +237,7 @@ interface Top5CriterionResult {
     category: 'sikap' | 'penampilan';
     topPutra: TopCandidate[];
     topPutri: TopCandidate[];
+    topSemua: TopCandidate[];
 }
 
     // Detail modal states
@@ -246,7 +247,7 @@ interface Top5CriterionResult {
     // Top 5 Best Performer Modal states
     const [showBestModal, setShowBestModal] = useState(false);
     const [bestModalTab, setBestModalTab] = useState<'sikap' | 'penampilan'>('sikap');
-    const [bestGenderFilter, setBestGenderFilter] = useState<'L' | 'P'>('L'); // 'L' = Putra, 'P' = Putri
+    const [bestGenderFilter, setBestGenderFilter] = useState<'L' | 'P' | 'ALL'>('ALL'); // 'L' = Putra, 'P' = Putri, 'ALL' = Semua
     const [top5SikapList, setTop5SikapList] = useState<Top5CriterionResult[]>([]);
     const [top5PenampilanList, setTop5PenampilanList] = useState<Top5CriterionResult[]>([]);
     const [bestLoading, setBestLoading] = useState(false);
@@ -802,14 +803,16 @@ interface Top5CriterionResult {
 
         const computeTop5ForFields = (fields: typeof sikapFields, category: 'sikap' | 'penampilan'): Top5CriterionResult[] => {
             return fields.map(f => {
-                const getTop5ForGender = (genderFilter: 'L' | 'P'): TopCandidate[] => {
+                const getTop5ForGender = (genderFilter: 'L' | 'P' | 'ALL'): TopCandidate[] => {
                     const candStats = candidates
                         .map((cand, idx) => {
-                            const isMatch = genderFilter === 'L'
-                                ? (cand.jk === 'L' || cand.jk?.toLowerCase() === 'putra')
-                                : (cand.jk === 'P' || cand.jk?.toLowerCase() === 'putri');
-
-                            if (!isMatch) return null;
+                            if (genderFilter === 'L') {
+                                const isPutra = cand.jk === 'L' || cand.jk?.toLowerCase() === 'putra' || cand.jk?.toLowerCase().includes('laki');
+                                if (!isPutra) return null;
+                            } else if (genderFilter === 'P') {
+                                const isPutri = cand.jk === 'P' || cand.jk?.toLowerCase() === 'putri' || cand.jk?.toLowerCase().includes('perempuan');
+                                if (!isPutri) return null;
+                            }
 
                             const det = results[idx];
                             const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
@@ -856,7 +859,8 @@ interface Top5CriterionResult {
                     label: f.label,
                     category,
                     topPutra: getTop5ForGender('L'),
-                    topPutri: getTop5ForGender('P')
+                    topPutri: getTop5ForGender('P'),
+                    topSemua: getTop5ForGender('ALL')
                 };
             });
         };
@@ -896,7 +900,7 @@ interface Top5CriterionResult {
 
             const wb = XLSX.utils.book_new();
 
-            const buildExcelRows = (results: Top5CriterionResult[], genderKey: 'topPutra' | 'topPutri') => {
+            const buildExcelRows = (results: Top5CriterionResult[], genderKey: 'topPutra' | 'topPutri' | 'topSemua') => {
                 const rows: any[] = [];
                 results.forEach((item, fIdx) => {
                     const topList = item[genderKey];
@@ -977,7 +981,7 @@ interface Top5CriterionResult {
         }
     };
 
-    // 9. Calculate Matrix per Kriteria / per Peserta
+    // 9. Calculate Matrix per Candidate (Rows = Candidates, Columns = Criteria Headers)
     const calculateCriteriaMatrix = async () => {
         const detailPromises = candidates.map(c =>
             fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
@@ -986,90 +990,130 @@ interface Top5CriterionResult {
         );
 
         const results: (JournalDetails | null)[] = await Promise.all(detailPromises);
-        const candidateHeaders = candidates.map(c => c.nama_lengkap || `Peserta #${c.id}`);
 
-        const sikapMatrix = sikapFields.map((f, idx) => {
+        const sikapCriteriaHeaders = sikapFields.map(f => f.label);
+        const penampilanCriteriaHeaders = penampilanFields.map(f => f.label);
+        const pbbCriteriaHeaders = pbbSikapDiamFields.map(f => f.label);
+
+        // Sikap Matrix (Rows = Candidates)
+        const sikapMatrix = candidates.map((cand, idx) => {
+            const det = results[idx];
+            const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+
             let totalSum = 0;
             let validCount = 0;
 
-            const candidateScores = candidates.map((cand, candIdx) => {
-                const det = results[candIdx];
-                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
-                if (logs.length === 0) return '-';
-
+            const scoresObj: Record<string, string | number> = {};
+            sikapFields.forEach(f => {
+                if (logs.length === 0) {
+                    scoresObj[f.label] = '-';
+                    return;
+                }
                 const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-                if (values.length === 0) return '-';
-
+                if (values.length === 0) {
+                    scoresObj[f.label] = '-';
+                    return;
+                }
                 const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
                 totalSum += avg;
                 validCount++;
-                return parseFloat(avg.toFixed(2));
+                scoresObj[f.label] = parseFloat(avg.toFixed(2));
             });
 
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
             return {
-                'Kriteria Sikap': f.label,
-                ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
+                'No.': idx + 1,
+                'Nama Peserta': cand.nama_lengkap || `Peserta #${cand.id}`,
+                'No. Peserta': cand.no_peserta || '-',
+                'Provinsi': cand.provinsi || '-',
+                ...scoresObj,
                 'RATA-RATA TOTAL': overallAvg
             };
         });
 
-        const penampilanMatrix = penampilanFields.map((f) => {
+        // Penampilan Matrix (Rows = Candidates)
+        const penampilanMatrix = candidates.map((cand, idx) => {
+            const det = results[idx];
+            const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+
             let totalSum = 0;
             let validCount = 0;
 
-            const candidateScores = candidates.map((cand, candIdx) => {
-                const det = results[candIdx];
-                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
-                if (logs.length === 0) return '-';
-
+            const scoresObj: Record<string, string | number> = {};
+            penampilanFields.forEach(f => {
+                if (logs.length === 0) {
+                    scoresObj[f.label] = '-';
+                    return;
+                }
                 const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-                if (values.length === 0) return '-';
-
+                if (values.length === 0) {
+                    scoresObj[f.label] = '-';
+                    return;
+                }
                 const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
                 totalSum += avg;
                 validCount++;
-                return parseFloat(avg.toFixed(2));
+                scoresObj[f.label] = parseFloat(avg.toFixed(2));
             });
 
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
             return {
-                'Kriteria Penampilan': f.label,
-                ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
+                'No.': idx + 1,
+                'Nama Peserta': cand.nama_lengkap || `Peserta #${cand.id}`,
+                'No. Peserta': cand.no_peserta || '-',
+                'Provinsi': cand.provinsi || '-',
+                ...scoresObj,
                 'RATA-RATA TOTAL': overallAvg
             };
         });
 
-        const pbbMatrix = pbbSikapDiamFields.map((f) => {
+        // PBB Matrix (Rows = Candidates)
+        const pbbMatrix = candidates.map((cand, idx) => {
+            const det = results[idx];
+            const logs: DailyPelatih[] = det?.pemusatan?.pelatih || [];
+
             let totalSum = 0;
             let validCount = 0;
 
-            const candidateScores = candidates.map((cand, candIdx) => {
-                const det = results[candIdx];
-                const logs: DailyPelatih[] = det?.pemusatan?.pelatih || [];
-                if (logs.length === 0) return '-';
-
+            const scoresObj: Record<string, string | number> = {};
+            pbbSikapDiamFields.forEach(f => {
+                if (logs.length === 0) {
+                    scoresObj[f.label] = '-';
+                    return;
+                }
                 const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-                if (values.length === 0) return '-';
-
+                if (values.length === 0) {
+                    scoresObj[f.label] = '-';
+                    return;
+                }
                 const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
                 totalSum += avg;
                 validCount++;
-                return parseFloat(avg.toFixed(2));
+                scoresObj[f.label] = parseFloat(avg.toFixed(2));
             });
 
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
             return {
-                'Kriteria PBB': f.label,
-                ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
+                'No.': idx + 1,
+                'Nama Peserta': cand.nama_lengkap || `Peserta #${cand.id}`,
+                'No. Peserta': cand.no_peserta || '-',
+                'Provinsi': cand.provinsi || '-',
+                ...scoresObj,
                 'RATA-RATA TOTAL': overallAvg
             };
         });
 
-        return { candidateHeaders, sikapMatrix, penampilanMatrix, pbbMatrix };
+        return {
+            sikapCriteriaHeaders,
+            penampilanCriteriaHeaders,
+            pbbCriteriaHeaders,
+            sikapMatrix,
+            penampilanMatrix,
+            pbbMatrix
+        };
     };
 
     // 10. Open Matrix Criteria Modal
@@ -1077,8 +1121,8 @@ interface Top5CriterionResult {
         setShowMatrixModal(true);
         setMatrixLoading(true);
         try {
-            const { candidateHeaders, sikapMatrix, penampilanMatrix, pbbMatrix } = await calculateCriteriaMatrix();
-            setMatrixHeaders(candidateHeaders);
+            const { sikapCriteriaHeaders, penampilanCriteriaHeaders, pbbCriteriaHeaders, sikapMatrix, penampilanMatrix, pbbMatrix } = await calculateCriteriaMatrix();
+            setMatrixHeaders(sikapCriteriaHeaders);
             setSikapMatrixData(sikapMatrix);
             setPenampilanMatrixData(penampilanMatrix);
             setPbbMatrixData(pbbMatrix);
@@ -1099,35 +1143,20 @@ interface Top5CriterionResult {
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            const { candidateHeaders, sikapMatrix, penampilanMatrix, pbbMatrix } = await calculateCriteriaMatrix();
+            const { sikapMatrix, penampilanMatrix, pbbMatrix } = await calculateCriteriaMatrix();
 
             const wb = XLSX.utils.book_new();
 
             // Sheet 1: Sikap Matrix
             const wsSikap = XLSX.utils.json_to_sheet(sikapMatrix);
-            wsSikap['!cols'] = [
-                { wch: 32 },
-                ...candidateHeaders.map(() => ({ wch: 25 })),
-                { wch: 22 }
-            ];
             XLSX.utils.book_append_sheet(wb, wsSikap, 'Matriks Sikap (31)');
 
             // Sheet 2: Penampilan Matrix
             const wsPenampilan = XLSX.utils.json_to_sheet(penampilanMatrix);
-            wsPenampilan['!cols'] = [
-                { wch: 32 },
-                ...candidateHeaders.map(() => ({ wch: 25 })),
-                { wch: 22 }
-            ];
             XLSX.utils.book_append_sheet(wb, wsPenampilan, 'Matriks Penampilan (7)');
 
             // Sheet 3: PBB Matrix
             const wsPbb = XLSX.utils.json_to_sheet(pbbMatrix);
-            wsPbb['!cols'] = [
-                { wch: 32 },
-                ...candidateHeaders.map(() => ({ wch: 25 })),
-                { wch: 22 }
-            ];
             XLSX.utils.book_append_sheet(wb, wsPbb, 'Matriks PBB Pelatih (25)');
 
             downloadExcelWorkbook(wb, `Matriks_Nilai_RataRata_per_Kriteria_per_Peserta_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -1830,8 +1859,18 @@ interface Top5CriterionResult {
                             {/* Gender Toggle */}
                             <div className="flex items-center p-1 bg-gray-200/80 dark:bg-gray-800 rounded-xl">
                                 <button
+                                    onClick={() => setBestGenderFilter('ALL')}
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                        bestGenderFilter === 'ALL'
+                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <span>🌐</span> SEMUA
+                                </button>
+                                <button
                                     onClick={() => setBestGenderFilter('L')}
-                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                                         bestGenderFilter === 'L'
                                             ? 'bg-blue-600 text-white shadow-sm'
                                             : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
@@ -1841,7 +1880,7 @@ interface Top5CriterionResult {
                                 </button>
                                 <button
                                     onClick={() => setBestGenderFilter('P')}
-                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                                         bestGenderFilter === 'P'
                                             ? 'bg-pink-600 text-white shadow-sm'
                                             : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
@@ -1886,15 +1925,15 @@ interface Top5CriterionResult {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {(bestModalTab === 'sikap' ? top5SikapList : top5PenampilanList).map((item) => {
-                                        const topList = bestGenderFilter === 'L' ? item.topPutra : item.topPutri;
+                                        const topList = bestGenderFilter === 'L' ? item.topPutra : bestGenderFilter === 'P' ? item.topPutri : item.topSemua;
                                         return (
                                             <div key={item.key} className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/60 shadow-sm flex flex-col justify-between space-y-3 hover:border-amber-400 dark:hover:border-amber-500 transition">
                                                 <div className="border-b border-gray-100 dark:border-gray-700/60 pb-2 flex justify-between items-center">
                                                     <h4 className="font-bold text-xs text-gray-900 dark:text-white leading-tight">
                                                         {item.label}
                                                     </h4>
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${bestGenderFilter === 'L' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' : 'bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300'}`}>
-                                                        {bestGenderFilter === 'L' ? 'PUTRA' : 'PUTRI'}
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${bestGenderFilter === 'L' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' : bestGenderFilter === 'P' ? 'bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'}`}>
+                                                        {bestGenderFilter === 'L' ? 'PUTRA' : bestGenderFilter === 'P' ? 'PUTRI' : 'SEMUA'}
                                                     </span>
                                                 </div>
 
@@ -1964,10 +2003,10 @@ interface Top5CriterionResult {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                                        Matriks Nilai Rata-Rata per Kriteria per Peserta
+                                        Matriks Nilai Rata-Rata per Peserta per Kriteria
                                     </h3>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Baris = Kriteria Penilaian | Kolom = Nama Peserta Capaska
+                                        Baris = Peserta Capaska | Kolom = Kriteria Penilaian (Ketaqwaan, Niat / Kemauan, Keberanian...)
                                     </p>
                                 </div>
                             </div>
@@ -2032,7 +2071,9 @@ interface Top5CriterionResult {
                                     <table className="w-full text-left text-xs border-collapse">
                                         <thead className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold sticky top-0 z-20 shadow-sm">
                                             <tr>
-                                                <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[220px] sticky left-0 bg-gray-100 dark:bg-gray-800 z-30 shadow-sm">Kriteria Penilaian</th>
+                                                <th className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 w-12 text-center sticky left-0 bg-gray-100 dark:bg-gray-800 z-30">No.</th>
+                                                <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[200px] sticky left-12 bg-gray-100 dark:bg-gray-800 z-30 shadow-sm">Nama Peserta</th>
+                                                <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[150px]">Provinsi</th>
                                                 {matrixHeaders.map((name, i) => (
                                                     <th key={i} className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[160px] text-center whitespace-normal">
                                                         {name}
@@ -2043,10 +2084,11 @@ interface Top5CriterionResult {
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900">
                                             {(matrixModalTab === 'sikap' ? sikapMatrixData : matrixModalTab === 'penampilan' ? penampilanMatrixData : pbbMatrixData).map((row, rIdx) => {
-                                                const criterionKey = matrixModalTab === 'sikap' ? 'Kriteria Sikap' : matrixModalTab === 'penampilan' ? 'Kriteria Penampilan' : 'Kriteria PBB';
                                                 return (
                                                     <tr key={rIdx} className="hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors">
-                                                        <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 sticky left-0 bg-white dark:bg-gray-900 z-10 shadow-sm">{row[criterionKey]}</td>
+                                                        <td className="px-3 py-2.5 text-center font-bold text-gray-500 border-r border-gray-200 dark:border-gray-800 sticky left-0 bg-white dark:bg-gray-900 z-10">{row['No.']}</td>
+                                                        <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 sticky left-12 bg-white dark:bg-gray-900 z-10 shadow-sm whitespace-nowrap">{row['Nama Peserta']}</td>
+                                                        <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-800 whitespace-nowrap">{row['Provinsi']}</td>
                                                         {matrixHeaders.map((name, cIdx) => {
                                                             const val = row[name];
                                                             return (
