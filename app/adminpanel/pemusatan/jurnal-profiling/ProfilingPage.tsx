@@ -126,84 +126,84 @@ interface JournalDetails {
 
 // Field definitions
 const sikapFields = [
-    { key: 'nilai_ketaqwaan', label: '1. Ketaqwaan' },
-    { key: 'nilai_niat_kemauan', label: '2. Niat / Kemauan' },
-    { key: 'nilai_keberanian', label: '3. Keberanian' },
-    { key: 'nilai_komunikasi', label: '4. Komunikasi' },
-    { key: 'nilai_keterbukaan', label: '5. Keterbukaan' },
-    { key: 'nilai_ketelitian', label: '6. Ketelitian' },
-    { key: 'nilai_kesadaran', label: '7. Kesadaran' },
-    { key: 'nilai_toleransi', label: '8. Toleransi' },
-    { key: 'nilai_keikhlasan', label: '9. Keikhlasan' },
-    { key: 'nilai_mempercayai', label: '10. Mempercayai' },
-    { key: 'nilai_jiwa_korsa', label: '11. Jiwa Korsa' },
-    { key: 'nilai_kekeluargaan', label: '12. Kekeluargaan' },
-    { key: 'nilai_persatuan_kesatuan', label: '13. Persatuan Kesatuan' },
-    { key: 'nilai_ketahanan', label: '14. Ketahanan' },
-    { key: 'nilai_kekompakan_keseragaman', label: '15. Kekompakan / Keseragaman' },
-    { key: 'nilai_ketertiban', label: '16. Ketertiban' },
-    { key: 'nilai_kesopanan', label: '17. Kesopanan' },
-    { key: 'nilai_kesigapan', label: '18. Kesigapan' },
-    { key: 'nilai_kewajaran', label: '19. Kewajaran' },
-    { key: 'nilai_ketanggapan', label: '20. Ketanggapan' },
-    { key: 'nilai_ketenangan', label: '21. Ketenangan' },
-    { key: 'nilai_menyimak', label: '22. Menyimak' },
-    { key: 'nilai_kebiasaan', label: '23. Kebiasaan' },
-    { key: 'nilai_mengelola_stres', label: '24. Mengelola Stres' },
-    { key: 'nilai_menghargai_waktu', label: '25. Menghargai Waktu' },
-    { key: 'nilai_berbicara', label: '26. Berbicara' },
-    { key: 'nilai_berjalan', label: '27. Berjalan' },
-    { key: 'nilai_makan_minum', label: '28. Makan / Minum' },
-    { key: 'nilai_kehadiran', label: '29. Kehadiran' },
-    { key: 'nilai_hubungan_interpersonal', label: '30. Hubungan Inter Personal' },
-    { key: 'nilai_ketaatan', label: '31. Ketaatan' },
+    { key: 'nilai_ketaqwaan', label: 'Ketaqwaan' },
+    { key: 'nilai_niat_kemauan', label: 'Niat / Kemauan' },
+    { key: 'nilai_keberanian', label: 'Keberanian' },
+    { key: 'nilai_komunikasi', label: 'Komunikasi' },
+    { key: 'nilai_keterbukaan', label: 'Keterbukaan' },
+    { key: 'nilai_ketelitian', label: 'Ketelitian' },
+    { key: 'nilai_kesadaran', label: 'Kesadaran' },
+    { key: 'nilai_toleransi', label: 'Toleransi' },
+    { key: 'nilai_keikhlasan', label: 'Keikhlasan' },
+    { key: 'nilai_mempercayai', label: 'Mempercayai' },
+    { key: 'nilai_jiwa_korsa', label: 'Jiwa Korsa' },
+    { key: 'nilai_kekeluargaan', label: 'Kekeluargaan' },
+    { key: 'nilai_persatuan_kesatuan', label: 'Persatuan Kesatuan' },
+    { key: 'nilai_ketahanan', label: 'Ketahanan' },
+    { key: 'nilai_kekompakan_keseragaman', label: 'Kekompakan / Keseragaman' },
+    { key: 'nilai_ketertiban', label: 'Ketertiban' },
+    { key: 'nilai_kesopanan', label: 'Kesopanan' },
+    { key: 'nilai_kesigapan', label: 'Kesigapan' },
+    { key: 'nilai_kewajaran', label: 'Kewajaran' },
+    { key: 'nilai_ketanggapan', label: 'Ketanggapan' },
+    { key: 'nilai_ketenangan', label: 'Ketenangan' },
+    { key: 'nilai_menyimak', label: 'Menyimak' },
+    { key: 'nilai_kebiasaan', label: 'Kebiasaan' },
+    { key: 'nilai_mengelola_stres', label: 'Mengelola Stres' },
+    { key: 'nilai_menghargai_waktu', label: 'Menghargai Waktu' },
+    { key: 'nilai_berbicara', label: 'Berbicara' },
+    { key: 'nilai_berjalan', label: 'Berjalan' },
+    { key: 'nilai_makan_minum', label: 'Makan / Minum' },
+    { key: 'nilai_kehadiran', label: 'Kehadiran' },
+    { key: 'nilai_hubungan_interpersonal', label: 'Hubungan Inter Personal' },
+    { key: 'nilai_ketaatan', label: 'Ketaatan' },
 ];
 
 const penampilanFields = [
-    { key: 'nilai_istirahat_malam', label: '1. Istirahat Malam' },
-    { key: 'nilai_keindahan', label: '2. Keindahan' },
-    { key: 'nilai_kerapihan', label: '3. Kerapihan' },
-    { key: 'nilai_kebersihan', label: '4. Kebersihan' },
-    { key: 'nilai_berpakaian', label: '5. Berpakaian' },
-    { key: 'nilai_penampilan_rambut', label: '6. Penampilan Rambut' },
-    { key: 'nilai_bersih_rapih_wangi', label: '7. Bersih, Rapih, Wangi' },
+    { key: 'nilai_istirahat_malam', label: 'Istirahat Malam' },
+    { key: 'nilai_keindahan', label: 'Keindahan' },
+    { key: 'nilai_kerapihan', label: 'Kerapihan' },
+    { key: 'nilai_kebersihan', label: 'Kebersihan' },
+    { key: 'nilai_berpakaian', label: 'Berpakaian' },
+    { key: 'nilai_penampilan_rambut', label: 'Penampilan Rambut' },
+    { key: 'nilai_bersih_rapih_wangi', label: 'Bersih, Rapih, Wangi' },
 ];
 
 const pbbSikapDiamFields = [
-    { key: 'nilai_aba_aba', label: '1. Aba-Aba' },
-    { key: 'nilai_berhimpun', label: '2. Berhimpun' },
-    { key: 'nilai_berkumpul', label: '3. Berkumpul' },
-    { key: 'nilai_keluar_masuk_barisan', label: '4. Keluar Masuk Barisan' },
-    { key: 'nilai_hormat', label: '5. Hormat' },
-    { key: 'nilai_sikap_sempurna', label: '6. Sikap Sempurna' },
-    { key: 'nilai_istirahat', label: '7. Istirahat' },
-    { key: 'nilai_periksa_kerapihan', label: '8. Periksa Kerapihan' },
-    { key: 'nilai_berhitung', label: '9. Berhitung' },
-    { key: 'nilai_lepas_kenakan_topi', label: '10. Lepas Kenakan Topi' },
-    { key: 'nilai_bubar', label: '11. Bubar' },
-    { key: 'nilai_lencang_depan', label: '12. Lencang Depan' },
-    { key: 'nilai_lencang_kanan_kiri', label: '13. Lencang Kanan/Kiri' },
-    { key: 'nilai_setengah_lengan_lencang_kanan_kiri', label: '14. 1/2 Lengan Lencang Ka/Ki' },
-    { key: 'nilai_hadap_kanan_kiri', label: '15. Hadap Kanan/Kiri' },
-    { key: 'nilai_hadap_serong_kanan_kiri', label: '16. Hadap Serong Kanan/Kiri' },
-    { key: 'nilai_balik_kanan', label: '17. Balik Kanan' },
-    { key: 'nilai_langkah_bisa', label: '18. Langkah Bisa' },
-    { key: 'nilai_langkah_tegap', label: '19. Langkah Tegap' },
-    { key: 'nilai_sikap_awal_berlari', label: '20. Sikap Awal Berlari' },
-    { key: 'nilai_jalan_di_tempat', label: '21. Jalan Di Tempat' },
-    { key: 'nilai_4_langkah_ke_depan', label: '22. 4 Langkah Ke Depan' },
-    { key: 'nilai_4_langkah_ke_kanan', label: '23. 4 Langkah Ke Kanan' },
-    { key: 'nilai_4_langkah_ke_kiri', label: '24. 4 Langkah Ke Kiri' },
-    { key: 'nilai_4_langkah_ke_belakang', label: '25. 4 Langkah Ke Belakang' },
+    { key: 'nilai_aba_aba', label: 'Aba-Aba' },
+    { key: 'nilai_berhimpun', label: 'Berhimpun' },
+    { key: 'nilai_berkumpul', label: 'Berkumpul' },
+    { key: 'nilai_keluar_masuk_barisan', label: 'Keluar Masuk Barisan' },
+    { key: 'nilai_hormat', label: 'Hormat' },
+    { key: 'nilai_sikap_sempurna', label: 'Sikap Sempurna' },
+    { key: 'nilai_istirahat', label: 'Istirahat' },
+    { key: 'nilai_periksa_kerapihan', label: 'Periksa Kerapihan' },
+    { key: 'nilai_berhitung', label: 'Berhitung' },
+    { key: 'nilai_lepas_kenakan_topi', label: 'Lepas Kenakan Topi' },
+    { key: 'nilai_bubar', label: 'Bubar' },
+    { key: 'nilai_lencang_depan', label: 'Lencang Depan' },
+    { key: 'nilai_lencang_kanan_kiri', label: 'Lencang Kanan/Kiri' },
+    { key: 'nilai_setengah_lengan_lencang_kanan_kiri', label: '1/2 Lengan Lencang Ka/Ki' },
+    { key: 'nilai_hadap_kanan_kiri', label: 'Hadap Kanan/Kiri' },
+    { key: 'nilai_hadap_serong_kanan_kiri', label: 'Hadap Serong Kanan/Kiri' },
+    { key: 'nilai_balik_kanan', label: 'Balik Kanan' },
+    { key: 'nilai_langkah_bisa', label: 'Langkah Bisa' },
+    { key: 'nilai_langkah_tegap', label: 'Langkah Tegap' },
+    { key: 'nilai_sikap_awal_berlari', label: 'Sikap Awal Berlari' },
+    { key: 'nilai_jalan_di_tempat', label: 'Jalan Di Tempat' },
+    { key: 'nilai_4_langkah_ke_depan', label: '4 Langkah Ke Depan' },
+    { key: 'nilai_4_langkah_ke_kanan', label: '4 Langkah Ke Kanan' },
+    { key: 'nilai_4_langkah_ke_kiri', label: '4 Langkah Ke Kiri' },
+    { key: 'nilai_4_langkah_ke_belakang', label: '4 Langkah Ke Belakang' },
 ];
 
 const benderaFields = [
-    { key: 'nilai_lipat_bendera', label: '1. Lipat Bendera' },
-    { key: 'nilai_bentang_bendera', label: '2. Bentang Bendera' },
-    { key: 'nilai_10_tahap_penurunan', label: '3. 10 Tahap Penurunan' },
-    { key: 'nilai_jadi_kibra_pembentang', label: '4. Jadi Kibra;Pembentang' },
-    { key: 'nilai_jadi_kibra_pembawa', label: '5. Jadi Kibra;Pembawa' },
-    { key: 'nilai_jadi_kibra_pengerek', label: '6. Jadi Kibra;Pengerek' },
+    { key: 'nilai_lipat_bendera', label: 'Lipat Bendera' },
+    { key: 'nilai_bentang_bendera', label: 'Bentang Bendera' },
+    { key: 'nilai_10_tahap_penurunan', label: '10 Tahap Penurunan' },
+    { key: 'nilai_jadi_kibra_pembentang', label: 'Jadi Kibra;Pembentang' },
+    { key: 'nilai_jadi_kibra_pembawa', label: 'Jadi Kibra;Pembawa' },
+    { key: 'nilai_jadi_kibra_pengerek', label: 'Jadi Kibra;Pengerek' },
 ];
 
 export default function ProfilingPage() {
@@ -969,14 +969,13 @@ interface BestCriterionResult {
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
             return {
-                'No.': idx + 1,
                 'Kriteria Sikap': f.label,
                 ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
                 'RATA-RATA TOTAL': overallAvg
             };
         });
 
-        const penampilanMatrix = penampilanFields.map((f, idx) => {
+        const penampilanMatrix = penampilanFields.map((f) => {
             let totalSum = 0;
             let validCount = 0;
 
@@ -997,14 +996,13 @@ interface BestCriterionResult {
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
             return {
-                'No.': idx + 1,
                 'Kriteria Penampilan': f.label,
                 ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
                 'RATA-RATA TOTAL': overallAvg
             };
         });
 
-        const pbbMatrix = pbbSikapDiamFields.map((f, idx) => {
+        const pbbMatrix = pbbSikapDiamFields.map((f) => {
             let totalSum = 0;
             let validCount = 0;
 
@@ -1025,7 +1023,6 @@ interface BestCriterionResult {
             const overallAvg = validCount > 0 ? parseFloat((totalSum / validCount).toFixed(2)) : '-';
 
             return {
-                'No.': idx + 1,
                 'Kriteria PBB': f.label,
                 ...Object.fromEntries(candidateHeaders.map((name, i) => [name, candidateScores[i]])),
                 'RATA-RATA TOTAL': overallAvg
@@ -1069,7 +1066,6 @@ interface BestCriterionResult {
             // Sheet 1: Sikap Matrix
             const wsSikap = XLSX.utils.json_to_sheet(sikapMatrix);
             wsSikap['!cols'] = [
-                { wch: 6 },
                 { wch: 32 },
                 ...candidateHeaders.map(() => ({ wch: 25 })),
                 { wch: 22 }
@@ -1079,7 +1075,6 @@ interface BestCriterionResult {
             // Sheet 2: Penampilan Matrix
             const wsPenampilan = XLSX.utils.json_to_sheet(penampilanMatrix);
             wsPenampilan['!cols'] = [
-                { wch: 6 },
                 { wch: 32 },
                 ...candidateHeaders.map(() => ({ wch: 25 })),
                 { wch: 22 }
@@ -1089,7 +1084,6 @@ interface BestCriterionResult {
             // Sheet 3: PBB Matrix
             const wsPbb = XLSX.utils.json_to_sheet(pbbMatrix);
             wsPbb['!cols'] = [
-                { wch: 6 },
                 { wch: 32 },
                 ...candidateHeaders.map(() => ({ wch: 25 })),
                 { wch: 22 }
@@ -1963,8 +1957,7 @@ interface BestCriterionResult {
                                     <table className="w-full text-left text-xs border-collapse">
                                         <thead className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold sticky top-0 z-20 shadow-sm">
                                             <tr>
-                                                <th className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 w-12 text-center sticky left-0 bg-gray-100 dark:bg-gray-800 z-30">No.</th>
-                                                <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[220px] sticky left-12 bg-gray-100 dark:bg-gray-800 z-30">Kriteria Penilaian</th>
+                                                <th className="px-4 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[220px] sticky left-0 bg-gray-100 dark:bg-gray-800 z-30 shadow-sm">Kriteria Penilaian</th>
                                                 {matrixHeaders.map((name, i) => (
                                                     <th key={i} className="px-3 py-3 border-b border-r border-gray-200 dark:border-gray-700 min-w-[160px] text-center whitespace-normal">
                                                         {name}
@@ -1978,8 +1971,7 @@ interface BestCriterionResult {
                                                 const criterionKey = matrixModalTab === 'sikap' ? 'Kriteria Sikap' : matrixModalTab === 'penampilan' ? 'Kriteria Penampilan' : 'Kriteria PBB';
                                                 return (
                                                     <tr key={rIdx} className="hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors">
-                                                        <td className="px-3 py-2.5 text-center font-bold text-gray-500 border-r border-gray-200 dark:border-gray-800 sticky left-0 bg-white dark:bg-gray-900 z-10">{row['No.']}</td>
-                                                        <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 sticky left-12 bg-white dark:bg-gray-900 z-10 shadow-sm">{row[criterionKey]}</td>
+                                                        <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 sticky left-0 bg-white dark:bg-gray-900 z-10 shadow-sm">{row[criterionKey]}</td>
                                                         {matrixHeaders.map((name, cIdx) => {
                                                             const val = row[name];
                                                             return (
