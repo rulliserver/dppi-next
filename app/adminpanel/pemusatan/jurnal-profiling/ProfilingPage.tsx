@@ -219,29 +219,36 @@ export default function ProfilingPage() {
     const [detailLoading, setDetailLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<'pamong' | 'pelatih' | 'dokter'>('pamong');
     
-interface BestCriterionResult {
+interface TopCandidate {
+    rank: number;
+    candId: number;
+    nama_lengkap: string;
+    no_peserta: string;
+    provinsi: string;
+    asal_sekolah: string;
+    photo: string | null;
+    avgScore: number;
+    maxDaysCount: number;
+}
+
+interface Top5CriterionResult {
     key: string;
     label: string;
     category: 'sikap' | 'penampilan';
-    bestScore: number;
-    maxDaysCount: number;
-    candidateName: string;
-    noPeserta: string;
-    provinsi: string;
-    sekolah: string;
-    photo: string | null;
-    tiedCandidatesCount: number;
+    topPutra: TopCandidate[];
+    topPutri: TopCandidate[];
 }
 
     // Detail modal states
     const [selectedPamongLog, setSelectedPamongLog] = useState<DailyPamong | null>(null);
     const [selectedPelatihLog, setSelectedPelatihLog] = useState<DailyPelatih | null>(null);
 
-    // Best Performer Modal states
+    // Top 5 Best Performer Modal states
     const [showBestModal, setShowBestModal] = useState(false);
     const [bestModalTab, setBestModalTab] = useState<'sikap' | 'penampilan'>('sikap');
-    const [bestSikapList, setBestSikapList] = useState<BestCriterionResult[]>([]);
-    const [bestPenampilanList, setBestPenampilanList] = useState<BestCriterionResult[]>([]);
+    const [bestGenderFilter, setBestGenderFilter] = useState<'L' | 'P'>('L'); // 'L' = Putra, 'P' = Putri
+    const [top5SikapList, setTop5SikapList] = useState<Top5CriterionResult[]>([]);
+    const [top5PenampilanList, setTop5PenampilanList] = useState<Top5CriterionResult[]>([]);
     const [bestLoading, setBestLoading] = useState(false);
 
     // Matrix Criteria Modal states
@@ -775,7 +782,7 @@ interface BestCriterionResult {
         }
     };
 
-    // 6. Calculate Best Performers for each Sikap (31) and Penampilan (7) criterion using Option 2 (Consistency & Co-Winners)
+    // 6. Calculate Top 5 Best Performers for each Sikap (31) and Penampilan (7) criterion separated by Putra & Putri
     const calculateBestCriteria = async () => {
         const detailPromises = candidates.map(c =>
             fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
@@ -793,74 +800,69 @@ interface BestCriterionResult {
             return sumTotal / logs.length;
         });
 
-        const computeBestForFields = (fields: typeof sikapFields, category: 'sikap' | 'penampilan'): BestCriterionResult[] => {
+        const computeTop5ForFields = (fields: typeof sikapFields, category: 'sikap' | 'penampilan'): Top5CriterionResult[] => {
             return fields.map(f => {
-                const candStats = candidates.map((cand, idx) => {
-                    const det = results[idx];
-                    const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
-                    if (logs.length === 0) return { cand, avg: -1, maxScoreDays: 0, overall: 0 };
+                const getTop5ForGender = (genderFilter: 'L' | 'P'): TopCandidate[] => {
+                    const candStats = candidates
+                        .map((cand, idx) => {
+                            const isMatch = genderFilter === 'L'
+                                ? (cand.jk === 'L' || cand.jk?.toLowerCase() === 'putra')
+                                : (cand.jk === 'P' || cand.jk?.toLowerCase() === 'putri');
 
-                    const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
-                    if (values.length === 0) return { cand, avg: -1, maxScoreDays: 0, overall: 0 };
+                            if (!isMatch) return null;
 
-                    const maxInLogs = Math.max(...values);
-                    const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
-                    const maxScoreDays = values.filter(v => v === maxInLogs && v >= 90).length;
+                            const det = results[idx];
+                            const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+                            if (logs.length === 0) return null;
 
-                    return {
-                        cand,
-                        avg: parseFloat(avg.toFixed(2)),
-                        maxScoreDays,
-                        overall: overallPamongAvgs[idx]
-                    };
-                }).filter(s => s.avg >= 0);
+                            const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+                            if (values.length === 0) return null;
 
-                if (candStats.length === 0) {
-                    return {
-                        key: f.key,
-                        label: f.label,
-                        category,
-                        bestScore: 0,
-                        maxDaysCount: 0,
-                        candidateName: 'Belum Ada Data',
-                        noPeserta: '-',
-                        provinsi: '-',
-                        sekolah: '-',
-                        photo: null,
-                        tiedCandidatesCount: 0
-                    };
-                }
+                            const maxInLogs = Math.max(...values);
+                            const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                            const maxScoreDays = values.filter(v => v === maxInLogs && v >= 90).length;
 
-                const highestAvg = Math.max(...candStats.map(s => s.avg));
-                const topAvgCands = candStats.filter(s => s.avg === highestAvg);
+                            return {
+                                cand,
+                                avg: parseFloat(avg.toFixed(2)),
+                                maxScoreDays,
+                                overall: overallPamongAvgs[idx]
+                            };
+                        })
+                        .filter((s): s is NonNullable<typeof s> => s !== null && s.avg >= 0);
 
-                const highestMaxDays = Math.max(...topAvgCands.map(s => s.maxScoreDays));
-                const topMaxDaysCands = topAvgCands.filter(s => s.maxScoreDays === highestMaxDays);
+                    // Sort descending: avg -> maxScoreDays -> overall
+                    candStats.sort((a, b) => {
+                        if (b.avg !== a.avg) return b.avg - a.avg;
+                        if (b.maxScoreDays !== a.maxScoreDays) return b.maxScoreDays - a.maxScoreDays;
+                        return b.overall - a.overall;
+                    });
 
-                const highestOverall = Math.max(...topMaxDaysCands.map(s => s.overall));
-                const winners = topMaxDaysCands.filter(s => s.overall === highestOverall);
-
-                const firstWinner = winners[0];
-                const winnerNames = winners.map(w => w.cand.nama_lengkap || '-').join(', ');
+                    return candStats.slice(0, 5).map((item, i) => ({
+                        rank: i + 1,
+                        candId: item.cand.id,
+                        nama_lengkap: item.cand.nama_lengkap || 'Peserta',
+                        no_peserta: item.cand.no_peserta || '-',
+                        provinsi: item.cand.provinsi || '-',
+                        asal_sekolah: item.cand.asal_sekolah || '-',
+                        photo: item.cand.photo || null,
+                        avgScore: item.avg,
+                        maxDaysCount: item.maxScoreDays
+                    }));
+                };
 
                 return {
                     key: f.key,
                     label: f.label,
                     category,
-                    bestScore: highestAvg,
-                    maxDaysCount: highestMaxDays,
-                    candidateName: winnerNames,
-                    noPeserta: winners.length === 1 ? firstWinner.cand.no_peserta || '-' : `${winners.length} Peserta Seri`,
-                    provinsi: winners.length === 1 ? firstWinner.cand.provinsi || '-' : 'Multi Provinsi',
-                    sekolah: winners.length === 1 ? firstWinner.cand.asal_sekolah || '-' : '-',
-                    photo: winners.length === 1 ? firstWinner.cand.photo || null : null,
-                    tiedCandidatesCount: winners.length
+                    topPutra: getTop5ForGender('L'),
+                    topPutri: getTop5ForGender('P')
                 };
             });
         };
 
-        const sikapResults = computeBestForFields(sikapFields, 'sikap');
-        const penampilanResults = computeBestForFields(penampilanFields, 'penampilan');
+        const sikapResults = computeTop5ForFields(sikapFields, 'sikap');
+        const penampilanResults = computeTop5ForFields(penampilanFields, 'penampilan');
 
         return { sikapResults, penampilanResults };
     };
@@ -871,8 +873,8 @@ interface BestCriterionResult {
         setBestLoading(true);
         try {
             const { sikapResults, penampilanResults } = await calculateBestCriteria();
-            setBestSikapList(sikapResults);
-            setBestPenampilanList(penampilanResults);
+            setTop5SikapList(sikapResults);
+            setTop5PenampilanList(penampilanResults);
         } catch (err: any) {
             console.error(err);
         } finally {
@@ -880,12 +882,12 @@ interface BestCriterionResult {
         }
     };
 
-    // 8. Export Excel Best Criteria
+    // 8. Export Excel Top 5 Best Criteria (Putra & Putri)
     const exportBestCriteriaToExcel = async () => {
         try {
             Swal.fire({
-                title: 'Menyiapkan Export Nilai Terbaik',
-                text: 'Mohon tunggu, sedang menghitung peserta terbaik di setiap kriteria...',
+                title: 'Menyiapkan Export Top 5 per Kriteria',
+                text: 'Mohon tunggu, sedang menghitung 5 peserta terbaik per kriteria (Putra & Putri)...',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -894,69 +896,84 @@ interface BestCriterionResult {
 
             const wb = XLSX.utils.book_new();
 
-            // Sheet 1: Nilai Terbaik Sikap (31)
-            const sikapRows = sikapResults.map((r, idx) => ({
-                'No': idx + 1,
-                'Kriteria Sikap': r.label,
-                'Nilai Rerata Tertinggi': r.bestScore > 0 ? r.bestScore : '-',
-                'Konsistensi (Hari Nilai Puncak)': r.maxDaysCount > 0 ? `${r.maxDaysCount} Hari Nilai Puncak` : '-',
-                'Nama Peserta Terbaik': r.candidateName,
-                'No. Peserta': r.noPeserta,
-                'Provinsi': r.provinsi,
-                'Asal Sekolah': r.sekolah,
-                'Status Seri': r.tiedCandidatesCount > 1 ? `Seri Penuh (${r.tiedCandidatesCount} Peserta)` : 'Tunggal'
-            }));
-            const wsSikap = XLSX.utils.json_to_sheet(sikapRows);
-            wsSikap['!cols'] = [
-                { wch: 6 },
+            const buildExcelRows = (results: Top5CriterionResult[], genderKey: 'topPutra' | 'topPutri') => {
+                const rows: any[] = [];
+                results.forEach((item, fIdx) => {
+                    const topList = item[genderKey];
+                    if (topList.length === 0) {
+                        rows.push({
+                            'No. Kriteria': fIdx + 1,
+                            'Kriteria': item.label,
+                            'Peringkat': '-',
+                            'Nilai Rerata': '-',
+                            'Konsistensi Puncak': '-',
+                            'Nama Peserta': 'Belum Ada Data',
+                            'No. Peserta': '-',
+                            'Provinsi': '-',
+                            'Asal Sekolah': '-'
+                        });
+                    } else {
+                        topList.forEach((cand) => {
+                            rows.push({
+                                'No. Kriteria': fIdx + 1,
+                                'Kriteria': item.label,
+                                'Peringkat': `Rank ${cand.rank}`,
+                                'Nilai Rerata': cand.avgScore,
+                                'Konsistensi Puncak': cand.maxDaysCount > 0 ? `${cand.maxDaysCount} Hari` : '-',
+                                'Nama Peserta': cand.nama_lengkap,
+                                'No. Peserta': cand.no_peserta,
+                                'Provinsi': cand.provinsi,
+                                'Asal Sekolah': cand.asal_sekolah
+                            });
+                        });
+                    }
+                });
+                return rows;
+            };
+
+            const colsDef = [
+                { wch: 12 },
                 { wch: 32 },
+                { wch: 12 },
+                { wch: 15 },
                 { wch: 22 },
-                { wch: 28 },
-                { wch: 35 },
+                { wch: 32 },
                 { wch: 18 },
                 { wch: 25 },
-                { wch: 30 },
-                { wch: 22 },
+                { wch: 30 }
             ];
-            XLSX.utils.book_append_sheet(wb, wsSikap, 'Nilai Terbaik Sikap (31)');
 
-            // Sheet 2: Nilai Terbaik Penampilan (7)
-            const penampilanRows = penampilanResults.map((r, idx) => ({
-                'No': idx + 1,
-                'Kriteria Penampilan': r.label,
-                'Nilai Rerata Tertinggi': r.bestScore > 0 ? r.bestScore : '-',
-                'Konsistensi (Hari Nilai Puncak)': r.maxDaysCount > 0 ? `${r.maxDaysCount} Hari Nilai Puncak` : '-',
-                'Nama Peserta Terbaik': r.candidateName,
-                'No. Peserta': r.noPeserta,
-                'Provinsi': r.provinsi,
-                'Asal Sekolah': r.sekolah,
-                'Status Seri': r.tiedCandidatesCount > 1 ? `Seri Penuh (${r.tiedCandidatesCount} Peserta)` : 'Tunggal'
-            }));
-            const wsPenampilan = XLSX.utils.json_to_sheet(penampilanRows);
-            wsPenampilan['!cols'] = [
-                { wch: 6 },
-                { wch: 32 },
-                { wch: 22 },
-                { wch: 28 },
-                { wch: 35 },
-                { wch: 18 },
-                { wch: 25 },
-                { wch: 30 },
-                { wch: 22 },
-            ];
-            XLSX.utils.book_append_sheet(wb, wsPenampilan, 'Nilai Terbaik Penampilan (7)');
+            // 1. Sheet Top 5 Sikap Putra
+            const wsSikapPutra = XLSX.utils.json_to_sheet(buildExcelRows(sikapResults, 'topPutra'));
+            wsSikapPutra['!cols'] = colsDef;
+            XLSX.utils.book_append_sheet(wb, wsSikapPutra, 'Top 5 Sikap (PUTRA)');
 
-            downloadExcelWorkbook(wb, `Rekap_Nilai_Terbaik_Kriteria_Sikap_Penampilan_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
+            // 2. Sheet Top 5 Sikap Putri
+            const wsSikapPutri = XLSX.utils.json_to_sheet(buildExcelRows(sikapResults, 'topPutri'));
+            wsSikapPutri['!cols'] = colsDef;
+            XLSX.utils.book_append_sheet(wb, wsSikapPutri, 'Top 5 Sikap (PUTRI)');
+
+            // 3. Sheet Top 5 Penampilan Putra
+            const wsPenampilanPutra = XLSX.utils.json_to_sheet(buildExcelRows(penampilanResults, 'topPutra'));
+            wsPenampilanPutra['!cols'] = colsDef;
+            XLSX.utils.book_append_sheet(wb, wsPenampilanPutra, 'Top 5 Penampilan (PUTRA)');
+
+            // 4. Sheet Top 5 Penampilan Putri
+            const wsPenampilanPutri = XLSX.utils.json_to_sheet(buildExcelRows(penampilanResults, 'topPutri'));
+            wsPenampilanPutri['!cols'] = colsDef;
+            XLSX.utils.book_append_sheet(wb, wsPenampilanPutri, 'Top 5 Penampilan (PUTRI)');
+
+            downloadExcelWorkbook(wb, `Rekap_Top5_Peserta_Terbaik_per_Kriteria_Putra_Putri_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
 
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil Export',
-                text: 'File Excel Nilai Terbaik Kriteria berhasil diunduh.',
+                text: 'File Excel Top 5 Peserta Terbaik per Kriteria (Putra & Putri) berhasil diunduh.',
                 timer: 2000,
                 showConfirmButton: false
             });
         } catch (err: any) {
-            Swal.fire('Error', err.message || 'Gagal export Excel Nilai Terbaik', 'error');
+            Swal.fire('Error', err.message || 'Gagal export Excel Top 5 Terbaik', 'error');
         }
     };
 
@@ -1777,7 +1794,7 @@ interface BestCriterionResult {
             {/* Modal Best Criteria */}
             {showBestModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-900 w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 w-full max-w-6xl max-h-[92vh] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
                         {/* Modal Header */}
                         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent">
                             <div className="flex items-center gap-3">
@@ -1786,10 +1803,10 @@ interface BestCriterionResult {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                                        Nilai Terbaik per Kriteria (Sikap & Penampilan)
+                                        Top 5 Peserta Terbaik per Kriteria (Putra & Putri)
                                     </h3>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Peserta Capaska dengan perolehan rata-rata nilai tertinggi di masing-masing indikator harian
+                                        Peringkat 5 teratas berdasarkan akumulasi & konsistensi jurnal harian Pamong
                                     </p>
                                 </div>
                             </div>
@@ -1802,34 +1819,61 @@ interface BestCriterionResult {
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    Export Excel Best Kriteria
+                                    Export Excel Top 5
                                 </button>
                                 <button onClick={() => setShowBestModal(false)} className="text-gray-400 hover:text-gray-600 text-lg font-bold px-2">✕</button>
                             </div>
                         </div>
 
-                        {/* Modal Sub Header Tabs */}
-                        <div className="px-6 border-b border-gray-200 dark:border-gray-800 flex gap-4 bg-gray-50/50 dark:bg-gray-800/30">
-                            <button
-                                onClick={() => setBestModalTab('sikap')}
-                                className={`py-3 text-xs font-bold border-b-2 transition ${
-                                    bestModalTab === 'sikap'
-                                        ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                31 Kriteria Sikap Pamong
-                            </button>
-                            <button
-                                onClick={() => setBestModalTab('penampilan')}
-                                className={`py-3 text-xs font-bold border-b-2 transition ${
-                                    bestModalTab === 'penampilan'
-                                        ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                7 Kriteria Penampilan Pamong
-                            </button>
+                        {/* Modal Sub Header Controls: Gender & Category */}
+                        <div className="px-6 py-2.5 border-b border-gray-200 dark:border-gray-800 flex flex-wrap justify-between items-center gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+                            {/* Gender Toggle */}
+                            <div className="flex items-center p-1 bg-gray-200/80 dark:bg-gray-800 rounded-xl">
+                                <button
+                                    onClick={() => setBestGenderFilter('L')}
+                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                        bestGenderFilter === 'L'
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <span>♂</span> PUTRA
+                                </button>
+                                <button
+                                    onClick={() => setBestGenderFilter('P')}
+                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                                        bestGenderFilter === 'P'
+                                            ? 'bg-pink-600 text-white shadow-sm'
+                                            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <span>♀</span> PUTRI
+                                </button>
+                            </div>
+
+                            {/* Category Tabs */}
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setBestModalTab('sikap')}
+                                    className={`py-2 text-xs font-bold border-b-2 transition ${
+                                        bestModalTab === 'sikap'
+                                            ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    31 Kriteria Sikap Pamong
+                                </button>
+                                <button
+                                    onClick={() => setBestModalTab('penampilan')}
+                                    className={`py-2 text-xs font-bold border-b-2 transition ${
+                                        bestModalTab === 'penampilan'
+                                            ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    7 Kriteria Penampilan Pamong
+                                </button>
+                            </div>
                         </div>
 
                         {/* Modal Content */}
@@ -1837,65 +1881,66 @@ interface BestCriterionResult {
                             {bestLoading ? (
                                 <div className="py-16 text-center text-gray-500 space-y-2">
                                     <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                    <p className="text-xs">Menghitung peserta terbaik per kriteria...</p>
+                                    <p className="text-xs">Menghitung 5 peserta terbaik per kriteria...</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {(bestModalTab === 'sikap' ? bestSikapList : bestPenampilanList).map((item) => (
-                                        <div key={item.key} className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/60 shadow-sm flex flex-col justify-between space-y-3 hover:border-amber-400 dark:hover:border-amber-500 transition">
-                                            <div className="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-2">
-                                                <h4 className="font-bold text-xs text-gray-900 dark:text-white leading-tight">
-                                                    {item.label}
-                                                </h4>
-                                                <div className="flex items-center gap-1 shrink-0">
-                                                    {item.maxDaysCount > 0 && (
-                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300" title={`Meraih nilai puncak sebanyak ${item.maxDaysCount} hari`}>
-                                                            🔥 {item.maxDaysCount}x Puncak
-                                                        </span>
-                                                    )}
-                                                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                                                        ⭐ {item.bestScore > 0 ? item.bestScore.toFixed(2) : '-'}
+                                    {(bestModalTab === 'sikap' ? top5SikapList : top5PenampilanList).map((item) => {
+                                        const topList = bestGenderFilter === 'L' ? item.topPutra : item.topPutri;
+                                        return (
+                                            <div key={item.key} className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/60 shadow-sm flex flex-col justify-between space-y-3 hover:border-amber-400 dark:hover:border-amber-500 transition">
+                                                <div className="border-b border-gray-100 dark:border-gray-700/60 pb-2 flex justify-between items-center">
+                                                    <h4 className="font-bold text-xs text-gray-900 dark:text-white leading-tight">
+                                                        {item.label}
+                                                    </h4>
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${bestGenderFilter === 'L' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' : 'bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300'}`}>
+                                                        {bestGenderFilter === 'L' ? 'PUTRA' : 'PUTRI'}
                                                     </span>
                                                 </div>
-                                            </div>
 
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-700 shrink-0">
-                                                    {item.photo ? (
-                                                        <img
-                                                            src={getCandidatePhotoUrl(item.photo)}
-                                                            alt={item.candidateName}
-                                                            className="w-full h-full object-cover"
-                                                            onError={(e) => {
-                                                                const target = e.currentTarget;
-                                                                target.onerror = null;
-                                                                target.src = '/assets/images/logo-dppi-kecil.png';
-                                                            }}
-                                                        />
+                                                {/* Top 5 list */}
+                                                <div className="space-y-2">
+                                                    {topList.length === 0 ? (
+                                                        <p className="text-xs text-gray-400 italic py-2">Belum ada data nilai.</p>
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold bg-gray-200 dark:bg-gray-700">
-                                                            {item.candidateName.charAt(0)}
-                                                        </div>
+                                                        topList.map((cand) => (
+                                                            <div key={cand.candId} className="flex items-center justify-between text-xs p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800">
+                                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                                    <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                                                                        cand.rank === 1 ? 'bg-amber-400 text-amber-950' :
+                                                                        cand.rank === 2 ? 'bg-slate-300 text-slate-900' :
+                                                                        cand.rank === 3 ? 'bg-amber-700 text-white' :
+                                                                        'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                                                                    }`}>
+                                                                        {cand.rank}
+                                                                    </span>
+                                                                    <div className="overflow-hidden">
+                                                                        <p className="font-bold text-gray-900 dark:text-white truncate text-[11px]">{cand.nama_lengkap}</p>
+                                                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{cand.provinsi}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right shrink-0">
+                                                                    <span className="font-extrabold text-amber-600 dark:text-amber-400 text-xs">
+                                                                        {cand.avgScore.toFixed(2)}
+                                                                    </span>
+                                                                    {cand.maxDaysCount > 0 && (
+                                                                        <p className="text-[9px] text-orange-600 font-semibold">🔥 {cand.maxDaysCount}x Puncak</p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))
                                                     )}
                                                 </div>
-                                                <div className="overflow-hidden">
-                                                    <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
-                                                        {item.candidateName}
-                                                    </p>
-                                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                                                        {item.noPeserta} | {item.provinsi}
-                                                    </p>
-                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
 
                         {/* Modal Footer */}
                         <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-between items-center text-xs text-gray-500">
-                            <span>Dihitung otomatis dari akumulasi harian Pamong</span>
+                            <span>Peringkat 5 teratas berdasarkan akumulasi nilai jurnal harian Pamong</span>
                             <button
                                 onClick={() => setShowBestModal(false)}
                                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-white rounded-xl font-bold transition"
