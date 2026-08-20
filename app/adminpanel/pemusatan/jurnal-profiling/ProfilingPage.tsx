@@ -333,6 +333,19 @@ export default function ProfilingPage() {
         if (score >= 60) return 'text-amber-600 dark:text-amber-450';
         return 'text-rose-600 dark:text-rose-455';
     };
+
+    const getCandidatePhotoUrl = (photoPath: string | null | undefined) => {
+        if (!photoPath) return '/assets/images/logo-dppi-kecil.png';
+        if (photoPath.startsWith('http') || photoPath.startsWith('data:')) return photoPath;
+        
+        const domain = UrlApi.replace(/\/api\/?$/, '');
+        const cleanPath = photoPath.replace(/^\//, '');
+
+        if (cleanPath.startsWith('uploads/')) {
+            return `${domain}/${cleanPath}`;
+        }
+        return `${domain}/uploads/capaska/${cleanPath}`;
+    };
     // Helper to download Excel Blob
     const downloadExcelWorkbook = (wb: XLSX.WorkBook, filename: string) => {
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -852,11 +865,13 @@ export default function ProfilingPage() {
                                                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-850">
                                                         {c.photo ? (
                                                             <img 
-                                                                src={`${UrlApi.replace('/api', '')}/uploads/capaska/${c.photo}`} 
+                                                                src={getCandidatePhotoUrl(c.photo)} 
                                                                 alt={c.nama_lengkap || 'Avatar'} 
                                                                 className="w-full h-full object-cover"
                                                                 onError={(e) => {
-                                                                    (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                                                    const target = e.currentTarget;
+                                                                    target.onerror = null;
+                                                                    target.src = '/assets/images/logo-dppi-kecil.png';
                                                                 }}
                                                             />
                                                         ) : (
@@ -945,11 +960,13 @@ export default function ProfilingPage() {
                         <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-800 shrink-0 mx-auto md:mx-0">
                             {details.profile.photo ? (
                                 <img 
-                                    src={`${UrlApi.replace('/api', '')}/uploads/capaska/${details.profile.photo}`} 
+                                    src={getCandidatePhotoUrl(details.profile.photo)} 
                                     alt={details.profile.nama_lengkap || 'Avatar'}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = '/default-avatar.png';
+                                        const target = e.currentTarget;
+                                        target.onerror = null;
+                                        target.src = '/assets/images/logo-dppi-kecil.png';
                                     }}
                                 />
                             ) : (
