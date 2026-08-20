@@ -328,6 +328,11 @@ export default function ProfilingPage() {
     };
 
     const getScoreColor = (score: number | null | undefined) => {
+        if (score === null || score === undefined) return 'text-gray-400';
+        if (score >= 80) return 'text-emerald-600 dark:text-emerald-450';
+        if (score >= 60) return 'text-amber-600 dark:text-amber-450';
+        return 'text-rose-600 dark:text-rose-455';
+    };
     // Helper to download Excel Blob
     const downloadExcelWorkbook = (wb: XLSX.WorkBook, filename: string) => {
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
