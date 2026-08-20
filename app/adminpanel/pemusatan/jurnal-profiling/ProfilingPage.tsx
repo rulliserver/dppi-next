@@ -219,9 +219,28 @@ export default function ProfilingPage() {
     const [detailLoading, setDetailLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<'pamong' | 'pelatih' | 'dokter'>('pamong');
     
+interface BestCriterionResult {
+    key: string;
+    label: string;
+    category: 'sikap' | 'penampilan';
+    bestScore: number;
+    candidateName: string;
+    noPeserta: string;
+    provinsi: string;
+    sekolah: string;
+    photo: string | null;
+}
+
     // Detail modal states
     const [selectedPamongLog, setSelectedPamongLog] = useState<DailyPamong | null>(null);
     const [selectedPelatihLog, setSelectedPelatihLog] = useState<DailyPelatih | null>(null);
+
+    // Best Performer Modal states
+    const [showBestModal, setShowBestModal] = useState(false);
+    const [bestModalTab, setBestModalTab] = useState<'sikap' | 'penampilan'>('sikap');
+    const [bestSikapList, setBestSikapList] = useState<BestCriterionResult[]>([]);
+    const [bestPenampilanList, setBestPenampilanList] = useState<BestCriterionResult[]>([]);
+    const [bestLoading, setBestLoading] = useState(false);
 
     useEffect(() => {
         const fetchCandidates = async () => {
@@ -745,6 +764,170 @@ export default function ProfilingPage() {
         }
     };
 
+    // 6. Calculate Best Performers for each Sikap (31) and Penampilan (7) criterion
+    const calculateBestCriteria = async () => {
+        const detailPromises = candidates.map(c =>
+            fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
+                .then(r => r.ok ? r.json() : null)
+                .catch(() => null)
+        );
+
+        const results: (JournalDetails | null)[] = await Promise.all(detailPromises);
+
+        const sikapResults: BestCriterionResult[] = sikapFields.map(f => {
+            let bestScore = -1;
+            let bestCand: any = null;
+
+            candidates.forEach((cand, idx) => {
+                const det = results[idx];
+                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+                if (logs.length === 0) return;
+
+                const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+                if (values.length === 0) return;
+
+                const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                if (avg > bestScore) {
+                    bestScore = avg;
+                    bestCand = cand;
+                }
+            });
+
+            return {
+                key: f.key,
+                label: f.label,
+                category: 'sikap',
+                bestScore: bestScore > 0 ? parseFloat(bestScore.toFixed(2)) : 0,
+                candidateName: bestCand?.nama_lengkap || 'Belum Ada Data',
+                noPeserta: bestCand?.no_peserta || '-',
+                provinsi: bestCand?.provinsi || '-',
+                sekolah: bestCand?.asal_sekolah || '-',
+                photo: bestCand?.photo || null,
+            };
+        });
+
+        const penampilanResults: BestCriterionResult[] = penampilanFields.map(f => {
+            let bestScore = -1;
+            let bestCand: any = null;
+
+            candidates.forEach((cand, idx) => {
+                const det = results[idx];
+                const logs: DailyPamong[] = det?.pemusatan?.pamong || [];
+                if (logs.length === 0) return;
+
+                const values = logs.map(p => (p as any)[f.key]).filter((v): v is number => v !== null && v !== undefined);
+                if (values.length === 0) return;
+
+                const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+                if (avg > bestScore) {
+                    bestScore = avg;
+                    bestCand = cand;
+                }
+            });
+
+            return {
+                key: f.key,
+                label: f.label,
+                category: 'penampilan',
+                bestScore: bestScore > 0 ? parseFloat(bestScore.toFixed(2)) : 0,
+                candidateName: bestCand?.nama_lengkap || 'Belum Ada Data',
+                noPeserta: bestCand?.no_peserta || '-',
+                provinsi: bestCand?.provinsi || '-',
+                sekolah: bestCand?.asal_sekolah || '-',
+                photo: bestCand?.photo || null,
+            };
+        });
+
+        return { sikapResults, penampilanResults };
+    };
+
+    // 7. Open Best Criteria Modal
+    const openBestModal = async () => {
+        setShowBestModal(true);
+        setBestLoading(true);
+        try {
+            const { sikapResults, penampilanResults } = await calculateBestCriteria();
+            setBestSikapList(sikapResults);
+            setBestPenampilanList(penampilanResults);
+        } catch (err: any) {
+            console.error(err);
+        } finally {
+            setBestLoading(false);
+        }
+    };
+
+    // 8. Export Excel Best Criteria
+    const exportBestCriteriaToExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Menyiapkan Export Nilai Terbaik',
+                text: 'Mohon tunggu, sedang menghitung peserta terbaik di setiap kriteria...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const { sikapResults, penampilanResults } = await calculateBestCriteria();
+
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1: Nilai Terbaik Sikap (31)
+            const sikapRows = sikapResults.map((r, idx) => ({
+                'No': idx + 1,
+                'Kriteria Sikap': r.label,
+                'Nilai Rerata Tertinggi': r.bestScore > 0 ? r.bestScore : '-',
+                'Nama Peserta Terbaik': r.candidateName,
+                'No. Peserta': r.noPeserta,
+                'Provinsi': r.provinsi,
+                'Asal Sekolah': r.sekolah,
+            }));
+            const wsSikap = XLSX.utils.json_to_sheet(sikapRows);
+            wsSikap['!cols'] = [
+                { wch: 6 },
+                { wch: 32 },
+                { wch: 22 },
+                { wch: 30 },
+                { wch: 15 },
+                { wch: 25 },
+                { wch: 30 },
+            ];
+            XLSX.utils.book_append_sheet(wb, wsSikap, 'Nilai Terbaik Sikap (31)');
+
+            // Sheet 2: Nilai Terbaik Penampilan (7)
+            const penampilanRows = penampilanResults.map((r, idx) => ({
+                'No': idx + 1,
+                'Kriteria Penampilan': r.label,
+                'Nilai Rerata Tertinggi': r.bestScore > 0 ? r.bestScore : '-',
+                'Nama Peserta Terbaik': r.candidateName,
+                'No. Peserta': r.noPeserta,
+                'Provinsi': r.provinsi,
+                'Asal Sekolah': r.sekolah,
+            }));
+            const wsPenampilan = XLSX.utils.json_to_sheet(penampilanRows);
+            wsPenampilan['!cols'] = [
+                { wch: 6 },
+                { wch: 32 },
+                { wch: 22 },
+                { wch: 30 },
+                { wch: 15 },
+                { wch: 25 },
+                { wch: 30 },
+            ];
+            XLSX.utils.book_append_sheet(wb, wsPenampilan, 'Nilai Terbaik Penampilan (7)');
+
+            downloadExcelWorkbook(wb, `Rekap_Nilai_Terbaik_Kriteria_Sikap_Penampilan_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Export',
+                text: 'File Excel Nilai Terbaik Kriteria berhasil diunduh.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (err: any) {
+            Swal.fire('Error', err.message || 'Gagal export Excel Nilai Terbaik', 'error');
+        }
+    };
+
     return (
         <div className="mb-36 relative">
             {/* Page Header */}
@@ -777,6 +960,14 @@ export default function ProfilingPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
                                 Export Nilai Rata-Rata (Excel)
+                            </button>
+                            <button
+                                onClick={openBestModal}
+                                className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+                                title="Lihat & Download Nilai Terbaik per Kriteria Sikap & Penampilan"
+                            >
+                                <span>🏆</span>
+                                Nilai Terbaik Kriteria
                             </button>
                             <button
                                 onClick={exportAllJournalsToExcel}
@@ -1368,6 +1559,132 @@ export default function ProfilingPage() {
                                 className="px-4 py-2 bg-violet-600 hover:bg-violet-750 text-white rounded text-xs font-bold transition-colors shadow-sm"
                             >
                                 Tutup Detail
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Best Criteria */}
+            {showBestModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-900 w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-amber-500/20">
+                                    🏆
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                                        Nilai Terbaik per Kriteria (Sikap & Penampilan)
+                                    </h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Peserta Capaska dengan perolehan rata-rata nilai tertinggi di masing-masing indikator harian
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={exportBestCriteriaToExcel}
+                                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-1.5"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Export Excel Best Kriteria
+                                </button>
+                                <button onClick={() => setShowBestModal(false)} className="text-gray-400 hover:text-gray-600 text-lg font-bold px-2">✕</button>
+                            </div>
+                        </div>
+
+                        {/* Modal Sub Header Tabs */}
+                        <div className="px-6 border-b border-gray-200 dark:border-gray-800 flex gap-4 bg-gray-50/50 dark:bg-gray-800/30">
+                            <button
+                                onClick={() => setBestModalTab('sikap')}
+                                className={`py-3 text-xs font-bold border-b-2 transition ${
+                                    bestModalTab === 'sikap'
+                                        ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                31 Kriteria Sikap Pamong
+                            </button>
+                            <button
+                                onClick={() => setBestModalTab('penampilan')}
+                                className={`py-3 text-xs font-bold border-b-2 transition ${
+                                    bestModalTab === 'penampilan'
+                                        ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                7 Kriteria Penampilan Pamong
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {bestLoading ? (
+                                <div className="py-16 text-center text-gray-500 space-y-2">
+                                    <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                    <p className="text-xs">Menghitung peserta terbaik per kriteria...</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {(bestModalTab === 'sikap' ? bestSikapList : bestPenampilanList).map((item) => (
+                                        <div key={item.key} className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/60 shadow-sm flex flex-col justify-between space-y-3 hover:border-amber-400 dark:hover:border-amber-500 transition">
+                                            <div className="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-2">
+                                                <h4 className="font-bold text-xs text-gray-900 dark:text-white leading-tight">
+                                                    {item.label}
+                                                </h4>
+                                                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 shrink-0">
+                                                    ⭐ {item.bestScore > 0 ? item.bestScore.toFixed(2) : '-'}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200 dark:border-gray-700 shrink-0">
+                                                    {item.photo ? (
+                                                        <img
+                                                            src={getCandidatePhotoUrl(item.photo)}
+                                                            alt={item.candidateName}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                const target = e.currentTarget;
+                                                                target.onerror = null;
+                                                                target.src = '/assets/images/logo-dppi-kecil.png';
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold bg-gray-200 dark:bg-gray-700">
+                                                            {item.candidateName.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="overflow-hidden">
+                                                    <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                                                        {item.candidateName}
+                                                    </p>
+                                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                                                        {item.noPeserta} | {item.provinsi}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-between items-center text-xs text-gray-500">
+                            <span>Dihitung otomatis dari akumulasi harian Pamong</span>
+                            <button
+                                onClick={() => setShowBestModal(false)}
+                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-white rounded-xl font-bold transition"
+                            >
+                                Tutup
                             </button>
                         </div>
                     </div>
