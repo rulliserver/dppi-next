@@ -597,6 +597,141 @@ export default function ProfilingPage() {
         }
     };
 
+    // 5. Export Overall Averages Summary per Candidate
+    const exportOverallAveragesToExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Menyiapkan Export Rata-Rata',
+                text: 'Mohon tunggu, sedang menghitung nilai rata-rata keseluruhan peserta...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            // Fetch detail journal for all candidates
+            const detailPromises = candidates.map(c =>
+                fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null)
+            );
+
+            const results = await Promise.all(detailPromises);
+
+            const rows = candidates.map((cand, idx) => {
+                const det: JournalDetails | null = results[idx];
+                const pamongLogs: DailyPamong[] = det?.pemusatan?.pamong || [];
+                const pelatihLogs: DailyPelatih[] = det?.pemusatan?.pelatih || [];
+                const dokterLogs: DailyDokter[] = det?.pemusatan?.dokter || [];
+
+                // Pamong calculations
+                let avgSikapPamong = 0;
+                let avgPenampilanPamong = 0;
+                let totalPamongScore = 0;
+                if (pamongLogs.length > 0) {
+                    const sumSikap = pamongLogs.reduce((acc, p) => acc + parseFloat(getSikapAvg(p)), 0);
+                    const sumPenampilan = pamongLogs.reduce((acc, p) => acc + parseFloat(getPenampilanAvg(p)), 0);
+                    const sumTotal = pamongLogs.reduce((acc, p) => acc + parseFloat(getPamongNilaiKeseluruhan(p)), 0);
+
+                    avgSikapPamong = sumSikap / pamongLogs.length;
+                    avgPenampilanPamong = sumPenampilan / pamongLogs.length;
+                    totalPamongScore = sumTotal / pamongLogs.length;
+                }
+
+                // Pelatih calculations
+                let avgPbbPelatih = 0;
+                let avgBenderaPelatih = 0;
+                let totalPelatihScore = 0;
+                if (pelatihLogs.length > 0) {
+                    const sumPbb = pelatihLogs.reduce((acc, p) => acc + parseFloat(getPbbSikapDiamAvg(p)), 0);
+                    const sumBendera = pelatihLogs.reduce((acc, p) => acc + parseFloat(getBenderaAvg(p)), 0);
+
+                    avgPbbPelatih = sumPbb / pelatihLogs.length;
+                    avgBenderaPelatih = sumBendera / pelatihLogs.length;
+                    totalPelatihScore = (avgPbbPelatih + avgBenderaPelatih) / 2;
+                }
+
+                // Dokter summary
+                const lastDokter = dokterLogs.length > 0 ? dokterLogs[dokterLogs.length - 1] : null;
+                const rekomDokter = lastDokter?.rekomendasi_istirahat || 'Normal / Bisa Latihan';
+
+                // Combined Final Average
+                let finalCombinedScore = 0;
+                if (totalPamongScore > 0 && totalPelatihScore > 0) {
+                    finalCombinedScore = (totalPamongScore + totalPelatihScore) / 2;
+                } else if (totalPamongScore > 0) {
+                    finalCombinedScore = totalPamongScore;
+                } else if (totalPelatihScore > 0) {
+                    finalCombinedScore = totalPelatihScore;
+                }
+
+                let kategori = 'Belum Ada Penilaian';
+                if (finalCombinedScore >= 85) kategori = 'Sangat Baik';
+                else if (finalCombinedScore >= 75) kategori = 'Baik';
+                else if (finalCombinedScore >= 65) kategori = 'Cukup';
+                else if (finalCombinedScore > 0) kategori = 'Perlu Perhatian';
+
+                return {
+                    'No': idx + 1,
+                    'No. Peserta': cand.no_peserta || '-',
+                    'Nama Lengkap': cand.nama_lengkap || '-',
+                    'Jenis Kelamin': cand.jk === 'L' ? 'Putra' : cand.jk === 'P' ? 'Putri' : cand.jk || '-',
+                    'Provinsi': cand.provinsi || '-',
+                    'Kabupaten/Kota': cand.kabupaten_kota || '-',
+                    'Asal Sekolah': cand.asal_sekolah || '-',
+                    'Jml Hari Pamong': pamongLogs.length,
+                    'Rata-rata Sikap (Pamong)': avgSikapPamong > 0 ? avgSikapPamong.toFixed(2) : '-',
+                    'Rata-rata Penampilan (Pamong)': avgPenampilanPamong > 0 ? avgPenampilanPamong.toFixed(2) : '-',
+                    'Total Rata-rata Pamong': totalPamongScore > 0 ? totalPamongScore.toFixed(2) : '-',
+                    'Jml Hari Pelatih': pelatihLogs.length,
+                    'Rata-rata PBB (Pelatih)': avgPbbPelatih > 0 ? avgPbbPelatih.toFixed(2) : '-',
+                    'Rata-rata Bendera (Pelatih)': avgBenderaPelatih > 0 ? avgBenderaPelatih.toFixed(2) : '-',
+                    'Total Rata-rata Pelatih': totalPelatihScore > 0 ? totalPelatihScore.toFixed(2) : '-',
+                    'Jml Cek Dokter': dokterLogs.length,
+                    'Rekomendasi Dokter Terakhir': rekomDokter,
+                    'RATA-RATA GABUNGAN AKHIR': finalCombinedScore > 0 ? finalCombinedScore.toFixed(2) : '-',
+                    'KATEGORI HASIL': kategori
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+            ws['!cols'] = [
+                { wch: 6 },  // No
+                { wch: 15 }, // No Peserta
+                { wch: 30 }, // Nama Lengkap
+                { wch: 15 }, // JK
+                { wch: 25 }, // Provinsi
+                { wch: 25 }, // Kab/Kota
+                { wch: 30 }, // Asal Sekolah
+                { wch: 16 }, // Jml Hari Pamong
+                { wch: 22 }, // Rerata Sikap
+                { wch: 26 }, // Rerata Penampilan
+                { wch: 22 }, // Rerata Total Pamong
+                { wch: 16 }, // Jml Hari Pelatih
+                { wch: 22 }, // Rerata PBB
+                { wch: 24 }, // Rerata Bendera
+                { wch: 22 }, // Rerata Total Pelatih
+                { wch: 16 }, // Jml Cek Dokter
+                { wch: 28 }, // Rekomendasi Dokter
+                { wch: 26 }, // RERATA GABUNGAN AKHIR
+                { wch: 20 }, // KATEGORI HASIL
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Rata-Rata Keseluruhan');
+
+            downloadExcelWorkbook(wb, `Rekap_Nilai_RataRata_Keseluruhan_Capaska_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Export',
+                text: 'File Excel Nilai Rata-rata Keseluruhan berhasil diunduh.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (err: any) {
+            Swal.fire('Error', err.message || 'Gagal export data Excel', 'error');
+        }
+    };
+
     return (
         <div className="mb-36 relative">
             {/* Page Header */}
@@ -619,6 +754,16 @@ export default function ProfilingPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Export Roster (Excel)
+                            </button>
+                            <button
+                                onClick={exportOverallAveragesToExcel}
+                                className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+                                title="Download Rekap Nilai Rata-Rata Keseluruhan per Peserta (Excel)"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                Export Nilai Rata-Rata (Excel)
                             </button>
                             <button
                                 onClick={exportAllJournalsToExcel}
