@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { UrlApi } from '@/app/components/apiUrl';
 import Swal from 'sweetalert2';
 import Pagination from '@/app/components/UserPagination';
+import * as XLSX from 'xlsx-js-style';
 
 // Update Candidate interface sesuai dengan data_capaska
 interface Candidate {
@@ -327,30 +328,326 @@ export default function ProfilingPage() {
     };
 
     const getScoreColor = (score: number | null | undefined) => {
-        if (score === null || score === undefined) return 'text-gray-400';
-        if (score >= 80) return 'text-emerald-600 dark:text-emerald-450';
-        if (score >= 60) return 'text-amber-600 dark:text-amber-450';
-        return 'text-rose-600 dark:text-rose-455';
+    // Helper to download Excel Blob
+    const downloadExcelWorkbook = (wb: XLSX.WorkBook, filename: string) => {
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    // 1. Export Roster Candidates List
+    const exportRosterToExcel = () => {
+        const dataToExport = filteredCandidates.map((c, idx) => ({
+            'No': idx + 1,
+            'No. Peserta': c.no_peserta || '-',
+            'Nama Lengkap': c.nama_lengkap || '-',
+            'Jenis Kelamin': c.jk === 'L' ? 'Putra' : c.jk === 'P' ? 'Putri' : c.jk || '-',
+            'Provinsi': c.provinsi || '-',
+            'Kabupaten/Kota': c.kabupaten_kota || '-',
+            'Asal Sekolah': c.asal_sekolah || '-',
+            'No. HP': c.no_hp || '-',
+            'Status': c.status || 'Aktif',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        ws['!cols'] = [
+            { wch: 6 },
+            { wch: 15 },
+            { wch: 30 },
+            { wch: 15 },
+            { wch: 25 },
+            { wch: 25 },
+            { wch: 30 },
+            { wch: 18 },
+            { wch: 15 },
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Roster Peserta');
+        downloadExcelWorkbook(wb, `Roster_Profiling_Paskibraka_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+    // 2. Export Single Candidate's Complete Journal (4 Sheets)
+    const exportSingleCandidateJournal = (cand: Candidate, det: JournalDetails) => {
+        const wb = XLSX.utils.book_new();
+
+        // Sheet 1: Profil Peserta
+        const profileRows = [
+            ['INFORMASI PROFIL PESERTA PASKIBRAKA 2026', ''],
+            ['Nama Lengkap', cand.nama_lengkap || '-'],
+            ['No. Peserta', cand.no_peserta || '-'],
+            ['Jenis Kelamin', cand.jk === 'L' ? 'Putra' : cand.jk === 'P' ? 'Putri' : cand.jk || '-'],
+            ['Tempat, Tgl Lahir', `${cand.tempat_lahir || '-'}, ${cand.tanggal_lahir || '-'}`],
+            ['Provinsi', cand.provinsi || '-'],
+            ['Kabupaten/Kota', cand.kabupaten_kota || '-'],
+            ['Asal Sekolah', cand.asal_sekolah || '-'],
+            ['No. HP', cand.no_hp || '-'],
+            ['Status', cand.status || 'Aktif']
+        ];
+        const wsProfile = XLSX.utils.aoa_to_sheet(profileRows);
+        wsProfile['!cols'] = [{ wch: 25 }, { wch: 40 }];
+        XLSX.utils.book_append_sheet(wb, wsProfile, 'Profil Peserta');
+
+        // Sheet 2: Jurnal Pamong
+        const pamongHeaders = [
+            'Tanggal', 'Rerata Sikap', 'Rerata Penampilan', 'Nilai Keseluruhan', 'Catatan Pamong',
+            ...sikapFields.map(f => f.label),
+            ...penampilanFields.map(f => f.label)
+        ];
+        const pamongRows = (det.pemusatan?.pamong || []).map(p => [
+            p.tanggal,
+            getSikapAvg(p),
+            getPenampilanAvg(p),
+            getPamongNilaiKeseluruhan(p),
+            p.catatan || '-',
+            ...sikapFields.map(f => (p as any)[f.key] ?? '-'),
+            ...penampilanFields.map(f => (p as any)[f.key] ?? '-')
+        ]);
+        const wsPamong = XLSX.utils.aoa_to_sheet([pamongHeaders, ...pamongRows]);
+        XLSX.utils.book_append_sheet(wb, wsPamong, 'Jurnal Pamong');
+
+        // Sheet 3: Jurnal Pelatih
+        const pelatihHeaders = [
+            'Tanggal', 'Rerata PBB / Sikap Diam', 'Rerata Bendera', 'Catatan Pelatih',
+            ...pbbSikapDiamFields.map(f => f.label),
+            ...benderaFields.map(f => f.label)
+        ];
+        const pelatihRows = (det.pemusatan?.pelatih || []).map(p => [
+            p.tanggal,
+            getPbbSikapDiamAvg(p),
+            getBenderaAvg(p),
+            p.catatan || '-',
+            ...pbbSikapDiamFields.map(f => (p as any)[f.key] ?? '-'),
+            ...benderaFields.map(f => (p as any)[f.key] ?? '-')
+        ]);
+        const wsPelatih = XLSX.utils.aoa_to_sheet([pelatihHeaders, ...pelatihRows]);
+        XLSX.utils.book_append_sheet(wb, wsPelatih, 'Jurnal Pelatih');
+
+        // Sheet 4: Jurnal Dokter
+        const dokterHeaders = ['Tanggal', 'Tensi', 'Suhu (°C)', 'Keluhan', 'Diagnosa', 'Terapi Obat', 'Rekomendasi Istirahat'];
+        const dokterRows = (det.pemusatan?.dokter || []).map(d => [
+            d.tanggal,
+            d.tensi || '-',
+            d.suhu || '-',
+            d.keluhan || '-',
+            d.diagnosa || '-',
+            d.terapi_obat || '-',
+            d.rekomendasi_istirahat || '-'
+        ]);
+        const wsDokter = XLSX.utils.aoa_to_sheet([dokterHeaders, ...dokterRows]);
+        XLSX.utils.book_append_sheet(wb, wsDokter, 'Jurnal Kesehatan Dokter');
+
+        const cleanName = (cand.nama_lengkap || 'Peserta').replace(/[^a-zA-Z0-9_-]/g, '_');
+        downloadExcelWorkbook(wb, `Jurnal_Profiling_${cleanName}_${cand.no_peserta || 'ID'}.xlsx`);
+    };
+
+    // 3. Download single candidate from table row button
+    const handleDownloadCandidateJournalById = async (cand: Candidate) => {
+        try {
+            Swal.fire({
+                title: 'Menyiapkan File Excel',
+                text: `Mengunduh jurnal profiling untuk ${cand.nama_lengkap}...`,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            const res = await fetch(`${UrlApi}/pemusatan/jurnal/${cand.id}`, { credentials: 'include' });
+            if (!res.ok) throw new Error('Gagal memuat detail jurnal peserta');
+            const data = await res.json();
+            exportSingleCandidateJournal(cand, data);
+            Swal.close();
+        } catch (err: any) {
+            Swal.fire('Error', err.message || 'Gagal mengunduh Excel', 'error');
+        }
+    };
+
+    // 4. Export Master Excel (All Candidates)
+    const exportAllJournalsToExcel = async () => {
+        try {
+            Swal.fire({
+                title: 'Menyiapkan Rekap Excel',
+                text: 'Mohon tunggu, sedang mengompilasi jurnal harian seluruh peserta...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const wb = XLSX.utils.book_new();
+
+            // 1. Roster Sheet
+            const rosterData = candidates.map((c, idx) => ({
+                'No': idx + 1,
+                'No. Peserta': c.no_peserta || '-',
+                'Nama Lengkap': c.nama_lengkap || '-',
+                'Jenis Kelamin': c.jk === 'L' ? 'Putra' : c.jk === 'P' ? 'Putri' : c.jk || '-',
+                'Provinsi': c.provinsi || '-',
+                'Kabupaten/Kota': c.kabupaten_kota || '-',
+                'Asal Sekolah': c.asal_sekolah || '-',
+                'No. HP': c.no_hp || '-',
+                'Status': c.status || 'Aktif',
+            }));
+            const wsRoster = XLSX.utils.json_to_sheet(rosterData);
+            XLSX.utils.book_append_sheet(wb, wsRoster, 'Roster Peserta');
+
+            const detailPromises = candidates.map(c =>
+                fetch(`${UrlApi}/pemusatan/jurnal/${c.id}`, { credentials: 'include' })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null)
+            );
+
+            const results = await Promise.all(detailPromises);
+
+            const pamongMasterRows: any[] = [];
+            const pelatihMasterRows: any[] = [];
+            const dokterMasterRows: any[] = [];
+
+            results.forEach((det: JournalDetails | null, idx) => {
+                const cand = candidates[idx];
+                if (!det) return;
+
+                (det.pemusatan?.pamong || []).forEach(p => {
+                    pamongMasterRows.push([
+                        cand.no_peserta || '-',
+                        cand.nama_lengkap || '-',
+                        cand.provinsi || '-',
+                        p.tanggal,
+                        getSikapAvg(p),
+                        getPenampilanAvg(p),
+                        getPamongNilaiKeseluruhan(p),
+                        p.catatan || '-',
+                        ...sikapFields.map(f => (p as any)[f.key] ?? '-'),
+                        ...penampilanFields.map(f => (p as any)[f.key] ?? '-')
+                    ]);
+                });
+
+                (det.pemusatan?.pelatih || []).forEach(p => {
+                    pelatihMasterRows.push([
+                        cand.no_peserta || '-',
+                        cand.nama_lengkap || '-',
+                        cand.provinsi || '-',
+                        p.tanggal,
+                        getPbbSikapDiamAvg(p),
+                        getBenderaAvg(p),
+                        p.catatan || '-',
+                        ...pbbSikapDiamFields.map(f => (p as any)[f.key] ?? '-'),
+                        ...benderaFields.map(f => (p as any)[f.key] ?? '-')
+                    ]);
+                });
+
+                (det.pemusatan?.dokter || []).forEach(d => {
+                    dokterMasterRows.push([
+                        cand.no_peserta || '-',
+                        cand.nama_lengkap || '-',
+                        cand.provinsi || '-',
+                        d.tanggal,
+                        d.tensi || '-',
+                        d.suhu || '-',
+                        d.keluhan || '-',
+                        d.diagnosa || '-',
+                        d.terapi_obat || '-',
+                        d.rekomendasi_istirahat || '-'
+                    ]);
+                });
+            });
+
+            // 2. Master Pamong Sheet
+            const pamongHeaders = [
+                'No Peserta', 'Nama Lengkap', 'Provinsi', 'Tanggal', 'Rerata Sikap', 'Rerata Penampilan', 'Nilai Keseluruhan', 'Catatan Pamong',
+                ...sikapFields.map(f => f.label),
+                ...penampilanFields.map(f => f.label)
+            ];
+            const wsPamong = XLSX.utils.aoa_to_sheet([pamongHeaders, ...pamongMasterRows]);
+            XLSX.utils.book_append_sheet(wb, wsPamong, 'Rekap Jurnal Pamong');
+
+            // 3. Master Pelatih Sheet
+            const pelatihHeaders = [
+                'No Peserta', 'Nama Lengkap', 'Provinsi', 'Tanggal', 'Rerata PBB', 'Rerata Bendera', 'Catatan Pelatih',
+                ...pbbSikapDiamFields.map(f => f.label),
+                ...benderaFields.map(f => f.label)
+            ];
+            const wsPelatih = XLSX.utils.aoa_to_sheet([pelatihHeaders, ...pelatihMasterRows]);
+            XLSX.utils.book_append_sheet(wb, wsPelatih, 'Rekap Jurnal Pelatih');
+
+            // 4. Master Dokter Sheet
+            const dokterHeaders = ['No Peserta', 'Nama Lengkap', 'Provinsi', 'Tanggal', 'Tensi', 'Suhu (°C)', 'Keluhan', 'Diagnosa', 'Terapi Obat', 'Rekomendasi Istirahat'];
+            const wsDokter = XLSX.utils.aoa_to_sheet([dokterHeaders, ...dokterMasterRows]);
+            XLSX.utils.book_append_sheet(wb, wsDokter, 'Rekap Jurnal Dokter');
+
+            downloadExcelWorkbook(wb, `Rekap_Lengkap_Jurnal_Profiling_Paskibraka_2026_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Export',
+                text: 'File Excel Rekap Jurnal Profiling berhasil diunduh.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (err: any) {
+            Swal.fire('Error', err.message || 'Gagal export data Excel', 'error');
+        }
     };
 
     return (
         <div className="mb-36 relative">
             {/* Page Header */}
-            <div className="mb-6 flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-4">
+            <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Jurnal Profiling Paskibraka 2026</h1>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
                         Kompilasi penilaian jurnal harian Pamong, Pelatih, dan Dokter
                     </p>
                 </div>
-                {selectedId !== null && (
-                    <button
-                        onClick={() => { setSelectedId(null); setDetails(null); }}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-250 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded text-xs font-bold transition-colors border border-gray-250 dark:border-gray-700 shadow-sm"
-                    >
-                        Kembali ke Roster
-                    </button>
-                )}
+                <div className="flex flex-wrap items-center gap-2">
+                    {selectedId === null ? (
+                        <>
+                            <button
+                                onClick={exportRosterToExcel}
+                                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+                                title="Download Roster Peserta (Excel)"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export Roster (Excel)
+                            </button>
+                            <button
+                                onClick={exportAllJournalsToExcel}
+                                className="px-3.5 py-2 bg-green-700 hover:bg-green-800 text-white rounded text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+                                title="Download Rekap Jurnal Lengkap Semua Peserta (Excel)"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export Rekap Jurnal All (Excel)
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            {details && (
+                                <button
+                                    onClick={() => exportSingleCandidateJournal(details.profile, details)}
+                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Export Jurnal Peserta Ini (Excel)
+                                </button>
+                            )}
+                            <button
+                                onClick={() => { setSelectedId(null); setDetails(null); }}
+                                className="px-4 py-2 bg-gray-100 hover:bg-gray-250 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded text-xs font-bold transition-colors border border-gray-250 dark:border-gray-700 shadow-sm"
+                            >
+                                Kembali ke Roster
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             {selectedId === null ? (
@@ -445,6 +742,16 @@ export default function ProfilingPage() {
                                                             className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/40 dark:hover:bg-violet-950 text-violet-750 dark:text-violet-300 rounded font-semibold transition-colors text-[11px]"
                                                         >
                                                             Lihat Profiling
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDownloadCandidateJournalById(c)}
+                                                            className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded font-semibold transition-colors text-[11px] flex items-center gap-1"
+                                                            title="Download Excel Jurnal Profiling Peserta Ini"
+                                                        >
+                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                            Excel
                                                         </button>
                                                         <a
                                                             href={`/adminpanel/capaska/edit/${c.id}`}
